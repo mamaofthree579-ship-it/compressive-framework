@@ -1,0 +1,47 @@
+site_name: Compressive Framework (CF)
+site_url: https://yourusername.github.io/compressive-framework/
+repo_url: https://github.com/yourusername/compressive-framework
+
+theme:
+  name: material
+  logo: assets/images/cf-logo.svg
+  favicon: assets/images/cf-logo.svg
+  features:
+    - navigation.instant
+    - content.code.copy
+    - navigation.sections
+    - toc.follow
+    - header.autohide
+  palette:
+    - scheme: slate
+      primary: deep purple
+      accent: blue
+
+markdown_extensions:
+  - toc:
+      permalink: true
+  - admonition
+  - footnotes
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.highlight
+  - pymdownx.superfences
+
+extra_javascript:
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+
+nav:
+  - Home: index.md
+  - Theory:
+      - Overview: theory/overview.md
+      - Equations: theory/equations.md
+  - Notebooks:
+      - Wave Compression: notebooks/01_wave_compression.md
+      - Chronon Dynamics: notebooks/02_chronon_dynamics.md
+      - Particle Formation: notebooks/03_particle_formation.md
+      - Wave → Particle Motion: notebooks/04_wave_to_particle_motion.md
+      - Fractional Presence: notebooks/05_fractional_presence.md
+      - Multi-Particle Coalescence: notebooks/06_particle_coalescence.md
+      - Field Interactions: notebooks/07_field_interactions.md
+      - Quantized Curvature: notebooks/08_quantized_curvature.md
+  - Glossary: glossary.md
