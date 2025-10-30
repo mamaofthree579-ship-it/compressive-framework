@@ -23,10 +23,10 @@ jobs:
           python-version: '3.11'
 
       - name: Install dependencies
-  run: |
-    pip install --upgrade pip
-    pip install -r requirements.txt
-          pip install mkdocs-material mkdocs-jupyter
+     run: |
+      - pip install --upgrade pip
+      -  pip install -r requirements.txt
+      -  pip install mkdocs-material mkdocs-jupyter
 
       - name: Build MkDocs site
         run: mkdocs build 
