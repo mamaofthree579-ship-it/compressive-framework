@@ -73,7 +73,7 @@ plt.xlabel("x")
 plt.ylabel("Amplitude Density")
 plt.legend()
 plt.grid(True)
-plt.show()
+plt.show(docs/101300640.jpg)
 ```
 
 This produces a visual showing the initial wide wave and the compressed localized form after iterative focusing.
