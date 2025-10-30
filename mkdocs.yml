@@ -39,16 +39,16 @@ extra_javascript:
 nav:
   - Home: index.md
    - Notebooks:
-          - Wave Compression: notebooks/01_wave_compression.md
-          - Chronon Dynamics: notebooks/02_chronon_dynamics.md
-          - Particle Formation: notebooks/03_particle_formation.md
-          - Wave → Particle Motion: notebooks/04_wave_to_particle_motion.md
-          - Fractional Presence & Nonlocal Binding: notebooks/05_fractional_presence.md
-          - Multi-Particle Coalescence: notebooks/06_particle_coalescence.md
-          - Field Interactions: notebooks/07_field_interactions.md
-          - Quantized Curvature: notebooks/08_quantized_curvature.md
-          - Vacuum Symmetry Breaking: notebooks/09_vacuum_symmetry_breaking.md
-          - Vacuum Domain Formation: notebooks/
+        - Wave Compression: notebooks/01_wave_compression.md
+        - Chronon Dynamics: notebooks/02_chronon_dynamics.md
+        - Particle Formation: notebooks/03_particle_formation.md
+        - Wave → Particle Motion: notebooks/04_wave_to_particle_motion.md
+        - Fractional Presence & Nonlocal Binding: notebooks/05_fractional_presence.md
+        - Multi-Particle Coalescence: notebooks/06_particle_coalescence.md
+        - Field Interactions: notebooks/07_field_interactions.md
+        - Quantized Curvature: notebooks/08_quantized_curvature.md
+        - Vacuum Symmetry Breaking: notebooks/09_vacuum_symmetry_breaking.md
+        - Vacuum Domain Formation: notebooks/
   - Contributing: contributing.md
   - API: api.md
 
