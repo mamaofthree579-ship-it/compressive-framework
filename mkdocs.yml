@@ -3,8 +3,8 @@ site_url: https://mamaofthree579-ship-it.github.io/compressive-framework-cf/
 
 theme:
   name: material
-  logo: 
-  favicon:
+  logo:
+  favicon: 
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
@@ -33,22 +33,21 @@ markdown_extensions:
   - pymdownx.highlight
 
 extra_javascript:
-  - assets/js/particles.js
   - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
 
 nav:
   - Home: index.md
-   - Notebooks:
-        - Wave Compression: notebooks/01_wave_compression.md
-        - Chronon Dynamics: notebooks/02_chronon_dynamics.md
-        - Particle Formation: notebooks/03_particle_formation.md
-        - Wave → Particle Motion: notebooks/04_wave_to_particle_motion.md
-        - Fractional Presence & Nonlocal Binding: notebooks/05_fractional_presence.md
-        - Multi-Particle Coalescence: notebooks/06_particle_coalescence.md
-        - Field Interactions: notebooks/07_field_interactions.md
-        - Quantized Curvature: notebooks/08_quantized_curvature.md
-        - Vacuum Symmetry Breaking: notebooks/09_vacuum_symmetry_breaking.md
-        - Vacuum Domain Formation: notebooks/
+  - Notebooks:
+      - Wave Compression: notebooks/01_wave_compression.md
+      - Chronon Dynamics: notebooks/02_chronon_dynamics.md
+      - Particle Formation: notebooks/03_particle_formation.md
+      - Wave → Particle Motion: notebooks/04_wave_to_particle_motion.md
+      - Fractional Presence & Nonlocal Binding: notebooks/05_fractional_presence.md
+      - Multi-Particle Coalescence: notebooks/06_particle_coalescence.md
+      - Field Interactions: notebooks/07_field_interactions.md
+      - Quantized Curvature: notebooks/08_quantized_curvature.md
+      - Vacuum Symmetry Breaking: notebooks/09_vacuum_symmetry_breaking.md
+      - Vacuum Domain Formation: notebooks/10_vacuum_domain_formation.md
   - Contributing: contributing.md
   - API: api.md
 
