@@ -53,6 +53,7 @@ plt.xlabel("x")
 plt.ylabel("Probability Density")
 plt.legend()
 plt.show()
+```
 
 This demonstrates how overlapping compression fields generate reinforced nodes of density — the precursors of stable composite particles.
 
