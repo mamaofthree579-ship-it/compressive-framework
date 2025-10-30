@@ -3,8 +3,8 @@ site_url: https://mamaofthree579-ship-it.github.io/compressive-framework-cf/
 
 theme:
   name: material
-  logo: images/cf-trifractal-dark.svg
-  favicon: images/cf-trifractal-dark.svg
+  logo: 
+  favicon:
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
@@ -39,13 +39,6 @@ extra_javascript:
 nav:
   - Home: index.md
   - Theory:
-      - Overview: theory/overview.md
-      - Equations: theory/equations.md
-  - Mathematics: math_reference.md
-  - Architecture: architecture.md
-  - Simulations:
-      - Concepts: simulation_concepts.md
-      - Gallery: reference_plots.md
       - Notebooks:
           - Intro to CF: notebooks/intro_to_cf.md
           - Wave Compression: notebooks/01_wave_compression.md
@@ -57,9 +50,7 @@ nav:
           - Field Interactions: notebooks/07_field_interactions.md
           - Quantized Curvature: notebooks/08_quantized_curvature.md
           - Vacuum Symmetry Breaking: notebooks/09_vacuum_symmetry_breaking.md
-          - Vacuum Domain Formation: notebooks/10_vacuum_domain_formation.md
-  - Research: research.md
-  - Glossary: glossary.md
+          - Vacuum Domain Formation: notebooks/
   - Contributing: contributing.md
   - API: api.md
 
