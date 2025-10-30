@@ -70,7 +70,7 @@ plt.title("Particle Formation Threshold Model")
 plt.xlabel("Position x")
 plt.legend()
 plt.show()
-
+```
 
 ⸻
 
