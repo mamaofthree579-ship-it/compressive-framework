@@ -38,9 +38,7 @@ extra_javascript:
 
 nav:
   - Home: index.md
-  - Theory:
-      - Notebooks:
-          - Intro to CF: notebooks/intro_to_cf.md
+   - Notebooks:
           - Wave Compression: notebooks/01_wave_compression.md
           - Chronon Dynamics: notebooks/02_chronon_dynamics.md
           - Particle Formation: notebooks/03_particle_formation.md
