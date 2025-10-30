@@ -114,13 +114,13 @@ plt.show()
 ⸻
 
 6. Key Insights
- -------------------------------------------  
+ -------------------------------------
 Mechanism | Field Driver | Observable Effect
---------------------------------------------
-Phase gradient | ψ-field | Directional momentum
-Compression gradient | Φ-field | Accelerated drift
-Temporal lag | χ-field | Emergent inertia
-Energy coupling | ψ–Φ–χ triad | Coherent motion
+--------------------------------------
+Phase gradient -> ψ-field -> Directional momentum |
+Compression gradient -> Φ-field -> Accelerated drift |
+Temporal lag -> χ-field -> Emergent inertia
+Energy coupling -> ψ–Φ–χ triad -> Coherent motion |
 
 
 ⸻
