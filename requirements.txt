@@ -1,0 +1,24 @@
+# Core MkDocs + Theme
+mkdocs>=1.6.0
+mkdocs-material>=9.5.0
+mkdocs-jupyter>=0.24.6
+
+# Scientific / Notebook dependencies
+numpy
+matplotlib
+sympy
+scipy
+pandas
+
+# Optional but useful for visualizations
+plotly
+seaborn
+
+# Markdown and rendering extensions
+pymdown-extensions
+markdown
+nbformat
+nbclient
+
+# Deployment
+ghp-import
