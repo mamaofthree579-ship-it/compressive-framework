@@ -21,18 +21,20 @@ Together, these form a **tri-field architecture**, generating spacetime’s geom
 
 The notebooks explore CF-DPF progression step-by-step, from wave origin to vacuum crystallization.
 
-| # | Notebook Title | Description |
-|:-:|:-----------------------------|:-----------------------------|
-| 1 | [Wave Compression](docs/notebooks/01_wave_compression.md) | Foundational dynamics of compression and expansion waves |
-| 2 | [Chronon Dynamics](docs/notebooks/02_chronon_dynamics.md) | Modeling the oscillatory nature of time in the continuum |
-| 3 | [Particle Formation](docs/notebooks/03_particle_formation.md) | Quantum particle nucleation from wave interference |
-| 4 | [Wave → Particle Motion](docs/notebooks/04_wave_to_particle_motion.md) | Transition between continuous and discrete motion |
-| 5 | [Fractional Presence & Nonlocal Binding](docs/notebooks/05_fractional_presence.md) | Wavefunction nonlocality and distributed presence |
-| 6 | [Multi-Particle Coalescence](docs/notebooks/06_particle_coalescence.md) | Formation of composite systems through phase coupling |
-| 7 | [Field Interactions](docs/notebooks/07_field_interactions.md) | Energy transfer among the graviton, chronon, and cognon fields |
-| 8 | [Quantized Curvature](docs/notebooks/08_quantized_curvature.md) | Discretization of curvature and the onset of structure |
-| 9 | [Vacuum Symmetry Breaking](docs/notebooks/09_vacuum_symmetry_breaking.md) | The collapse of uniformity and emergence of directional bias |
-| 10 | [Vacuum Domain Formation](docs/notebooks/10_vacuum_domain_formation.md) | Domain condensation and curvature stabilization |
+## 📚 Notebooks
+
+| # | Notebook | Description |
+|:-:|:--|:--|
+| 1 | [**Wave Compression**](notebooks/01_wave_compression.md) | The foundation of CF — describing how standing waves compress into quantized pockets of energy density. |
+| 2 | [**Chronon Dynamics**](notebooks/02_chronon_dynamics.md) | Examines time quantization and oscillatory frequency coupling in compressed wave regions. |
+| 3 | [**Particle Formation**](notebooks/03_particle_formation.md) | Demonstrates how sustained wave interference creates localized particle presence. |
+| 4 | [**Wave → Particle Motion**](notebooks/04_wave_to_particle_motion.md) | Describes how wave resonance transitions into directed particle movement. |
+| 5 | [**Fractional Presence & Nonlocal Binding**](notebooks/05_fractional_presence.md) | Explores how particle fields exist fractionally across nonlocal regions through compression entanglement. |
+| 6 | [**Multi-Particle Coalescence**](notebooks/06_particle_coalescence.md) | Shows how multiple wave-particles merge or repel based on phase and compression symmetry. |
+| 7 | [**Field Interactions**](notebooks/07_field_interactions.md) | Examines emergent forces and self-organizing field geometries from particle networks. |
+| 8 | [**Quantized Curvature**](notebooks/08_quantized_curvature.md) | Models graviton structures as quantized curvature waves in the compression field. |
+| 9 | [**Vacuum Symmetry Breaking**](notebooks/09_vacuum_symmetry_breaking.md) | Describes how fluctuations destabilize equilibrium fields, triggering energy differentiation and asymmetry. |
+| 10 | [**Vacuum Domain Formation**](notebooks/10_vacuum_domain_formation.md) | Explores how regions of broken symmetry stabilize into structured vacuum domains and proto-field boundaries. |
 
 ---
 
