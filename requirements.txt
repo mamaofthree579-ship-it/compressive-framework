@@ -1,34 +1,28 @@
-# Core Python scientific stack
-numpy>=1.26
-scipy>=1.12
-matplotlib>=3.9
-sympy>=1.13
+# --- Core MkDocs setup ---
+mkdocs>=1.6.0
+mkdocs-material>=9.5.0
+mkdocs-jupyter>=0.24.6
+mkdocs-awesome-pages-plugin>=2.9.2
 
-# Optional: 3D visualization and animation support
-plotly>=5.24
-mpl_toolkits
-matplotlib-inline
+# --- Notebook + rendering support ---
+nbformat>=5.10.0
+nbclient>=0.10.0
+jupyter-client>=8.6.0
+ipykernel>=6.29.0
 
-# MkDocs static site generation
-mkdocs>=1.6
-mkdocs-material>=9.5
-mkdocs-jupyter>=0.24
-mkdocs-git-revision-date-localized-plugin>=1.3
-mkdocs-awesome-pages-plugin>=2.9
+# --- Scientific + plotting libraries ---
+numpy>=1.26.0
+matplotlib>=3.9.0
+scipy>=1.13.0
+sympy>=1.13.0
+pandas>=2.2.0
 
-# Markdown and math rendering
-markdown>=3.5
-pymdown-extensions>=10.8
-markdown-katex>=20220419
+# --- Visualization & Animation ---
+plotly>=5.24.0
+matplotlib-inline>=0.1.6
+seaborn>=0.13.0
 
-# Syntax highlighting & notebook visualization
-pygments>=2.18
-jupyter>=1.1
-nbformat>=5.10
-nbclient>=0.10
-ipykernel>=6.29
-
-# Optional tools for GitHub Actions & Docs validation
-requests
-jinja2
-pyyaml
+# --- Optional for rich Markdown features ---
+pymdown-extensions>=10.8.0
+markdown>=3.6
+python-markdown-math>=0.8
