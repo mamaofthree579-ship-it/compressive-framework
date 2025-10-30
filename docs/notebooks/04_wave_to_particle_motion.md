@@ -92,6 +92,10 @@ Thus inertia arises dynamically from time-binding lag, not as a fixed intrinsic 
    from matplotlib.animation import FuncAnimation
 
 # Simulate a moving Gaussian envelope
+
+```python
+import numpy as np
+import matplotlib.pyplot as plt
 frames = 60
 x0_values = np.linspace(-3, 3, frames)
 
@@ -109,7 +113,7 @@ def update(i):
 
 ani = FuncAnimation(fig, update, frames=frames, blit=True)
 plt.show()
-
+```
 
 ⸻
 
@@ -134,16 +138,6 @@ Motion in this framework is not applied externally but arises from imbalance wit
 ]
 
 Each “particle” moves because its internal standing wave pattern evolves slightly off-center, producing a continual drift of its compression node.
-
-
-
-
-
-
-
-
-
-
 
 ⸻
 
