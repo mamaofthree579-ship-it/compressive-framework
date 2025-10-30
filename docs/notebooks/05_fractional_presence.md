@@ -121,22 +121,16 @@ plt.show()
 
 7. Interpretation
 
-Concept
-Description
-Physical Effect
-Fractional presence
-Distributed ψ amplitude
-Multi-local identity
-Chronon synchronization
-Temporal alignment
-Maintains coherence
-Nonlocal correlation
-Shared phase structure
-Enables entanglement-like linkage
-Graviton coupling
-Background curvature field
-Global stability
+Concept -> Description -> Physical Effect
+-------------------------------
 
+Distributed ->  ψ amplitude -> Multi-local identity
+
+Chronon synchronization -> Temporal alignment -> Maintains coherence
+
+Nonlocal correlation -> Shared phase structure -> Enables entanglement-like linkage
+
+Graviton coupling -> Background curvature field -> Global stability
 
 ⸻
 
