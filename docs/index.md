@@ -29,20 +29,6 @@ Use the notebooks below to follow the full narrative: waves compress → coheren
 | 9 | [**Vacuum Symmetry Breaking**](notebooks/09_vacuum_symmetry_breaking.md) | Describes how fluctuations destabilize equilibrium fields, triggering energy differentiation and asymmetry. |
 | 10 | [**Vacuum Domain Formation**](notebooks/10_vacuum_domain_formation.md) | Explores how regions of broken symmetry stabilize into structured vacuum domains and proto-field boundaries. |
 
-> If any link is a 404, that file is either missing or named differently — check that the file exists under `docs/notebooks/` and that the filename matches exactly (including underscores and numbering).  
-
----
-
-## Recommended reading order
-
-1. Start at **01 — Wave Compression** to learn the compressive wave model.  
-2. Continue with **02 — Chronon Dynamics** then **03 — Graviton** and **04 — Cognon** to understand the three supporting fields.  
-3. Read **05** and **06** for particle nucleation and motion.  
-4. Use **07 → 09** to study coalescence, entanglement, and binding.  
-5. Finish with **10** to see how discrete curvature emerges.
-
----
-
 ## About this site
 
 - The notebooks are written to be readable inside MkDocs (Markdown) and optionally executable when `mkdocs-jupyter` or `nbconvert` is used.  
