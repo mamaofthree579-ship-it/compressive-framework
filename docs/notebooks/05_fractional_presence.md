@@ -108,6 +108,9 @@ This model numerically checks the binding coherence across the distributed ψ-fi
 
 6. Visualization of Phase-Linked Nodes
 
+```python
+import numpy as np
+import matplotlib.pyplot as plt
 fig, ax = plt.subplots(figsize=(8, 4))
 for c, p in zip(centers, phases):
     y = np.exp(-((x - c)**2)/(2*sigma**2)) * np.cos(p)
@@ -115,7 +118,7 @@ for c, p in zip(centers, phases):
 plt.title("Nonlocal Phase Correlation of Fractional Nodes")
 plt.legend()
 plt.show()
-
+```
 
 ⸻
 
