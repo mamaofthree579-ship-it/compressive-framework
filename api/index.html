@@ -1,0 +1,896 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://mamaofthree579-ship-it.github.io/compressive-framework-cf/api/">
+      
+      
+        <link rel="prev" href="../contributing/">
+      
+      
+      
+      <link rel="icon" href="../None">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.22">
+    
+    
+      
+        <title>API - Compressive Framework — Dynamic Particle Formation (CF-DPF)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.84d31ad4.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/css/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="blue">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#cfdpf-api-reference" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Compressive Framework — Dynamic Particle Formation (CF-DPF)" class="md-header__button md-logo" aria-label="Compressive Framework — Dynamic Particle Formation (CF-DPF)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Compressive Framework — Dynamic Particle Formation (CF-DPF)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              API
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="blue"  aria-hidden="true"  type="radio" name="__palette" id="__palette_0">
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="blue"  aria-hidden="true"  type="radio" name="__palette" id="__palette_1">
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Compressive Framework — Dynamic Particle Formation (CF-DPF)" class="md-nav__button md-logo" aria-label="Compressive Framework — Dynamic Particle Formation (CF-DPF)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Compressive Framework — Dynamic Particle Formation (CF-DPF)
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    Notebooks
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Notebooks
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/01_wave_compression/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Wave Compression
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/02_chronon_dynamics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Chronon Dynamics
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/03_particle_formation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Particle Formation
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/04_wave_to_particle_motion/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Wave → Particle Motion
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/05_fractional_presence/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Fractional Presence & Nonlocal Binding
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/06_particle_coalescence/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Multi-Particle Coalescence
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/07_field_interactions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Field Interactions
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/08_quantized_curvature/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Quantized Curvature
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/09_vacuum_symmetry_breaking/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Vacuum Symmetry Breaking
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/10_vacuum_domain_formation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Vacuum Domain Formation
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Contributing
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    API
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    API
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#core-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      🧩 Core Architecture
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      ⚙️ Example Workflow
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#core-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      🧩 Core Architecture
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      ⚙️ Example Workflow
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="cfdpf-api-reference">CF–DPF API Reference<a class="headerlink" href="#cfdpf-api-reference" title="Permanent link">&para;</a></h1>
+<p>This document outlines the <strong>Compressive Framework — Dynamic Particle Formation (CF–DPF)</strong> API.<br />
+It summarizes the logical module structure, key classes, and utility functions referenced throughout the notebooks.</p>
+<hr />
+<h2 id="core-architecture">🧩 Core Architecture<a class="headerlink" href="#core-architecture" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Module</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>cf.wave</code></td>
+<td style="text-align: left;">Handles compression, propagation, and resonance of field waves.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>cf.chronon</code></td>
+<td style="text-align: left;">Models time-quantized units (chronons) and temporal phase flow.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>cf.particle</code></td>
+<td style="text-align: left;">Generates stable particle configurations from residual field compression.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>cf.motion</code></td>
+<td style="text-align: left;">Governs transitions from distributed wave behavior to localized motion.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>cf.binding</code></td>
+<td style="text-align: left;">Manages fractional presence, nonlocal binding, and field entanglement.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>cf.coalescence</code></td>
+<td style="text-align: left;">Simulates multi-particle merging and stability thresholds.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>cf.field</code></td>
+<td style="text-align: left;">Defines field-level interactions between cognons (data), gravitons (gravity), and chronons (time).</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>cf.curvature</code></td>
+<td style="text-align: left;">Handles quantized curvature feedback and geometry distortion.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>cf.vacuum</code></td>
+<td style="text-align: left;">Simulates vacuum symmetry breaking and domain formation.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>cf.utils</code></td>
+<td style="text-align: left;">Shared math, constants, and visualization utilities.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="example-workflow">⚙️ Example Workflow<a class="headerlink" href="#example-workflow" title="Permanent link">&para;</a></h2>
+<p>```python
+from cf.wave import WaveCompressor
+from cf.chronon import ChrononField
+from cf.particle import ParticleFormation
+from cf.motion import WaveToParticle
+from cf.field import FieldInteraction</p>
+<h1 id="initialize-a-wave">Initialize a wave<a class="headerlink" href="#initialize-a-wave" title="Permanent link">&para;</a></h1>
+<p>wave = WaveCompressor(frequency=3.2, amplitude=1.0)</p>
+<h1 id="model-temporal-compression">Model temporal compression<a class="headerlink" href="#model-temporal-compression" title="Permanent link">&para;</a></h1>
+<p>chronon_field = ChrononField(time_quantum=1e-21)
+chronon_field.propagate(wave)</p>
+<h1 id="generate-stable-particles-from-the-wavefront">Generate stable particles from the wavefront<a class="headerlink" href="#generate-stable-particles-from-the-wavefront" title="Permanent link">&para;</a></h1>
+<p>particle = ParticleFormation(wave)
+particle.nucleate(resolution=500)</p>
+<h1 id="transition-wave-state-to-localized-motion">Transition wave state to localized motion<a class="headerlink" href="#transition-wave-state-to-localized-motion" title="Permanent link">&para;</a></h1>
+<p>transition = WaveToParticle(wave, particle)
+transition.visualize()</p>
+<h1 id="introduce-gravitational-informational-coupling">Introduce gravitational / informational coupling<a class="headerlink" href="#introduce-gravitational-informational-coupling" title="Permanent link">&para;</a></h1>
+<p>field = FieldInteraction()
+field.bind(wave, particle)</p>
+<p>⸻</p>
+<p>🧮 Utilities and Constants</p>
+<p>The cf.utils module provides key physical constants and math helpers.</p>
+<p>from cf.utils import hbar, c, planck_length, resonance_energy</p>
+<p>E = resonance_energy(frequency=4.0)
+print(f"Energy: {E:.3e} J")</p>
+<p>Available constants:
+    •   hbar — Reduced Planck constant
+    •   c — Speed of light
+    •   planck_length — Quantum scale base length
+    •   tau — Time period of one quantum cycle</p>
+<p>Available utilities:
+    •   normalize_wave(data) — rescales amplitude data
+    •   energy_density(wave) — returns the energy distribution
+    •   phase_shift(field, delta_t) — applies temporal offsets</p>
+<p>⸻</p>
+<p>🧠 Field Entities</p>
+<h2 id="entity-symbol-description">Entity | Symbol | Description<a class="headerlink" href="#entity-symbol-description" title="Permanent link">&para;</a></h2>
+<p>Chronon -&gt; χ -&gt; Represents a discrete quantum of time</p>
+<p>Graviton -&gt; ϕ -&gt; Mediates curvature and mass interaction</p>
+<p>Cognon -&gt; ψ -&gt; Encodes informational density and pattern memory</p>
+<p>These are represented programmatically through the cf.field module and can interact or superimpose via coupling rules.</p>
+<p>⸻</p>
+<p>🌀 Visualization API</p>
+<p>The cf.visuals toolkit provides utilities for rendering and analysis.</p>
+<p>from cf.visuals import plot_field, animate_transition</p>
+<p>plot_field(field)
+animate_transition(wave, particle)</p>
+<p>Functions:
+    •   plot_field(field) → 2D field magnitude map
+    •   animate_transition(wave, particle) → smooth transformation animation
+    •   render_vacuum_domain(domain) → visualize domain formation &amp; collapse</p>
+<p>⸻</p>
+<p>🚀 Simulation Pipeline Summary</p>
+<p>Step
+Notebook
+Description
+1
+01_wave_compression
+Wave compression dynamics
+2
+02_chronon_dynamics
+Quantized time structures
+3
+03_particle_formation
+Stable particle nucleation
+4
+04_wave_to_particle_motion
+Motion emergence
+5
+05_fractional_presence
+Nonlocal field binding
+6
+06_particle_coalescence
+Multi-particle merging
+7
+07_field_interactions
+Cross-field coherence
+8
+08_quantized_curvature
+Geometric feedback
+9
+09_vacuum_symmetry_breaking
+Symmetry and phase imbalance
+10
+10_vacuum_domain_formation
+Stable domain formation</p>
+<p>⸻</p>
+<p>🧩 Future API Goals
+    •   Add CFUniverse() unified simulation orchestrator
+    •   Support GPU acceleration for wave propagation
+    •   Integrate real-time visualization dashboards
+    •   Create JSON-based experiment templates for reproducibility</p>
+<p>⸻</p>
+<p>Auto-generated documentation based on conceptual and mathematical models within the CF–DPF framework.
+Use mkdocs build or mkdocs serve to regenerate.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "..", "features": ["navigation.sections", "navigation.instant", "content.code.copy", "header.autohide"], "search": "../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.f55a23d4.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>
