@@ -14,17 +14,20 @@ The project models interactions between four core fields:
 
 Use the notebooks below to follow the full narrative: waves compress → coherence forms → particles emerge → particles move, bind, and build structure.
 
-### Notebooks (ordered)
-1. [01 — Wave Compression](notebooks/01_wave_compression.md)  
-2. [02 — Chronon Dynamics](notebooks/02_chronon_dynamics.md)  
-3. [03 — Graviton Field Formation](notebooks/03_graviton_field.md)  
-4. [04 — Cognon Information Field](notebooks/04_cognon_field.md)  
-5. [05 — Particle Formation](notebooks/05_particle_formation.md)  
-6. [06 — Wave → Particle Motion](notebooks/06_wave_to_particle_motion.md)  
-7. [07 — Multi-Particle Coalescence](notebooks/07_particle_coalescence.md)  
-8. [08 — Entanglement & Fractional Presence](notebooks/08_fractional_presence.md)  
-9. [09 — Field Interactions & Binding Potentials](notebooks/09_field_interactions.md)  
-10. [10 — Quantized Curvature](notebooks/10_quantized_curvature.md)
+## 📚 Notebooks
+
+| # | Notebook | Description |
+|:-:|:--|:--|
+| 1 | [**Wave Compression**](notebooks/01_wave_compression.md) | The foundation of CF — describing how standing waves compress into quantized pockets of energy density. |
+| 2 | [**Chronon Dynamics**](notebooks/02_chronon_dynamics.md) | Examines time quantization and oscillatory frequency coupling in compressed wave regions. |
+| 3 | [**Particle Formation**](notebooks/03_particle_formation.md) | Demonstrates how sustained wave interference creates localized particle presence. |
+| 4 | [**Wave → Particle Motion**](notebooks/04_wave_to_particle_motion.md) | Describes how wave resonance transitions into directed particle movement. |
+| 5 | [**Fractional Presence & Nonlocal Binding**](notebooks/05_fractional_presence.md) | Explores how particle fields exist fractionally across nonlocal regions through compression entanglement. |
+| 6 | [**Multi-Particle Coalescence**](notebooks/06_particle_coalescence.md) | Shows how multiple wave-particles merge or repel based on phase and compression symmetry. |
+| 7 | [**Field Interactions**](notebooks/07_field_interactions.md) | Examines emergent forces and self-organizing field geometries from particle networks. |
+| 8 | [**Quantized Curvature**](notebooks/08_quantized_curvature.md) | Models graviton structures as quantized curvature waves in the compression field. |
+| 9 | [**Vacuum Symmetry Breaking**](notebooks/09_vacuum_symmetry_breaking.md) | Describes how fluctuations destabilize equilibrium fields, triggering energy differentiation and asymmetry. |
+| 10 | [**Vacuum Domain Formation**](notebooks/10_vacuum_domain_formation.md) | Explores how regions of broken symmetry stabilize into structured vacuum domains and proto-field boundaries. |
 
 > If any link is a 404, that file is either missing or named differently — check that the file exists under `docs/notebooks/` and that the filename matches exactly (including underscores and numbering).  
 
