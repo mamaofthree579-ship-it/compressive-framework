@@ -1,33 +1,39 @@
-site_name: Compressive Framework (CF)
-site_url: https://mamaofthree579-ship-it.github.io/compressive-framework/
-repo_url: https://github.com/mamaofthree579-ship-it/compressive-framework
+site_name: Compressive Framework — Dynamic Particle Formation (CF-DPF)
+site_url: https://mamaofthree579-ship-it.github.io/compressive-framework-cf/
 
 theme:
   name: material
-  logo: assets/images/cf-logo.svg
-  favicon: assets/images/cf-logo.svg
-  features:
-    - navigation.instant
-    - content.code.copy
-    - navigation.sections
-    - toc.follow
-    - header.autohide
+  logo: images/cf-trifractal-dark.svg
+  favicon: images/cf-trifractal-dark.svg
   palette:
-    - scheme: slate
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
       primary: deep purple
       accent: blue
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: deep purple
+      accent: blue
+  features:
+    - navigation.sections
+    - navigation.instant
+    - content.code.copy
+    - header.autohide
+
+extra_css:
+  - assets/css/extra.css
 
 markdown_extensions:
   - toc:
       permalink: true
   - admonition
   - footnotes
-  - pymdownx.arithmatex:
-      generic: true
-  - pymdownx.highlight
   - pymdownx.superfences
+  - pymdownx.arithmatex
+  - pymdownx.highlight
 
 extra_javascript:
+  - assets/js/particles.js
   - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
 
 nav:
@@ -35,13 +41,28 @@ nav:
   - Theory:
       - Overview: theory/overview.md
       - Equations: theory/equations.md
-  - Notebooks:
-      - Wave Compression: notebooks/01_wave_compression.md
-      - Chronon Dynamics: notebooks/02_chronon_dynamics.md
-      - Particle Formation: notebooks/03_particle_formation.md
-      - Wave → Particle Motion: notebooks/04_wave_to_particle_motion.md
-      - Fractional Presence: notebooks/05_fractional_presence.md
-      - Multi-Particle Coalescence: notebooks/06_particle_coalescence.md
-      - Field Interactions: notebooks/07_field_interactions.md
-      - Quantized Curvature: notebooks/08_quantized_curvature.md
+  - Mathematics: math_reference.md
+  - Architecture: architecture.md
+  - Simulations:
+      - Concepts: simulation_concepts.md
+      - Gallery: reference_plots.md
+      - Notebooks:
+          - Intro to CF: notebooks/intro_to_cf.md
+          - Wave Compression: notebooks/01_wave_compression.md
+          - Chronon Dynamics: notebooks/02_chronon_dynamics.md
+          - Particle Formation: notebooks/03_particle_formation.md
+          - Wave → Particle Motion: notebooks/04_wave_to_particle_motion.md
+          - Fractional Presence & Nonlocal Binding: notebooks/05_fractional_presence.md
+          - Multi-Particle Coalescence: notebooks/06_particle_coalescence.md
+          - Field Interactions: notebooks/07_field_interactions.md
+          - Quantized Curvature: notebooks/08_quantized_curvature.md
+          - Vacuum Symmetry Breaking: notebooks/09_vacuum_symmetry_breaking.md
+          - Vacuum Domain Formation: notebooks/10_vacuum_domain_formation.md
+  - Research: research.md
   - Glossary: glossary.md
+  - Contributing: contributing.md
+  - API: api.md
+
+plugins:
+  - search
+  - mkdocs-jupyter
