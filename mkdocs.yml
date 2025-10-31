@@ -3,8 +3,8 @@ site_url: https://mamaofthree579-ship-it.github.io/compressive-framework-cf/
 
 theme:
   name: material
-  logo: images/cf-trifractal-dark.svg
-  favicon: images/cf-trifractal-dark.svg
+  logo: 
+  favicon: 
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
