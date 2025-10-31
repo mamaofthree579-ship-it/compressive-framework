@@ -1,159 +1,111 @@
-/* ==========================================================
-   Compressive Framework (CF-DPF) — Custom Styling
-   Enhances visual design for deep purple + blue color palette
-   ========================================================== */
+/* ==========================================================================
+   GLOBAL PARTICLE BACKGROUND LAYER
+   ========================================================================== */
 
-/* --- Particle Background Layer --- */
+/* Create the fixed particle canvas that sits behind everything */
 #cf-particles {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  z-index: 0; /* keep behind main content */
-  pointer-events: none;
+  z-index: 0; /* ensures it's below content */
+  pointer-events: none; /* don't block clicks */
   background: transparent;
+  overflow: hidden;
 }
 
-/* --- Ensure MkDocs content is above it --- */
+/* ==========================================================================
+   CONTENT & STRUCTURE LAYERING
+   ========================================================================== */
+
+/* Keep all MkDocs Material content above the particle layer */
 .md-main, .md-header, .md-footer, .md-content {
   position: relative;
   z-index: 1;
 }
 
-/* Optional: improve readability over animation */
+/* Provide a slight translucent backdrop for readability */
 .md-content {
   background-color: rgba(255, 255, 255, 0.85); /* Light mode */
+  backdrop-filter: blur(4px);
+  border-radius: 6px;
+  padding: 1em;
 }
 
+/* Dark mode adjustments */
 [data-md-color-scheme="slate"] .md-content {
-  background-color: rgba(20, 20, 30, 0.75); /* Dark mode */
+  background-color: rgba(15, 15, 25, 0.7);
+  backdrop-filter: blur(6px);
 }
 
-/* Center logo and title area */
-.md-content__inner img[alt="logo"], 
-img[src*="IMG_2871.jpeg"] {
-  display: block;
-  margin: 2rem auto 1rem;
-  max-width: 180px;
-  opacity: 0.95;
-  transition: transform 0.3s ease-in-out;
+/* ==========================================================================
+   HEADER, NAVIGATION & FOOTER STYLING
+   ========================================================================== */
+
+.md-header {
+  background: rgba(45, 0, 70, 0.8);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 }
 
-img[src*="IMG_2871.jpeg"]:hover {
-  transform: scale(1.05);
-  opacity: 1;
+[data-md-color-scheme="slate"] .md-header {
+  background: rgba(20, 10, 40, 0.85);
 }
 
-/* Headings & typography */
-h1, h2, h3 {
-  font-family: 'Segoe UI', Roboto, sans-serif;
-  font-weight: 600;
-  color: #4A148C; /* Deep purple */
-  letter-spacing: 0.02em;
+.md-footer {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(6px);
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
 }
 
-h1 {
-  font-size: 2.2rem;
-  border-bottom: 2px solid #673AB7;
-  padding-bottom: 0.3rem;
+[data-md-color-scheme="slate"] .md-footer {
+  background: rgba(15, 15, 25, 0.8);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-h2 {
-  color: #311B92;
-  margin-top: 2rem;
+/* ==========================================================================
+   GRADIENT LANDING PAGE EFFECT
+   ========================================================================== */
+
+/* Optional: soft gradient that fades into the particle field */
+body {
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.95) 0%,
+    rgba(255, 255, 255, 0.7) 40%,
+    rgba(255, 255, 255, 0.3) 100%
+  );
 }
 
-h3 {
-  color: #4527A0;
+[data-md-color-scheme="slate"] body {
+  background: linear-gradient(
+    to bottom,
+    rgba(10, 10, 20, 0.95) 0%,
+    rgba(10, 10, 20, 0.7) 40%,
+    rgba(10, 10, 20, 0.3) 100%
+  );
 }
 
-/* Links */
-a {
-  color: #1E88E5;
-  text-decoration: none;
-  border-bottom: 1px dashed transparent;
-  transition: 0.2s ease;
+/* ==========================================================================
+   MISC VISUAL IMPROVEMENTS
+   ========================================================================== */
+
+a, a:visited {
+  transition: color 0.3s ease;
 }
 
 a:hover {
-  color: #0D47A1;
-  border-bottom: 1px dashed #42A5F5;
+  color: #7c4dff; /* deep purple accent */
 }
 
-/* Mermaid diagrams */
-.mermaid {
-  background-color: #f8f8ff;
-  border: 1px solid #ddd;
+/* Rounded corners for images */
+img {
   border-radius: 8px;
-  padding: 1.2rem;
-  margin: 1.5rem 0;
-  box-shadow: 0 2px 5px rgba(50, 50, 93, 0.1);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.15);
 }
 
-/* Dark theme Mermaid fix */
-[data-md-color-scheme="slate"] .mermaid {
-  background-color: #1e1e2f;
-  border-color: #444;
-}
-
-/* Code blocks */
-code, pre {
-  font-family: 'Fira Code', monospace;
-  background: #ede7f6;
-  color: #311B92;
-  border-radius: 4px;
-  padding: 0.2em 0.4em;
-}
-
-[data-md-color-scheme="slate"] code,
-[data-md-color-scheme="slate"] pre {
-  background: #2a2a3d;
-  color: #BBDEFB;
-}
-
-/* Admonitions (notes, tips, etc.) */
-.md-typeset .admonition {
-  border-left-width: 5px;
-  border-radius: 6px;
-  padding: 0.8em 1em;
-}
-
-.md-typeset .admonition.note {
-  border-color: #2196F3;
-  background-color: #E3F2FD;
-}
-
-.md-typeset .admonition.warning {
-  border-color: #FFB300;
-  background-color: #FFF8E1;
-}
-
-[data-md-color-scheme="slate"] .md-typeset .admonition.note {
-  border-color: #64B5F6;
-  background-color: #1e293b;
-}
-
-/* Footer */
-footer {
-  text-align: center;
-  font-size: 0.85rem;
-  color: #888;
-  margin-top: 2rem;
-}
-
-/* Custom badges on index page */
-a img[alt*="badge"] {
-  margin: 0 5px;
-  border-radius: 4px;
-  transition: transform 0.2s ease-in-out;
-}
-
-a img[alt*="badge"]:hover {
-  transform: translateY(-2px);
-}
-
-/* Subtle glow around diagrams */
-.mermaid svg {
-  filter: drop-shadow(0px 1px 3px rgba(100, 100, 255, 0.3));
+/* Smooth transitions */
+* {
+  transition: background-color 0.4s ease, color 0.4s ease;
 }
