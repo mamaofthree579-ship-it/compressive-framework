@@ -62,37 +62,7 @@ This coupling means that areas of high compression (large |ψ|²) slow local tim
 
 ## 4. Visualization — Chronon Oscillation Map
 
-```python
-# %%
-import numpy as np
-import matplotlib.pyplot as plt
-
-# Simulation grid
-x = np.linspace(-10, 10, 400)
-t = np.linspace(0, 20, 400)
-X, T = np.meshgrid(x, t)
-
-# Parameters
-gamma, lam, eta = 0.1, 0.5, 0.3
-
-# Initial ψ amplitude and phase
-A = np.exp(-X**2 / 10)
-phi = np.sin(X) * np.cos(T / 4)
-psi = A * np.exp(1j * phi)
-
-# Compute χ (temporal coherence field)
-chi = np.gradient(phi, axis=0)  # ∂φ/∂t
-chi_dynamics = -gamma * chi + lam * np.gradient(np.gradient(phi, axis=1), axis=1) + eta * np.abs(psi)**2
-
-# Visualization
-plt.figure(figsize=(8, 5))
-plt.imshow(chi_dynamics, extent=[-10, 10, 0, 20], aspect='auto', cmap='plasma', origin='lower')
-plt.colorbar(label="Chronon Field χ(t,x)")
-plt.title("Temporal Coherence Dynamics — Chronon Field χ(t, x)")
-plt.xlabel("Spatial domain x")
-plt.ylabel("Time t")
-plt.show()
-```
+![Chronon Oscillation](../notebooks/chronondynamics01.png)
 
 This plot shows the fluctuation pattern of χ(t, x) — the wave’s rhythmic “heartbeat” across time and space.
 
