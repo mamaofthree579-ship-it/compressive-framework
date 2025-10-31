@@ -70,31 +70,7 @@ Thus inertia arises dynamically from time-binding lag, not as a fixed intrinsic 
 
 5. Visualization of Moving Kernel
 
-   from matplotlib.animation import FuncAnimation
-
-# Simulate a moving Gaussian envelope
-
-```python
-import numpy as np
-import matplotlib.pyplot as plt
-frames = 60
-x0_values = np.linspace(-3, 3, frames)
-
-fig, ax = plt.subplots()
-line, = ax.plot(x, np.exp(-x**2), label='ψ(x)')
-ax.set_ylim(0, 1.1)
-ax.set_title("Particle Kernel Translation")
-
-def update(i):
-    x0 = x0_values[i]
-    y = np.exp(-(x - x0)**2)
-    line.set_ydata(y)
-    ax.set_title(f"Wave → Particle Motion (x₀={x0:.2f})")
-    return line,
-
-ani = FuncAnimation(fig, update, frames=frames, blit=True)
-plt.show()
-```
+   ![Stable Particle Bonding](../notebooks/4notebook04.JPG)
 
 ⸻
 
