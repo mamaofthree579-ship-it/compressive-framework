@@ -46,31 +46,9 @@ When compression and density reinforce, **wave amplitude focuses**, eventually f
 
 ## 3. Model Code (Prototype)
 
-```python
-import numpy as np
-import matplotlib.pyplot as plt
+![Stable Particle Emergence](../notebooks/03notebook01.png)
 
-# Parameters
-alpha = 0.5
-rho_th = 0.3
-n = 2
-lambda_c = 0.8
-
-# Space grid
-x = np.linspace(-5, 5, 400)
-rho = np.exp(-x**2)  # Gaussian density
-
-# Thresholded creation rate
-Gamma = alpha * np.maximum(rho - rho_th, 0)**n
-
-plt.plot(x, rho, label='ρ(x)')
-plt.plot(x, Gamma, label='Γ(x)', linestyle='--')
-plt.axhline(rho_th, color='gray', linestyle=':', label='ρ_th')
-plt.title("Particle Formation Threshold Model")
-plt.xlabel("Position x")
-plt.legend()
-plt.show()
-```
+![Stable Particle Emergence](../notebooks/03notebook02.png)
 
 ⸻
 
