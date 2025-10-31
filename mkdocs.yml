@@ -3,8 +3,8 @@ site_url: https://mamaofthree579-ship-it.github.io/compressive-framework-cf/
 
 theme:
   name: material
-  logo:
-  favicon: 
+  logo: images/cf-trifractal-dark.svg
+  favicon: images/cf-trifractal-dark.svg
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
@@ -22,37 +22,7 @@ theme:
 
 extra_css:
   - assets/css/extra.css
-  
-  
-markdown_extensions:
-  - toc:
-      permalink: true
-  - admonition
-  - footnotes
-  - pymdownx.superfences
-  - pymdownx.arithmatex
-  - pymdownx.highlight
 
 extra_javascript:
-  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
   - assets/js/particles.js
-  
-nav:
-  - Home: index.md
-  - Notebooks:
-      - Wave Compression: notebooks/01_wave_compression.md
-      - Chronon Dynamics: notebooks/02_chronon_dynamics.md
-      - Particle Formation: notebooks/03_particle_formation.md
-      - Wave → Particle Motion: notebooks/04_wave_to_particle_motion.md
-      - Fractional Presence & Nonlocal Binding: notebooks/05_fractional_presence.md
-      - Multi-Particle Coalescence: notebooks/06_particle_coalescence.md
-      - Field Interactions: notebooks/07_field_interactions.md
-      - Quantized Curvature: notebooks/08_quantized_curvature.md
-      - Vacuum Symmetry Breaking: notebooks/09_vacuum_symmetry_breaking.md
-      - Vacuum Domain Formation: notebooks/10_vacuum_domain_formation.md
-  - Contributing: contributing.md
-  - API: api.md
-
-plugins:
-  - search
-  - mkdocs-jupyter
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
