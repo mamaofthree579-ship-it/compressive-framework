@@ -88,11 +88,11 @@ This model numerically checks the binding coherence across the distributed ψ-fi
 
 6. Visualization of Phase-Linked Nodes
 
-![Fractal State](../notebooks/5notebook04.png)
+![Fractal State](../notebooks/5notebook04.JPG)
 
-![Fractal State](../notebooks/5notebook05.png)
+![Fractal State](../notebooks/5notebook05.JPG)
 
-![Fractal State](../notebooks/5notebook06.png)
+![Fractal State](../notebooks/5notebook06.JPG)
 
 ⸻
 
