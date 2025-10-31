@@ -49,6 +49,32 @@ document.addEventListener("DOMContentLoaded", () => {
           ctx.moveTo(particles[i].x, particles[i].y);
           ctx.lineTo(particles[j].x, particles[j].y);
           ctx.stroke();
+/* --- Particle Background Layer --- */
+#cf-particles {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0; /* keep behind main content */
+  pointer-events: none;
+  background: transparent;
+}
+
+/* --- Ensure MkDocs content is above it --- */
+.md-main, .md-header, .md-footer, .md-content {
+  position: relative;
+  z-index: 1;
+}
+
+/* Optional: improve readability over animation */
+.md-content {
+  background-color: rgba(255, 255, 255, 0.85); /* Light mode */
+}
+
+[data-md-color-scheme="slate"] .md-content {
+  background-color: rgba(20, 20, 30, 0.75); /* Dark mode */
+}
         }
       }
     }
