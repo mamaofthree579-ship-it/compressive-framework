@@ -26,7 +26,7 @@ jobs:
       - name: Execute notebooks
         run: |
           set -e
-          for nb in docs/notebooks/*.md; do
+          for nb in docs/notebooks/*.ipynb; do
             echo "Running $nb ..."
             python .github/scripts/execute_notebook.py "$nb"
           done
