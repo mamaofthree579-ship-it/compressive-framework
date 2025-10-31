@@ -4,7 +4,7 @@ title: Compressive Framework — Dynamic Particle Formation (CF-DPF)
 
 <div align="center">
 
-<img src="images/cf-trifractal-dark.svg" width="160">
+<img src="IMG_2871.jpeg" width="160">
 
 # **Compressive Framework (CF-DPF)**  
 ### *Dynamic Particle Formation from Wave Compression and Quantum Coalescence*
