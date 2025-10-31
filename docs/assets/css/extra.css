@@ -49,6 +49,33 @@
   background: rgba(20, 10, 40, 0.85);
 }
 
+/* --- Fix for Hidden/Unclickable Nav Menu --- */
+.md-header,
+.md-nav,
+.md-sidebar,
+.md-main,
+.md-overlay {
+  position: relative;
+  z-index: 1001 !important;
+}
+
+/* Ensure particles background stays behind all content */
+#particles-js {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0 !important;
+  pointer-events: none;
+}
+
+/* Prevent click-blocking on the menu icon */
+.md-header__button.md-icon {
+  z-index: 2000 !important;
+  position: relative;
+}
+
 /* ---- ✨ LOGO GLOW EFFECT ✨ ---- */
 .md-header__button.md-logo img {
   position: relative;
