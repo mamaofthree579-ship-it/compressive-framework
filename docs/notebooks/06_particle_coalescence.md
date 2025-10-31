@@ -65,6 +65,11 @@ In dense regions, multiple ψ-fields interact to form a standing compression lat
 
 centers = [-4, -1.5, 1.5, 4]
 phases = [0, np.pi/4, np.pi/2, 3*np.pi/4]
+
+```python
+import numpy as np
+import matplotlib.pyplot as plt
+
 psi_cluster = np.zeros_like(x, dtype=complex)
 
 for c, p in zip(centers, phases):
@@ -77,9 +82,15 @@ plt.xlabel("x")
 plt.ylabel("|Ψ|²")
 plt.legend()
 plt.show()
+```
 
 centers = [-4, -1.5, 1.5, 4]
 phases = [0, np.pi/4, np.pi/2, 3*np.pi/4]
+
+```python
+import numpy as np
+import matplotlib.pyplot as plt
+
 psi_cluster = np.zeros_like(x, dtype=complex)
 
 for c, p in zip(centers, phases):
@@ -92,6 +103,7 @@ plt.xlabel("x")
 plt.ylabel("|Ψ|²")
 plt.legend()
 plt.show()
+```
 
 These periodic density peaks represent resonant bonds — structures similar to phonon modes or quantum condensates.
 
@@ -123,6 +135,10 @@ E_\gamma + E_\chi + E_\Psi = \text{constant}
 ⸻
 
 6. Simulation: Phase-Dependent Binding Strength
+   
+```python
+import numpy as np
+import matplotlib.pyplot as plt
 
 phases = np.linspace(0, np.pi, 50)
 binding_strength = np.cos(phases)**2  # simple harmonic correlation
@@ -133,6 +149,7 @@ plt.title("Phase Correlation vs Binding Strength")
 plt.xlabel("Phase Difference Δφ")
 plt.ylabel("Binding Strength (normalized)")
 plt.show()
+```
 
 As Δφ → 0, binding strength approaches its maximum — indicating perfect phase alignment.
 
