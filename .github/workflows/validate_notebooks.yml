@@ -2,44 +2,31 @@ name: Validate Notebooks
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
 
 jobs:
-  test:
+  validate:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
       - name: Install dependencies
         run: |
-          pip install --upgrade pip
+          python -m pip install --upgrade pip
           pip install nbformat nbclient
 
-      - name: Execute notebooks (Markdown or Jupyter)
+      - name: Execute notebooks
         run: |
           set -e
-          echo "Running notebooks in docs/notebooks..."
           for nb in docs/notebooks/*.ipynb; do
-            if [ -f "$nb" ]; then
-              echo "Executing: $nb"
-              python - <<'PYCODE'
-import sys, nbformat
-from nbclient import NotebookClient
-nb_path = "$nb"
-with open(nb_path) as f:
-    nb = nbformat.read(f, as_version=4)
-client = NotebookClient(nb, timeout=300, kernel_name="python3")
-client.execute()
-PYCODE
-            fi
+            echo "Running $nb ..."
+            python .github/scripts/execute_notebook.py "$nb"
           done
-          echo "✅ Notebook validation complete."
