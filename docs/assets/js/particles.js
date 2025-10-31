@@ -3,6 +3,17 @@
    Particle Background Script — assets/js/particles.js
    ========================================================== */
 
+/* Ensure particle canvas appears behind content */
+#cf-particles {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  pointer-events: none;
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   // Create the canvas
   const canvas = document.createElement("canvas");
