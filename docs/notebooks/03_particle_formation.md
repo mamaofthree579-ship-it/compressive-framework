@@ -46,9 +46,9 @@ When compression and density reinforce, **wave amplitude focuses**, eventually f
 
 ## 3. Model Code (Prototype)
 
-![Stable Particle Emergence](../notebooks/03notebook01.png)
+![Stable Particle Emergence](../notebooks/3notebook01.png)
 
-![Stable Particle Emergence](../notebooks/03notebook02.png)
+![Stable Particle Emergence](../notebooks/3notebook02.png)
 
 ⸻
 
