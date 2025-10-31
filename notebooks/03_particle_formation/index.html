@@ -792,30 +792,8 @@
 <p>When compression and density reinforce, <strong>wave amplitude focuses</strong>, eventually forming a stable “particle kernel.”</p>
 <hr />
 <h2 id="3-model-code-prototype">3. Model Code (Prototype)<a class="headerlink" href="#3-model-code-prototype" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
-
-<span class="c1"># Parameters</span>
-<span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.5</span>
-<span class="n">rho_th</span> <span class="o">=</span> <span class="mf">0.3</span>
-<span class="n">n</span> <span class="o">=</span> <span class="mi">2</span>
-<span class="n">lambda_c</span> <span class="o">=</span> <span class="mf">0.8</span>
-
-<span class="c1"># Space grid</span>
-<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">400</span><span class="p">)</span>
-<span class="n">rho</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>  <span class="c1"># Gaussian density</span>
-
-<span class="c1"># Thresholded creation rate</span>
-<span class="n">Gamma</span> <span class="o">=</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">rho</span> <span class="o">-</span> <span class="n">rho_th</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span><span class="o">**</span><span class="n">n</span>
-
-<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">rho</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;ρ(x)&#39;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">Gamma</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Γ(x)&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">rho_th</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;:&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;ρ_th&#39;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Particle Formation Threshold Model&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Position x&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-</code></pre></div>
+<p><img alt="Stable Particle Emergence" src="../3notebook01.png" /></p>
+<p><img alt="Stable Particle Emergence" src="../3notebook02.png" /></p>
 <p>⸻</p>
 <ol>
 <li>Evolution Picture</li>
