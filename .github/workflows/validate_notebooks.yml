@@ -1,4 +1,4 @@
-name: Validate Notebooks
+name: Validate Markdown Notebooks
 
 on:
   push:
@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Set up Python
@@ -18,15 +18,15 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install dependencies
+      - name: Install MkDocs and plugins
         run: |
           python -m pip install --upgrade pip
-          pip install nbformat nbclient
+          pip install mkdocs mkdocs-material mkdocs-jupyter
 
-      - name: Execute notebooks
+      - name: Validate Markdown Notebooks
         run: |
-          set -e
-          for nb in docs/notebooks/*.ipynb; do
-            echo "Running $nb ..."
-            python .github/scripts/execute_notebook.py "$nb"
-          done
+          echo "🔍 Checking all Markdown notebooks..."
+          find docs/notebooks -type f -name "*.md" -print
+
+          echo "⚙️ Running MkDocs build for validation..."
+          mkdocs build --strict
