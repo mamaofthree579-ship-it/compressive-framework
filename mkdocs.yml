@@ -22,7 +22,7 @@ theme:
 
 extra_css:
   - assets/css/extra.css
-  - assets/js/particles.js
+  
   
 markdown_extensions:
   - toc:
@@ -35,7 +35,8 @@ markdown_extensions:
 
 extra_javascript:
   - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
-
+  - assets/js/particles.js
+  
 nav:
   - Home: index.md
   - Notebooks:
