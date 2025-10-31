@@ -64,6 +64,8 @@ This coupling means that areas of high compression (large |ψ|²) slow local tim
 
 ![Chronon Oscillation](../notebooks/chronondynamics01.png)
 
+![Chronon Oscillation](../notebooks/chronondynamics02.png)
+
 This plot shows the fluctuation pattern of χ(t, x) — the wave’s rhythmic “heartbeat” across time and space.
 
 ⸻
