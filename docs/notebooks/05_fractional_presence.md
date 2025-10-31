@@ -29,31 +29,11 @@ The physical interpretation:
 
 ## 2. Phase-Coherent Fractional States
 
-```python
-import numpy as np
-import matplotlib.pyplot as plt
+![Fractal State](../notebooks/5notebook01.png)
 
-x = np.linspace(-15, 15, 600)
-sigma = 1.5
+![Fractal State](../notebooks/5notebook02.png)
 
-# Three fractional centers
-centers = [-6, 0, 6]
-amplitudes = [0.5, 0.7, 0.5]
-phases = [0, np.pi/3, np.pi/2]
-
-psi_total = np.zeros_like(x, dtype=complex)
-
-for a, c, p in zip(amplitudes, centers, phases):
-    psi_total += a * np.exp(-((x - c)**2) / (2 * sigma**2)) * np.exp(1j * p)
-
-plt.figure(figsize=(8, 4))
-plt.plot(x, np.abs(psi_total)**2, label="|Ψ|² (Fractional Presence)")
-plt.title("Fractional Presence Across Multiple Compression Nodes")
-plt.xlabel("x")
-plt.ylabel("Probability Density")
-plt.legend()
-plt.show()
-```
+![Fractal State](../notebooks/5notebook03.png)
 
 This visualization shows coherent interference between distributed nodes — a continuous ψ-field maintains unity across separated basins.
 
@@ -108,17 +88,11 @@ This model numerically checks the binding coherence across the distributed ψ-fi
 
 6. Visualization of Phase-Linked Nodes
 
-```python
-import numpy as np
-import matplotlib.pyplot as plt
-fig, ax = plt.subplots(figsize=(8, 4))
-for c, p in zip(centers, phases):
-    y = np.exp(-((x - c)**2)/(2*sigma**2)) * np.cos(p)
-    ax.plot(x, y, label=f"Node phase={p:.2f}")
-plt.title("Nonlocal Phase Correlation of Fractional Nodes")
-plt.legend()
-plt.show()
-```
+![Fractal State](../notebooks/5notebook04.png)
+
+![Fractal State](../notebooks/5notebook05.png)
+
+![Fractal State](../notebooks/5notebook06.png)
 
 ⸻
 
