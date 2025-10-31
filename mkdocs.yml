@@ -22,7 +22,8 @@ theme:
 
 extra_css:
   - assets/css/extra.css
-
+  - assets/js/particles.js
+  
 markdown_extensions:
   - toc:
       permalink: true
