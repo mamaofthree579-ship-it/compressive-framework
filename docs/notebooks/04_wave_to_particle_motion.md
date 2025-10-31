@@ -44,30 +44,11 @@ This captures how phase tilt across the localized ψ-field yields directed motio
 
 ## 3. Simple Simulation (Phase Tilt Model)
 
-```python
-import numpy as np
-import matplotlib.pyplot as plt
+![Stable Particle Bonding](../notebooks/4notebook01.png)
 
-x = np.linspace(-10, 10, 400)
-sigma = 1.5
-phase_tilt = 0.4  # controls direction and magnitude of drift
+![Stable Particle Bonding](../notebooks/4notebook02.png)
 
-# Complex wave function with phase gradient
-psi = np.exp(-x**2 / (2 * sigma**2)) * np.exp(1j * phase_tilt * x)
-P = np.imag(np.conj(psi) * np.gradient(psi, x))
-prob_density = np.abs(psi)**2
-
-plt.figure(figsize=(7, 4))
-plt.plot(x, prob_density, label='|ψ|² (probability density)')
-plt.plot(x, P, label='Momentum density P(x)')
-plt.axhline(0, color='gray', linestyle=':')
-plt.title("Wave → Particle Motion via Phase Tilt")
-plt.xlabel("x")
-plt.legend()
-plt.show()
-Model)
-```
-
+![Stable Particle Bonding](../notebooks/4notebook03.png)
 
 ⸻
 
