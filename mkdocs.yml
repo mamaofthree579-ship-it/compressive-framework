@@ -4,7 +4,7 @@ site_url: https://mamaofthree579-ship-it.github.io/compressive-framework-cf/
 theme:
   name: material
   logo: logo.PNG
-  favicon: 
+  favicon: favicon.PNG
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
