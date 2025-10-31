@@ -2,15 +2,14 @@
    GLOBAL PARTICLE BACKGROUND LAYER
    ========================================================================== */
 
-/* Create the fixed particle canvas that sits behind everything */
 #cf-particles {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  z-index: 0; /* ensures it's below content */
-  pointer-events: none; /* don't block clicks */
+  z-index: 0;
+  pointer-events: none;
   background: transparent;
   overflow: hidden;
 }
@@ -19,28 +18,25 @@
    CONTENT & STRUCTURE LAYERING
    ========================================================================== */
 
-/* Keep all MkDocs Material content above the particle layer */
 .md-main, .md-header, .md-footer, .md-content {
   position: relative;
   z-index: 1;
 }
 
-/* Provide a slight translucent backdrop for readability */
 .md-content {
-  background-color: rgba(255, 255, 255, 0.85); /* Light mode */
+  background-color: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(4px);
   border-radius: 6px;
   padding: 1em;
 }
 
-/* Dark mode adjustments */
 [data-md-color-scheme="slate"] .md-content {
   background-color: rgba(15, 15, 25, 0.7);
   backdrop-filter: blur(6px);
 }
 
 /* ==========================================================================
-   HEADER, NAVIGATION & FOOTER STYLING
+   HEADER, LOGO, NAVIGATION & FOOTER STYLING
    ========================================================================== */
 
 .md-header {
@@ -51,6 +47,28 @@
 
 [data-md-color-scheme="slate"] .md-header {
   background: rgba(20, 10, 40, 0.85);
+}
+
+/* ---- ✨ LOGO GLOW EFFECT ✨ ---- */
+.md-header__button.md-logo img {
+  position: relative;
+  z-index: 2;
+  border-radius: 50%;
+  box-shadow: 0 0 20px rgba(124, 77, 255, 0.7);
+  animation: logo-glow 3s ease-in-out infinite alternate;
+}
+
+@keyframes logo-glow {
+  0% {
+    box-shadow: 0 0 10px rgba(124, 77, 255, 0.4),
+                0 0 30px rgba(124, 77, 255, 0.2);
+    transform: scale(1);
+  }
+  100% {
+    box-shadow: 0 0 25px rgba(124, 77, 255, 0.8),
+                0 0 60px rgba(124, 77, 255, 0.4);
+    transform: scale(1.02);
+  }
 }
 
 .md-footer {
@@ -68,7 +86,6 @@
    GRADIENT LANDING PAGE EFFECT
    ========================================================================== */
 
-/* Optional: soft gradient that fades into the particle field */
 body {
   background: linear-gradient(
     to bottom,
@@ -85,4 +102,25 @@ body {
     rgba(10, 10, 20, 0.7) 40%,
     rgba(10, 10, 20, 0.3) 100%
   );
+}
+
+/* ==========================================================================
+   MISC VISUAL IMPROVEMENTS
+   ========================================================================== */
+
+a, a:visited {
+  transition: color 0.3s ease;
+}
+
+a:hover {
+  color: #7c4dff;
+}
+
+img {
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+}
+
+* {
+  transition: background-color 0.4s ease, color 0.4s ease;
 }
