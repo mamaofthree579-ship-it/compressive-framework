@@ -73,6 +73,7 @@ plt.xlabel("x")
 plt.ylabel("Amplitude Density")
 plt.legend()
 plt.grid(True)
+plt.savefig("docs/notebooks/wavecompression01.png", dpi=200)
 plt.show()
 ```
 
