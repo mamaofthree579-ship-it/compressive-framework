@@ -31,29 +31,11 @@ and under **anti-phase** conditions:
 
 ## 2. Visualization of Two-Field Coalescence
 
-```python
-import numpy as np
-import matplotlib.pyplot as plt
+![Coalescence](../notebooks/6notebook01.JPG)
 
-x = np.linspace(-10, 10, 600)
-sigma = 1.2
+![Coalescence](../notebooks/6notebook02.JPG)
 
-# Two particles with phase difference
-psi1 = np.exp(-((x + 2)**2)/(2*sigma**2)) * np.exp(1j * 0)
-psi2 = np.exp(-((x - 2)**2)/(2*sigma**2)) * np.exp(1j * 0.4*np.pi)
-
-psi_total = psi1 + psi2
-
-plt.figure(figsize=(8,4))
-plt.plot(x, np.abs(psi1)**2, '--', label='Particle A')
-plt.plot(x, np.abs(psi2)**2, '--', label='Particle B')
-plt.plot(x, np.abs(psi_total)**2, label='Coalesced |Ψ|²', linewidth=2)
-plt.title("Two-Particle Coalescence Field")
-plt.xlabel("x")
-plt.ylabel("Probability Density")
-plt.legend()
-plt.show()
-```
+![Coalescence](../notebooks/6notebook03.JPG)
 
 This demonstrates how overlapping compression fields generate reinforced nodes of density — the precursors of stable composite particles.
 
