@@ -86,26 +86,3 @@ body {
     rgba(10, 10, 20, 0.3) 100%
   );
 }
-
-/* ==========================================================================
-   MISC VISUAL IMPROVEMENTS
-   ========================================================================== */
-
-a, a:visited {
-  transition: color 0.3s ease;
-}
-
-a:hover {
-  color: #7c4dff; /* deep purple accent */
-}
-
-/* Rounded corners for images */
-img {
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.15);
-}
-
-/* Smooth transitions */
-* {
-  transition: background-color 0.4s ease, color 0.4s ease;
-}
