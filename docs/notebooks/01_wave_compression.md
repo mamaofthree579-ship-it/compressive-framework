@@ -42,42 +42,9 @@ This model balances **nonlinear focusing** with **spatial diffusion**, naturally
 
 ## 3. Visualization — 1D Wave Compression
 
-```python
-# %%
-import numpy as np
-import matplotlib.pyplot as plt
+![Wave Compression 1](../notebooks/wavecompression01.png)
 
-# Parameters
-x = np.linspace(-10, 10, 400)
-t = np.linspace(0, 5, 200)
-alpha, beta = 1.0, 0.1
-
-# Initial Gaussian wave
-psi0 = np.exp(-x**2)
-
-def compressive_step(psi, dt=0.02, dx=0.05):
-    laplacian = np.gradient(np.gradient(psi, dx), dx)
-    nonlinear = alpha * np.abs(psi)**2 * psi
-    diffusion = -beta * laplacian * np.abs(psi)**2
-    return psi + dt * (1j * (-laplacian + nonlinear + diffusion))
-
-psi = psi0.copy()
-for _ in range(100):
-    psi = compressive_step(psi)
-
-plt.figure(figsize=(8, 4))
-plt.plot(x, np.abs(psi0)**2, '--', label='Initial |ψ|²')
-plt.plot(x, np.abs(psi)**2, label='Compressed |ψ|²')
-plt.title("Wave Compression in 1D Field ψ(t, x)")
-plt.xlabel("x")
-plt.ylabel("Amplitude Density")
-plt.legend()
-plt.grid(True)
-plt.savefig("docs/notebooks/wavecompression01.png", dpi=200)
-plt.show()
-```
-
-This produces a visual showing the initial wide wave and the compressed localized form after iterative focusing.
+![Wave Compression 2](../notebooks/wavecompression02.png)
 
 ⸻
 
