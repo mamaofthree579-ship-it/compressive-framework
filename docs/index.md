@@ -14,8 +14,6 @@ title: Compressive Framework — Dynamic Particle Formation (CF-DPF)
 [![GitHub](https://img.shields.io/badge/GitHub-Repository-black)](https://github.com/mamaofthree579-ship-it/compressive-framework-cf)
 [![License](https://img.shields.io/badge/License-MIT-green)](#)
 
-</div>
-
 ---
 
 ## 🌌 Overview
