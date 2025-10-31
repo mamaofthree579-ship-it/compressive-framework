@@ -50,6 +50,8 @@ When compression and density reinforce, **wave amplitude focuses**, eventually f
 
 ![Stable Particle Emergence](../notebooks/3notebook02.png)
 
+![Stable Particle Emergence](../notebooks/3notebook03.png)
+
 ⸻
 
 5. Evolution Picture
