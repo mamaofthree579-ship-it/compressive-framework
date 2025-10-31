@@ -24,30 +24,7 @@ $end:math:display$
 
 where λ terms represent coupling strengths between respective fields.
 
-```python
-import numpy as np
-import matplotlib.pyplot as plt
-
-# Define simple coupling matrix
-fields = ["Graviton (γ)", "Chronon (χ)", "Cognon (κ)"]
-coupling_matrix = np.array([
-    [0, 0.6, 0.3],
-    [0.6, 0, 0.8],
-    [0.3, 0.8, 0]
-])
-
-fig, ax = plt.subplots()
-im = ax.imshow(coupling_matrix, cmap='viridis')
-
-ax.set_xticks(range(3))
-ax.set_yticks(range(3))
-ax.set_xticklabels(fields)
-ax.set_yticklabels(fields)
-plt.title("Tri-Field Coupling Matrix λ")
-plt.colorbar(im)
-plt.show()
-```
-
+![Coupling](../notebooks/7notebook01.png)
 
 ⸻
 
@@ -59,29 +36,7 @@ When the system reaches field equilibrium, total energy exchange satisfies:
 
 Each field dynamically adjusts to conserve the unified energy distribution.
 
-```python
-import numpy as np
-import matplotlib.pyplot as plt
-
-t = np.linspace(0, 10, 200)
-gamma = np.sin(t)
-chi = np.cos(t)
-kappa = np.sin(2*t) / 2
-
-E_total = gamma + chi + kappa
-
-plt.figure(figsize=(8,4))
-plt.plot(t, gamma, label='γ (Graviton)')
-plt.plot(t, chi, label='χ (Chronon)')
-plt.plot(t, kappa, label='κ (Cognon)')
-plt.plot(t, E_total, label='Σ Fields', linewidth=2, color='k')
-plt.title("Dynamic Field Interaction Balance")
-plt.xlabel("Time (t)")
-plt.ylabel("Relative Field Strength")
-plt.legend()
-plt.show()
-```
-
+![Coupling](../notebooks/7notebook02.png)
 
 ⸻
 
