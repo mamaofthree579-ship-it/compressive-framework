@@ -19,14 +19,3 @@ Explore the dynamic interactions of the **Graviton (γ)**, **Chronon (χ)**, and
 - **Resonance thresholds and symmetry breaking**  
 - **Particle-domain emergence over temporal scales**
 
----
-
-## 🔬 Embedded Simulator (optional)
-
-You can embed it directly below if you prefer:
-
-<iframe src="https://YOUR-STREAMLIT-APP-URL"
-        width="100%"
-        height="750"
-        style="border:none; border-radius: 8px;">
-</iframe>
