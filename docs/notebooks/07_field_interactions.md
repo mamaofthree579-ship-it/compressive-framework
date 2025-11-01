@@ -47,30 +47,12 @@ Its oscillation frequency modulates both time perception (via χ) and curvature 
 
 \omega_\kappa = f(\chi, \gamma) = \alpha\chi + \beta\gamma
 
-```python
-import numpy as np
-import matplotlib.pyplot as plt
-
-gamma_vals = np.linspace(-1, 1, 100)
-chi_vals = np.linspace(-1, 1, 100)
-G, C = np.meshgrid(gamma_vals, chi_vals)
-
-alpha, beta = 0.7, 0.5
-omega_kappa = alpha * C + beta * G
-
-plt.figure(figsize=(6,5))
-plt.contourf(G, C, omega_kappa, 50, cmap='plasma')
-plt.xlabel("γ (Graviton influence)")
-plt.ylabel("χ (Chronon influence)")
-plt.title("Cognon Frequency Response ωκ(γ, χ)")
-plt.colorbar(label="Frequency (normalized)")
-plt.show()
-```
+![Coupling](../notebooks/7notebook03.PNG)
 
 
 ⸻
 
-4. Cross-Field Synchronization
+i4. Cross-Field Synchronization
 
 Each field oscillates, but coherence only occurs when all three align in harmonic proportion:
 
@@ -78,23 +60,7 @@ n_\gamma : n_\chi : n_\kappa = p : q : r
 
 This generates stabilized quantum nodes — points of minimal entropy and maximal coherence.
 
-```python
-import numpy as np
-import matplotlib.pyplot as plt
-
-freqs = np.linspace(0, 2*np.pi, 500)
-gamma_wave = np.sin(freqs)
-chi_wave = np.sin(2*freqs)
-kappa_wave = np.sin(3*freqs)
-tri_sync = gamma_wave + chi_wave + kappa_wave
-
-plt.figure(figsize=(8,3))
-plt.plot(freqs, tri_sync, color='k')
-plt.title("Tri-Field Harmonic Synchronization")
-plt.xlabel("Phase")
-plt.ylabel("Amplitude (Σ)")
-plt.show()
-```
+![Coupling](../notebooks/7notebook04.PNG)
 
 
 ⸻
@@ -123,16 +89,7 @@ Matter exists where gravity, time, and information compress in harmony.
 
 7. Visualization Summary
 
-```python
-import numpy as np
-import matplotlib.pyplot as plt
-
- plt.figure(figsize=(6,3))
-plt.bar(fields, [np.mean(coupling_matrix[i]) for i in range(3)], color=['blue','orange','green'])
-plt.title("Average Coupling Strengths per Field")
-plt.ylabel("Mean λ")
-plt.show()
-```
+![Coupling](../notebooks/7notebook05.PNG)
 
 
 ⸻
