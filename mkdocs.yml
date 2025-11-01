@@ -3,8 +3,8 @@ site_url: https://mamaofthree579-ship-it.github.io/compressive-framework-cf/
 
 theme:
   name: material
-  logo: docs/logo.PNG
-  favicon: docs/favicon.PNG
+  logo: images/cf-trifractal-dark.svg
+  favicon: images/cf-trifractal-dark.svg
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
@@ -23,10 +23,6 @@ theme:
 extra_css:
   - assets/css/extra.css
 
-extra_javascript:
-  - assets/js/particles.js
-  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
-
 markdown_extensions:
   - toc:
       permalink: true
@@ -35,6 +31,10 @@ markdown_extensions:
   - pymdownx.superfences
   - pymdownx.arithmatex
   - pymdownx.highlight
+
+extra_javascript:
+  - assets/js/particles.js
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
 
 nav:
   - Home: index.md
@@ -49,7 +49,7 @@ nav:
       - Quantized Curvature: notebooks/08_quantized_curvature.md
       - Vacuum Symmetry Breaking: notebooks/09_vacuum_symmetry_breaking.md
       - Vacuum Domain Formation: notebooks/10_vacuum_domain_formation.md
-      - Simulator: simulator.md
+  - Simulator: simulator.md
   - Contributing: contributing.md
   - API: api.md
 
