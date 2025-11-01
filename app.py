@@ -1,65 +1,57 @@
 import streamlit as st
 import numpy as np
-import plotly.graph_objects as go
+import matplotlib.pyplot as plt
 
-st.set_page_config(page_title="CF-DPF Simulator", layout="wide")
-
-st.title("🌌 Compressive Framework — Dynamic Particle Formation (CF-DPF)")
-st.markdown(
-    """
-    This simulator models **field interactions** between the three primary waves:
-    - **Graviton (γ)** — gravitational compression field  
-    - **Chronon (χ)** — temporal coherence field  
-    - **Cognon (κ)** — informational resonance field  
-
-    Adjust the parameters below to explore wave coupling, curvature fields, and emergent domains.
-    """
-)
+st.title("Quantum Field Simulator — Compressive Framework (CF-DPF)")
+st.write("""
+Explore the emergent dynamics of graviton, chronon, and cognon interactions.
+Adjust field parameters to visualize compression, curvature, and harmonics.
+""")
 
 # Sidebar controls
-st.sidebar.header("⚙️ Simulation Controls")
-alpha = st.sidebar.slider("Graviton weight (α)", 0.0, 2.0, 0.7, 0.05)
-beta = st.sidebar.slider("Chronon weight (β)", 0.0, 2.0, 0.5, 0.05)
-gamma = st.sidebar.slider("Cognon weight (γ)", 0.0, 2.0, 0.6, 0.05)
-phase_shift = st.sidebar.slider("Phase shift φ", 0.0, np.pi, 0.5, 0.05)
-t = st.sidebar.slider("Time t", 0.0, 2*np.pi, 0.0, 0.05)
+st.sidebar.header("Simulation Parameters")
+alpha = st.sidebar.slider("α (Compression Strength)", 0.1, 1.0, 0.5, 0.05)
+beta = st.sidebar.slider("β (Curvature Factor)", 0.1, 1.0, 0.7, 0.05)
+omega = st.sidebar.slider("ω (Frequency)", 1.0, 10.0, 3.0, 0.5)
 
-# Field grid
+# Generate field data
 x = np.linspace(-5, 5, 400)
-X = np.tile(x, (400, 1))
-T = np.linspace(0, 2*np.pi, 400).reshape(-1, 1)
+t = np.linspace(0, 2*np.pi, 200)
+X, T = np.meshgrid(x, t)
 
-# Wave definitions
-graviton = np.sin(alpha * X - t)
-chronon  = np.sin(beta * X - phase_shift)
-cognon   = np.sin(gamma * X - 2*t)
+compression = np.sin(omega * X) * np.exp(-alpha * X**2)
+curvature = beta * np.sin(compression**2 - T)
 
-# Superposition
-combined = graviton + chronon + cognon
-curvature = np.gradient(np.gradient(combined, axis=1), axis=1)
+# ✅ Normalize for safe Streamlit display
+curvature_norm = (curvature - curvature.min()) / (curvature.max() - curvature.min())
 
-# Plotly surface plot
-fig = go.Figure(data=go.Surface(
-    z=combined,
-    x=x,
-    y=np.linspace(0, 2*np.pi, 400),
-    colorscale="Viridis",
-    showscale=True
-))
-fig.update_layout(
-    title="Wave-Field Superposition Ψ(x,t)",
-    scene=dict(
-        xaxis_title="Spatial Coordinate x",
-        yaxis_title="Temporal Phase t",
-        zaxis_title="Field Amplitude Ψ"
-    ),
-    margin=dict(l=0, r=0, b=0, t=40)
+# Display intensity map
+st.subheader("Curvature Intensity Map")
+st.image(
+    np.flipud(curvature_norm),
+    caption="Normalized curvature intensity (𝒦-field)",
+    use_column_width=True
 )
 
-st.plotly_chart(fig, use_container_width=True)
+# Overlayed line plot
+fig, ax = plt.subplots(figsize=(7,3))
+ax.plot(x, compression[100, :], label="Compression Field ρc")
+ax.plot(x, np.gradient(compression[100, :]), label="Curvature Nodes 𝒦'", color="orange")
+ax.set_xlabel("Spatial Coordinate x")
+ax.set_title("Local Curvature Nodes within Compression Field")
+ax.legend()
+st.pyplot(fig)
 
-# Optional: curvature plot
-st.subheader("Derived Curvature Field 𝒦(x,t)")
-st.image(np.flipud(curvature), caption="Curvature Intensity Map", use_column_width=True)
+# Frequency response section
+gamma_vals = np.linspace(-1, 1, 100)
+chi_vals = np.linspace(-1, 1, 100)
+G, C = np.meshgrid(gamma_vals, chi_vals)
+omega_kappa = alpha * C + beta * G
 
-st.markdown("🧩 *Tip:* Tune α, β, γ to explore coupling resonance and symmetry breaking.")
+fig2, ax2 = plt.subplots(figsize=(6,5))
+contour = ax2.contourf(G, C, omega_kappa, 50, cmap="plasma")
+ax2.set_xlabel("γ (Graviton influence)")
+ax2.set_ylabel("χ (Chronon influence)")
+ax2.set_title("Cognon Frequency Response ωκ(γ, χ)")
+fig2.colorbar(contour, ax=ax2, label="Frequency (normalized)")
+st.pyplot(fig2)
