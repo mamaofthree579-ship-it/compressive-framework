@@ -49,6 +49,7 @@ nav:
       - Quantized Curvature: notebooks/08_quantized_curvature.md
       - Vacuum Symmetry Breaking: notebooks/09_vacuum_symmetry_breaking.md
       - Vacuum Domain Formation: notebooks/10_vacuum_domain_formation.md
+  - Simulator: simulator.md
   - Contributing: contributing.md
   - API: api.md
 
