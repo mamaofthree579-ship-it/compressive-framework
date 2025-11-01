@@ -6,7 +6,7 @@ Explore the dynamic interactions of the **Graviton (γ)**, **Chronon (χ)**, and
 
 ## 🧩 Launch Simulator
 
-[🚀 **Run the CF-DPF Simulator**](https://YOUR-STREAMLIT-APP-URL)
+[🚀 **Run the CF-DPF Simulator**](https://compressive-framework-jzawmyjakcuafw5twzcskd.streamlit.app/)
 
 > Adjust α, β, and γ to study wave coupling, resonance, and curvature formation in real-time.
 
