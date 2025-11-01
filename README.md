@@ -69,21 +69,7 @@ To view and run notebooks locally:
 # Clone repository
 git clone https://github.com/mamaofthree579-ship-it/compressive-framework-cf.git
 cd compressive-framework-cf
-
-# (Optional) Create a virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-To build the documentation locally with MkDocs:
-pip install mkdocs mkdocs-material mkdocs-jupyter
-mkdocs serve
-
-Then visit http://localhost:8000 to browse interactively.
-
-⸻
+```
 
 🚀 Deployment
 
@@ -95,16 +81,6 @@ To build and publish automatically:
 
 Manual deploy (if workflows not used):
 mkdocs gh-deploy --clean
-
-
-⸻
-
-🧭 Roadmap
-	•	Integrate interactive plots via Plotly for dynamic visualization
-	•	Add equations rendered with MathJax
-	•	Link simulation code for graviton–chronon–cognon field evolution
-	•	Add high-resolution visualizations for domain and wave transitions
-	•	Export full model summary as PDF for publication
 
 ⸻
 
