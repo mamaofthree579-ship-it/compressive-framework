@@ -17,26 +17,7 @@ We define quantized curvature \( \mathcal{K} \) as a function of compression ene
 
 where \( \alpha \) is the curvature sensitivity constant.
 
-```python
-import numpy as np
-import matplotlib.pyplot as plt
-
-x = np.linspace(-5, 5, 400)
-t = np.linspace(0, 2*np.pi, 200)
-X, T = np.meshgrid(x, t)
-
-rho_c = np.sin(X**2 - T)
-alpha = 0.6
-K = alpha * np.sin(rho_c)
-
-plt.figure(figsize=(6,4))
-plt.imshow(K, extent=[-5,5,0,2*np.pi], cmap="inferno", aspect="auto", origin="lower")
-plt.title("Quantized Curvature Field 𝒦(x,t)")
-plt.xlabel("Spatial Coordinate x")
-plt.ylabel("Time t")
-plt.colorbar(label="Curvature Magnitude")
-plt.show()
-```
+![Curvature](../notebooks/8notebook01.PNG)
 
 
 ⸻
@@ -45,21 +26,7 @@ plt.show()
 
 Curvature quantization manifests through discrete compression wells where space momentarily stabilizes before re-expanding.
 
-```python
-import numpy as np
-import matplotlib.pyplot as plt
-
-compression = np.sin(3*x) * np.exp(-0.1*x**2)
-curvature_nodes = np.gradient(compression)
-
-plt.figure(figsize=(7,3))
-plt.plot(x, compression, label='Compression Field ρc')
-plt.plot(x, curvature_nodes, label='Curvature Nodes 𝒦\'', color='orange')
-plt.title("Local Curvature Nodes within Compression Field")
-plt.xlabel("Spatial Coordinate x")
-plt.legend()
-plt.show()
-```
+![Curvature](../notebooks/8notebook02.PNG)
 
 
 ⸻
