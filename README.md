@@ -52,6 +52,11 @@ they **emerge** as self-organized compression patterns of an underlying field.
 
 ---
 
+## 🔬 Simulator
+
+ [**Particle Simulator**](https://compressive-framework-jzawmyjakcuafw5twzcskd.streamlit.app/) Explores how regions of broken symmetry stabilize into structured vacuum domains and proto-field boundaries. 
+---
+
 ## 🧠 Key Insights
 
 - The universe behaves as a **self-compressing computation**, where structure encodes data through motion.  
@@ -71,7 +76,7 @@ git clone https://github.com/mamaofthree579-ship-it/compressive-framework-cf.git
 cd compressive-framework-cf
 ```
 
-🚀 Deployment
+## 🚀 Deployment
 
 This project is designed for GitHub Pages deployment.
 
@@ -84,7 +89,7 @@ mkdocs gh-deploy --clean
 
 ⸻
 
-🪶 Citation
+## 🪶 Citation
 
 If referencing this work:
 
@@ -94,7 +99,7 @@ GitHub: mamaofthree579-ship-it/compressive-framework-cf￼
 
 ⸻
 
-💡 Closing Note
+## 💡 Closing Note
 
 “The universe is not expanding — it’s remembering how to breathe.”
 — CF-DPF Principle
