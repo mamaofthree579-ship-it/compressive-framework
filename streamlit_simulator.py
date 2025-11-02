@@ -99,7 +99,7 @@ st.set_page_config(page_title="CF Compressive Simulator", layout="wide")
 st.title("CF — Quantum Wave → Particle Simulator")
 
 st.sidebar.header("Simulation Controls")
-nx = st.sidebar.select_slider("Grid resolution", options=[100, 150, 200, 300, 400], value=250)
+nx = st.sidebar.select_slider("Grid resolution", options=[100, 150, 200, 300, 400], value=200)
 frames = st.sidebar.slider("Frames", min_value=40, max_value=600, value=180, step=10)
 alpha = st.sidebar.slider("α — graviton", 0.0, 2.0, 0.7, 0.05)
 beta = st.sidebar.slider("β — chronon", 0.0, 2.0, 0.5, 0.05)
