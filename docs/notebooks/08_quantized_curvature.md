@@ -40,22 +40,7 @@ We approximate this interaction using a scaling function:
 \mathcal{K}_{\text{γ-mod}} = \mathcal{K}(x,t) \cdot (1 + \beta \sin(\omega_γ t))
 ]
 
-```python
-import numpy as np
-import matplotlib.pyplot as plt
-
-omega_gamma = 3
-beta = 0.4
-K_mod = K * (1 + beta * np.sin(omega_gamma * T))
-
-plt.figure(figsize=(6,4))
-plt.imshow(K_mod, extent=[-5,5,0,2*np.pi], cmap="plasma", aspect="auto", origin="lower")
-plt.title("Graviton-Modulated Curvature Field 𝒦γ(x,t)")
-plt.xlabel("Spatial Coordinate x")
-plt.ylabel("Time t")
-plt.colorbar(label="Modulated Curvature Magnitude")
-plt.show()
-```
+![Curvature](../notebooks/8notebook03.PNG)
 
 
 ⸻
