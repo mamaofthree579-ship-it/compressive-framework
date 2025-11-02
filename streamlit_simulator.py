@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Quantum Wave–Particle Formation Simulator with 3D Field Visualization
+Quantum Compressive Simulator — Interactive 3D Visualization + Energy Potential Overlay
 """
 
 import streamlit as st
@@ -9,7 +9,9 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401
 from scipy import ndimage
 
-# --- Utility functions ---
+# -----------------------------------------------------
+# Helper functions
+# -----------------------------------------------------
 def build_grid(nx, xlim=(-6, 6)):
     x = np.linspace(xlim[0], xlim[1], nx)
     X = np.tile(x, (nx, 1))
@@ -49,10 +51,12 @@ def detect_particles(residual, threshold, min_pixels=3):
     return particles
 
 
-# --- Streamlit UI ---
+# -----------------------------------------------------
+# Streamlit UI
+# -----------------------------------------------------
 st.set_page_config(page_title="Quantum Compressive Simulator", layout="wide")
 st.title("🌀 Quantum Wave–Particle Formation Simulator")
-st.caption("Visualizing wave interference, quantum fluctuations, and particle emergence")
+st.caption("Dynamic 3D visualization of compressive field evolution and particle emergence")
 
 st.sidebar.header("Simulation Parameters")
 nx = st.sidebar.slider("Grid resolution (nx)", 100, 400, 250, 50)
@@ -67,10 +71,14 @@ decay = st.sidebar.slider("Residual decay per frame", 0.90, 1.00, 0.98, 0.005)
 leak = st.sidebar.slider("Residual leak rate", 0.01, 0.10, 0.03, 0.005)
 thresh = st.sidebar.slider("Particle threshold", 0.05, 0.3, 0.12, 0.01)
 minpix = st.sidebar.slider("Minimum particle pixels", 1, 10, 3)
+elev = st.sidebar.slider("3D Elevation", 10, 60, 30, 5)
+azim = st.sidebar.slider("3D Azimuth", 0, 360, 35, 5)
 
 run_button = st.sidebar.button("▶ Run Simulation")
 
-# --- Simulation ---
+# -----------------------------------------------------
+# Simulation Loop
+# -----------------------------------------------------
 if run_button:
     st.write("### Running Simulation...")
     placeholder_2d = st.empty()
@@ -93,7 +101,7 @@ if run_button:
         particles = detect_particles(residual, thresh, minpix)
         counts.append(len(particles))
 
-        # --- 2D Field (top view) ---
+        # --- 2D Field Map ---
         fig2d, axs = plt.subplots(2, 1, figsize=(8, 6), height_ratios=[2, 1])
         axs[0].imshow(energy_n, extent=[x[0], x[-1], 0, 2*np.pi],
                       origin="lower", cmap="plasma", aspect="auto")
@@ -116,22 +124,26 @@ if run_button:
         axs[1].set_ylim(0, max(5, max(counts)+2))
         placeholder_2d.pyplot(fig2d)
 
-        # --- NEW: 3D Surface Plot ---
+        # --- 3D Surface + Energy Potential Overlay ---
         fig3d = plt.figure(figsize=(7, 4))
         ax3d = fig3d.add_subplot(111, projection='3d')
         Tgrid, Xgrid = np.meshgrid(T, x)
-        ax3d.plot_surface(Xgrid, Tgrid, combined, cmap="viridis", linewidth=0, antialiased=True)
-        ax3d.set_title("3D Quantum Field Surface ψ(x,t)")
+        potential = -energy_n * 0.4  # energy potential surface
+        surface = ax3d.plot_surface(Xgrid, Tgrid, combined, cmap="viridis",
+                                    linewidth=0, antialiased=True, alpha=0.9)
+        ax3d.plot_surface(Xgrid, Tgrid, potential, cmap="plasma", alpha=0.5)
+        ax3d.set_title("3D Quantum Field ψ(x,t) + Potential Overlay")
         ax3d.set_xlabel("x")
         ax3d.set_ylabel("t")
         ax3d.set_zlabel("Amplitude")
-        ax3d.view_init(elev=30, azim=35)
+        ax3d.view_init(elev=elev, azim=azim)
         placeholder_3d.pyplot(fig3d)
 
         progress.progress((i + 1) / frames)
 
     progress.progress(1.0)
-    st.success("✅ Simulation complete!")
+    final_particles = counts[-1]
+    st.success(f"✅ Simulation complete! Final particle count: **{final_particles}**")
     st.balloons()
 
 else:
