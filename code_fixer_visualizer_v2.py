@@ -81,7 +81,7 @@ if run_button and code_input.strip():
     with st.spinner("Running your code..."):
         fig, logs, err = run_code(code_input)
 
-    if err and auto_fix:
+        if err and auto_fix:
         st.warning("⚠️ Error detected — attempting auto-fix...")
         st.text_area("Error Traceback:", err, height=200)
 
@@ -97,7 +97,18 @@ if run_button and code_input.strip():
         else:
             st.success("✅ Code fixed successfully!")
             st.pyplot(fig_fixed)
-            st.download_button("📥 Download Fixed Plot", fig_fixed.canvas.tostring_rgb(), "fixed_plot.png")
+
+            # ✅ Convert plot to PNG buffer for download
+            img_bytes = io.BytesIO()
+            fig_fixed.savefig(img_bytes, format="png", bbox_inches="tight")
+            img_bytes.seek(0)
+
+            st.download_button(
+                "📥 Download Fixed Plot",
+                data=img_bytes,
+                file_name="fixed_plot.png",
+                mime="image/png"
+            )
 
     elif err:
         st.error("❌ Error running code.")
@@ -105,7 +116,18 @@ if run_button and code_input.strip():
     else:
         st.success("✅ Code executed successfully!")
         st.pyplot(fig)
-        st.download_button("📥 Download Image", fig.canvas.tostring_rgb(), "plot.png")
+
+        # ✅ Convert plot to PNG buffer for download
+        img_bytes = io.BytesIO()
+        fig.savefig(img_bytes, format="png", bbox_inches="tight")
+        img_bytes.seek(0)
+
+        st.download_button(
+            "📥 Download Image",
+            data=img_bytes,
+            file_name="plot.png",
+            mime="image/png"
+        )
 
 else:
     st.info("👆 Paste plotting code and click **Run Code**.")
