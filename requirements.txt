@@ -3,6 +3,7 @@ numpy
 plotly
 matplotlib
 scipy
+imageio
 # --- Core MkDocs setup ---
 mkdocs>=1.6.0
 mkdocs-material>=9.5.0
