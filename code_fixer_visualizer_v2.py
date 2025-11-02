@@ -8,22 +8,22 @@ import re
 
 st.set_page_config(page_title="AI Code Fixer + Visualizer", layout="wide")
 
-st.title("🧠 AI Code Fixer + Visualizer")
-st.write("Paste your Matplotlib/Numpy plotting code below. If errors occur, the app will auto-diagnose and fix them!")
+st.title("🧩 AI Code Fixer + Visualizer v2")
+st.write("Paste your Python plotting code. The app will detect and **auto-correct** missing variables or imports.")
 
 code_input = st.text_area(
     "Python plotting code:",
     height=300,
-    placeholder="Example:\n\nimport numpy as np\nimport matplotlib.pyplot as plt\nx = np.linspace(-5,5,200)\ny = np.sin(x)\nplt.plot(x,y)\nplt.show()"
+    placeholder="Example:\n\nimport numpy as np\nimport matplotlib.pyplot as plt\nfields = ['Graviton','Chronon','Cognon']\nvalues = [0.7,0.5,0.6]\nplt.bar(fields, values)\nplt.show()"
 )
 
 col1, col2 = st.columns([1, 2])
 run_button = col1.button("🎨 Run Code")
-auto_fix = col2.checkbox("🧩 Auto-fix errors", value=True)
+auto_fix = col2.checkbox("🧠 Auto-fix errors", value=True)
 
 
 def run_code(code: str):
-    """Executes code safely and returns figure, output, and errors."""
+    """Executes user code safely and returns the figure, output logs, and any error."""
     output = io.StringIO()
     fig = None
     error = None
@@ -35,27 +35,44 @@ def run_code(code: str):
             plt.figure()
             exec(code, exec_globals)
             fig = plt.gcf()
-        except Exception as e:
+        except Exception:
             error = traceback.format_exc()
 
     return fig, output.getvalue(), error
 
 
 def auto_correct_code(code: str, error: str):
-    """Basic fixer for common Python/matplotlib mistakes."""
-    fixed = code
+    """Auto-fix common issues in matplotlib/numpy plotting code."""
+    fixed = code.strip()
 
-    # Common fixes
+    # Fix missing imports
     if "NameError" in error and "plt" in error and "import matplotlib" not in fixed:
         fixed = "import matplotlib.pyplot as plt\n" + fixed
     if "NameError" in error and "np" in error and "import numpy" not in fixed:
         fixed = "import numpy as np\n" + fixed
-    if "SyntaxError" in error and not fixed.strip().endswith("plt.show()"):
-        fixed += "\nplt.show()"
-    if "ValueError" in error and "x and y" in error:
-        fixed = re.sub(r"plt\.plot\([^)]*\)", "plt.plot(np.arange(10), np.arange(10))", fixed)
+
+    # Fix missing plt.show()
     if "plt.show" not in fixed:
         fixed += "\nplt.show()"
+
+    # Detect undefined variable and inject placeholder data
+    undefined_vars = re.findall(r"NameError: name '(\w+)' is not defined", error)
+    for var in undefined_vars:
+        if var == "fields":
+            st.info(f"⚙️ Auto-defining missing variable `{var}` = ['A','B','C']")
+            fixed = f"{var} = ['A','B','C']\n" + fixed
+        elif var == "values" or var == "curvatures":
+            st.info(f"⚙️ Auto-defining missing variable `{var}` = [1,2,3]")
+            fixed = f"{var} = [1, 2, 3]\n" + fixed
+        elif var == "x":
+            st.info(f"⚙️ Auto-defining missing variable `{var}` = np.linspace(-5,5,100)")
+            fixed = f"{var} = np.linspace(-5,5,100)\n" + fixed
+        elif var == "y":
+            st.info(f"⚙️ Auto-defining missing variable `{var}` = np.sin(x)")
+            fixed = f"{var} = np.sin(x)\n" + fixed
+        else:
+            st.info(f"⚙️ Auto-defining missing variable `{var}` = 1.0")
+            fixed = f"{var} = 1.0\n" + fixed
 
     return fixed
 
