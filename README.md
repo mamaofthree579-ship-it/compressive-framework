@@ -54,8 +54,10 @@ they **emerge** as self-organized compression patterns of an underlying field.
 
 ## 🔬 Simulator
 
- [**Particle Simulator**](https://compressive-framework-jzawmyjakcuafw5twzcskd.streamlit.app/) Explores how regions of broken symmetry stabilize into structured vacuum domains and proto-field boundaries. 
----
+ | [**Particle Simulator 1**](https://compressive-framework-jzawmyjakcuafw5twzcskd.streamlit.app/) 
+ |[**Particle Simulator 2**](https://compressive-framework-xvurxhhd4beqpn44cu3mes.streamlit.app/) | 
+ - Explores how regions of broken symmetry stabilize into structured vacuum domains and proto-field boundaries. 
+
 
 ## 🧠 Key Insights
 
