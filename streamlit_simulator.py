@@ -1,12 +1,7 @@
 #!/usr/bin/env python3
 """
-streamlit_simulator.py
-
-Streamlit front-end for visualizing the Compressive Framework process:
-quantum waveform movement, fluctuations, residual leakage, and particle formation.
-
-Run with:
-    streamlit run streamlit_simulator.py
+Quantum Wave–Particle Formation Simulator
+Interactive Streamlit frontend for the Compressive Framework dynamics
 """
 
 import streamlit as st
@@ -14,10 +9,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy import ndimage
 
-# ---------------------------
-# Simulation core functions
-# ---------------------------
-
+# --- Utility functions ---
 def build_grid(nx, xlim=(-6, 6)):
     x = np.linspace(xlim[0], xlim[1], nx)
     X = np.tile(x, (nx, 1))
@@ -56,23 +48,20 @@ def detect_particles(residual, threshold, min_pixels=3):
             particles.append(centroid)
     return particles
 
-# ---------------------------
-# Streamlit UI
-# ---------------------------
-
+# --- Streamlit UI ---
 st.set_page_config(page_title="Quantum Compressive Simulator", layout="wide")
 st.title("🌀 Quantum Wave–Particle Formation Simulator")
-st.markdown("""
-This interactive simulator visualizes **wave superposition**, **quantum fluctuations**,  
-**residual buildup (leakage)**, and **particle nucleation** within the **Compressive Framework**.
 
-Adjust parameters in the sidebar and press **▶ Run Simulation**.
+st.markdown("""
+This simulator visualizes the **wave interference**, **quantum fluctuations**,  
+and **particle emergence** due to compressive field leakage.
+Use the sidebar to adjust parameters, then click **▶ Run Simulation**.
 """)
 
-# Sidebar controls
+# Sidebar
 st.sidebar.header("Simulation Parameters")
 nx = st.sidebar.slider("Grid resolution (nx)", 100, 600, 300, 50)
-frames = st.sidebar.slider("Frames", 50, 600, 200, 50)
+frames = st.sidebar.slider("Frames", 50, 600, 150, 50)
 alpha = st.sidebar.slider("Graviton scale (α)", 0.1, 1.5, 0.7, 0.1)
 beta = st.sidebar.slider("Chronon scale (β)", 0.1, 1.5, 0.5, 0.1)
 gamma = st.sidebar.slider("Cognon scale (γ)", 0.1, 1.5, 0.6, 0.1)
@@ -86,23 +75,17 @@ minpix = st.sidebar.slider("Minimum particle pixels", 1, 10, 3)
 
 run_button = st.sidebar.button("▶ Run Simulation")
 
-# ---------------------------
-# Simulation logic
-# ---------------------------
-
+# --- Simulation ---
 if run_button:
+    st.write("### Running Simulation...")
+    placeholder = st.empty()  # dynamic figure area
+    progress = st.progress(0)
+
     x, X = build_grid(nx)
     residual = np.zeros_like(X)
     params = dict(alpha=alpha, beta=beta, gamma=gamma, omega=omega, env_sigma=env_sigma)
-
     frame_list = np.linspace(0, 2*np.pi, frames)
     counts = []
-    last_particles = None
-
-    progress = st.progress(0)
-    status = st.empty()
-    fig, axs = plt.subplots(2, 1, figsize=(8, 6), height_ratios=[2, 1])
-    plt.subplots_adjust(hspace=0.35)
 
     for i, t_phase in enumerate(frame_list):
         combined = compute_wavefields(X, t_phase, params)
@@ -113,40 +96,41 @@ if run_button:
         particles = detect_particles(residual, thresh, minpix)
         counts.append(len(particles))
 
-        # Plot compressed field
-        axs[0].cla()
+        # Draw updated figure
+        fig, axs = plt.subplots(2, 1, figsize=(8, 6), height_ratios=[2, 1])
         axs[0].imshow(energy_n, extent=[x[0], x[-1], 0, 2*np.pi],
                       origin="lower", cmap="plasma", aspect="auto")
         axs[0].set_title(f"Frame {i+1}/{frames} | Particles: {len(particles)}")
         axs[0].set_xlabel("Spatial Coordinate x")
         axs[0].set_ylabel("Phase t")
+
         if particles:
-            coords = np.array([[np.interp(p[1], [0, X.shape[1]-1], [x[0], x[-1]]),
-                                 np.interp(p[0], [0, X.shape[0]-1], [0, 2*np.pi])] for p in particles])
+            coords = np.array([
+                [np.interp(p[1], [0, X.shape[1]-1], [x[0], x[-1]]),
+                 np.interp(p[0], [0, X.shape[0]-1], [0, 2*np.pi])]
+                for p in particles
+            ])
             axs[0].scatter(coords[:,0], coords[:,1], s=60, edgecolors="white", facecolors="none")
 
-        # Plot particle count timeline
-        axs[1].cla()
         axs[1].plot(counts, '-o', color='black', markersize=3)
         axs[1].set_xlabel("Frame")
         axs[1].set_ylabel("Particle count")
         axs[1].set_xlim(0, frames)
-        axs[1].set_ylim(0, max(5, max(counts) + 2))
+        axs[1].set_ylim(0, max(5, max(counts)+2))
 
+        placeholder.pyplot(fig)
         progress.progress((i + 1) / frames)
-        status.text(f"Simulating frame {i + 1}/{frames}")
-        st.pyplot(fig, clear_figure=False)
 
     progress.progress(1.0)
-    status.success("✅ Simulation complete!")
+    st.success("✅ Simulation complete!")
     st.balloons()
 
-    # Summary metrics
+    # Summary
     st.markdown("### Simulation Summary")
-    col1, col2, col3 = st.columns(3)
-    col1.metric("Max particle count", max(counts))
-    col2.metric("Average count", f"{np.mean(counts):.2f}")
-    col3.metric("Frames simulated", frames)
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Max particle count", max(counts))
+    c2.metric("Average count", f"{np.mean(counts):.2f}")
+    c3.metric("Frames simulated", frames)
 
 else:
     st.info("Adjust parameters in the sidebar and click **▶ Run Simulation** to begin.")
