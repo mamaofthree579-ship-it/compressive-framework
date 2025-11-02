@@ -776,22 +776,7 @@ We approximate this interaction using a scaling function:</p>
 </ol>
 <p>The temporal stability of curvature describes how oscillations sustain spacetime continuity.
 When damping equals curvature feedback, the system self-regulates.</p>
-<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
-
-<span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">400</span><span class="p">)</span>
-<span class="n">stability</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.05</span><span class="o">*</span><span class="n">t</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">t</span><span class="p">)</span>
-<span class="n">feedback</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">t</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.5</span>
-
-<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">stability</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Curvature Stability Oscillation&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">feedback</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Feedback Regulation&quot;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Temporal Stability Curve of Curvature Feedback&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Time (t)&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Amplitude&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-</code></pre></div>
+<p><img alt="Curvature" src="../8notebook06.PNG" /></p>
 <p>⸻</p>
 <ol>
 <li>Quantized Curvature Summary</li>
@@ -812,18 +797,7 @@ and reality bends where information meets gravity.”</p>
 <ol>
 <li>Visualization Summary</li>
 </ol>
-<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
-
-<span class="n">fields</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Graviton&quot;</span><span class="p">,</span> <span class="s2">&quot;Chronon&quot;</span><span class="p">,</span> <span class="s2">&quot;Cognon&quot;</span><span class="p">]</span>
-<span class="n">curvatures</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.75</span><span class="p">,</span> <span class="mf">0.65</span><span class="p">,</span> <span class="mf">0.55</span><span class="p">]</span>
-
-<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">fields</span><span class="p">,</span> <span class="n">curvatures</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;purple&quot;</span><span class="p">,</span><span class="s2">&quot;orange&quot;</span><span class="p">,</span><span class="s2">&quot;green&quot;</span><span class="p">])</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Curvature Contribution by Fundamental Field&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Relative Curvature Influence&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-</code></pre></div>
+<p><img alt="Curvature" src="../8notebook07.PNG" /></p>
 <p>⸻</p>
 <p>Next Notebook → Vacuum Symmetry Breaking￼</p>
 
