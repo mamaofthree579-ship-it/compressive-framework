@@ -1,27 +1,3 @@
-#!/usr/bin/env python3
-"""
-simulator_wave_particle.py
-
-A compact simulator that shows quantum waveform movement with quantum fluctuations,
-residual buildup (leakage), and particle nucleation when residual concentration
-exceeds a threshold.
-
-Usage:
-    python simulator_wave_particle.py          # run with defaults
-    python simulator_wave_particle.py --frames 600 --nx 400 --save sim.mp4
-
-Requirements:
-    numpy
-    matplotlib
-    scipy
-
-Optional (for saving animation):
-    imageio or ffmpeg available to matplotlib
-
-Install:
-    pip install numpy matplotlib scipy
-"""
-
 import argparse
 import numpy as np
 import matplotlib.pyplot as plt
