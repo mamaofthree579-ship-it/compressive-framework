@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-Quantum Wave–Particle Formation Simulator
-Interactive Streamlit frontend for the Compressive Framework dynamics
+Quantum Wave–Particle Formation Simulator with 3D Field Visualization
 """
 
 import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D  # noqa: F401
 from scipy import ndimage
 
 # --- Utility functions ---
@@ -48,20 +48,15 @@ def detect_particles(residual, threshold, min_pixels=3):
             particles.append(centroid)
     return particles
 
+
 # --- Streamlit UI ---
 st.set_page_config(page_title="Quantum Compressive Simulator", layout="wide")
 st.title("🌀 Quantum Wave–Particle Formation Simulator")
+st.caption("Visualizing wave interference, quantum fluctuations, and particle emergence")
 
-st.markdown("""
-This simulator visualizes the **wave interference**, **quantum fluctuations**,  
-and **particle emergence** due to compressive field leakage.
-Use the sidebar to adjust parameters, then click **▶ Run Simulation**.
-""")
-
-# Sidebar
 st.sidebar.header("Simulation Parameters")
-nx = st.sidebar.slider("Grid resolution (nx)", 100, 600, 300, 50)
-frames = st.sidebar.slider("Frames", 50, 600, 150, 50)
+nx = st.sidebar.slider("Grid resolution (nx)", 100, 400, 250, 50)
+frames = st.sidebar.slider("Frames", 50, 300, 100, 25)
 alpha = st.sidebar.slider("Graviton scale (α)", 0.1, 1.5, 0.7, 0.1)
 beta = st.sidebar.slider("Chronon scale (β)", 0.1, 1.5, 0.5, 0.1)
 gamma = st.sidebar.slider("Cognon scale (γ)", 0.1, 1.5, 0.6, 0.1)
@@ -78,10 +73,12 @@ run_button = st.sidebar.button("▶ Run Simulation")
 # --- Simulation ---
 if run_button:
     st.write("### Running Simulation...")
-    placeholder = st.empty()  # dynamic figure area
+    placeholder_2d = st.empty()
+    placeholder_3d = st.empty()
     progress = st.progress(0)
 
     x, X = build_grid(nx)
+    T = np.linspace(0, 2 * np.pi, nx)
     residual = np.zeros_like(X)
     params = dict(alpha=alpha, beta=beta, gamma=gamma, omega=omega, env_sigma=env_sigma)
     frame_list = np.linspace(0, 2*np.pi, frames)
@@ -96,8 +93,8 @@ if run_button:
         particles = detect_particles(residual, thresh, minpix)
         counts.append(len(particles))
 
-        # Draw updated figure
-        fig, axs = plt.subplots(2, 1, figsize=(8, 6), height_ratios=[2, 1])
+        # --- 2D Field (top view) ---
+        fig2d, axs = plt.subplots(2, 1, figsize=(8, 6), height_ratios=[2, 1])
         axs[0].imshow(energy_n, extent=[x[0], x[-1], 0, 2*np.pi],
                       origin="lower", cmap="plasma", aspect="auto")
         axs[0].set_title(f"Frame {i+1}/{frames} | Particles: {len(particles)}")
@@ -117,20 +114,25 @@ if run_button:
         axs[1].set_ylabel("Particle count")
         axs[1].set_xlim(0, frames)
         axs[1].set_ylim(0, max(5, max(counts)+2))
+        placeholder_2d.pyplot(fig2d)
 
-        placeholder.pyplot(fig)
+        # --- NEW: 3D Surface Plot ---
+        fig3d = plt.figure(figsize=(7, 4))
+        ax3d = fig3d.add_subplot(111, projection='3d')
+        Tgrid, Xgrid = np.meshgrid(T, x)
+        ax3d.plot_surface(Xgrid, Tgrid, combined, cmap="viridis", linewidth=0, antialiased=True)
+        ax3d.set_title("3D Quantum Field Surface ψ(x,t)")
+        ax3d.set_xlabel("x")
+        ax3d.set_ylabel("t")
+        ax3d.set_zlabel("Amplitude")
+        ax3d.view_init(elev=30, azim=35)
+        placeholder_3d.pyplot(fig3d)
+
         progress.progress((i + 1) / frames)
 
     progress.progress(1.0)
     st.success("✅ Simulation complete!")
     st.balloons()
 
-    # Summary
-    st.markdown("### Simulation Summary")
-    c1, c2, c3 = st.columns(3)
-    c1.metric("Max particle count", max(counts))
-    c2.metric("Average count", f"{np.mean(counts):.2f}")
-    c3.metric("Frames simulated", frames)
-
 else:
-    st.info("Adjust parameters in the sidebar and click **▶ Run Simulation** to begin.")
+    st.info("Adjust parameters and click ▶ Run Simulation to begin.")
