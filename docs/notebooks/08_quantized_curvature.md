@@ -68,23 +68,7 @@ The curvature also defines phase-space geometry, where compression and expansion
 The temporal stability of curvature describes how oscillations sustain spacetime continuity.
 When damping equals curvature feedback, the system self-regulates.
 
-```python
-import numpy as np
-import matplotlib.pyplot as plt
-
-t = np.linspace(0, 20, 400)
-stability = np.exp(-0.05*t) * np.sin(2*t)
-feedback = np.cos(2*t) * 0.5
-
-plt.figure(figsize=(7,3))
-plt.plot(t, stability, label="Curvature Stability Oscillation")
-plt.plot(t, feedback, label="Feedback Regulation", linestyle='--')
-plt.title("Temporal Stability Curve of Curvature Feedback")
-plt.xlabel("Time (t)")
-plt.ylabel("Amplitude")
-plt.legend()
-plt.show()
-```
+![Curvature](../notebooks/8notebook06.PNG)
 
 
 ⸻
@@ -117,19 +101,7 @@ and reality bends where information meets gravity.”
 9. Visualization Summary
 
 
-```python
-import numpy as np
-import matplotlib.pyplot as plt
-
-fields = ["Graviton", "Chronon", "Cognon"]
-curvatures = [0.75, 0.65, 0.55]
-
-plt.figure(figsize=(5,3))
-plt.bar(fields, curvatures, color=["purple","orange","green"])
-plt.title("Curvature Contribution by Fundamental Field")
-plt.ylabel("Relative Curvature Influence")
-plt.show()
-```
+![Curvature](../notebooks/8notebook07.PNG)
 
 
 ⸻
