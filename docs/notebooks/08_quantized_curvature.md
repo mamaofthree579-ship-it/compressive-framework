@@ -40,7 +40,7 @@ We approximate this interaction using a scaling function:
 \mathcal{K}_{\text{γ-mod}} = \mathcal{K}(x,t) \cdot (1 + \beta \sin(\omega_γ t))
 ]
 
-![Curvature](../notebooks/8notebook03.PNG)
+![Curvature](../notebooks/8notebook03.png)
 
 
 ⸻
