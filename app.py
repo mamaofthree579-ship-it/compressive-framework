@@ -1,13 +1,3 @@
-#!/usr/bin/env python3
-"""
-CF-DPF Simulator (Streamlit)
-Interactive exploration of Grav/Chron/CoG (graviton, chronon, cognon) field compression
-and particle nucleation via constructive interference.
-
-Save as: simulator/app.py
-Run: streamlit run simulator/app.py
-"""
-
 import streamlit as st
 import numpy as np
 import plotly.express as px
