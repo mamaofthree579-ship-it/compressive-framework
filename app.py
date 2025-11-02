@@ -187,4 +187,3 @@ if animate:
 # ---- Footer / tips ----
 st.markdown("---")
 st.markdown("**Tips:** Try increasing `alpha`, `beta`, or `gamma` to see stronger constructive regions. "
-            "Reduce the envelope width to localize compression. Use the detection threshold to tune particle nucleation sensitivity.")
