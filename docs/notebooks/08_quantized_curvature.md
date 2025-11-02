@@ -49,20 +49,7 @@ We approximate this interaction using a scaling function:
 
 Curvature quantization forms energy bands, analogous to discrete harmonic states.
 
-```python
-import numpy as np
-import matplotlib.pyplot as plt
-
-k_values = np.linspace(0, 10, 300)
-quantized_levels = np.sin(k_values)**2 * np.exp(-0.05*k_values)
-
-plt.figure(figsize=(6,3))
-plt.plot(k_values, quantized_levels, color="teal")
-plt.title("Curvature Quantization Spectrum")
-plt.xlabel("Wave Number k")
-plt.ylabel("Energy Level (normalized)")
-plt.show()
-```
+![Curvature](../notebooks/8notebook04.png)
 
 
 ⸻
@@ -71,23 +58,7 @@ plt.show()
 
 The curvature also defines phase-space geometry, where compression and expansion oscillate around stable attractors.
 
-```python
-import numpy as np
-import matplotlib.pyplot as plt
-
-x_vals = np.linspace(-2, 2, 300)
-y_vals = np.linspace(-2, 2, 300)
-X, Y = np.meshgrid(x_vals, y_vals)
-Z = np.sin(X**2 + Y**2)
-
-plt.figure(figsize=(5,5))
-plt.contourf(X, Y, Z, levels=40, cmap='viridis')
-plt.title("Phase-Space Geometry of Curvature Field")
-plt.xlabel("X (Spatial component)")
-plt.ylabel("Y (Momentum-like component)")
-plt.colorbar(label="Curvature Potential")
-plt.show()
-```
+![Curvature](../notebooks/8notebook05.png)
 
 
 ⸻
