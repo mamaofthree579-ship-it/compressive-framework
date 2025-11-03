@@ -31,4 +31,4 @@ In the **human case**, intrinsic temporal stochasticity and multi-frequency feed
 
 ## 🧩 Launch Simulator
 
-[🚀 **Run the Slit Experiment Simulator**](https://compressive-framework-hjffy3tq6gyffp3kww7xcb.streamlit.app/)
+[🚀 **Run the Double-Slit Experiment Simulator**](https://compressive-framework-hjffy3tq6gyffp3kww7xcb.streamlit.app/)
