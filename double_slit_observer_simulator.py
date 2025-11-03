@@ -136,6 +136,7 @@ with st.sidebar:
     detector_sigma = st.slider("Detector sigma (localization)", 0.2, 2.5, 0.7, step=0.1)
     human_noise_amp = st.slider("Human noise amp", 0.0, 0.2, 0.08, step=0.01)
     human_bias_x = st.slider("Human bias (x position)", -4.0, 4.0, -1.0, step=0.2)
+    compare_mode = st.sidebar.checkbox("Side-by-side comparison mode", value=False)
 
 # Build grid
 x_grid, y_grid, X, Y = build_grid(nx_x=nx, nx_y_factor=0.5, xlim=(-8, 8), ylim=(0, 8))
@@ -257,7 +258,11 @@ def render_frame_and_stats(frame_index):
 
     plot_placeholder.pyplot(fig)
     plt.close(fig)
-
+    if compare_mode:
+    render_side_by_side(frame_to_show)
+    else:
+    render_frame_and_stats(frame_to_show)
+    
     # Stats
     total_unique = len(tracked_particles)
     stats_md = f"""
@@ -301,6 +306,37 @@ else:
         # render frame from slider
         frame_to_show = frame_slider if frame_slider is not None else 0
         render_frame_and_stats(int(frame_to_show))
+    def render_side_by_side(frame_index):
+    tphase = 2 * np.pi * (frame_index / max(1, frames))
+
+    # Unobserved baseline
+    psi_base_time = psi_base * np.cos(0.5 * tphase)
+    psi_no_obs = psi_base_time + global_noise * np.random.randn(*psi_base.shape)
+    energy_no = normalize(np.abs(psi_no_obs)**2)
+
+    # Observed version
+    obs = observer_field(X, Y, observer_type if observer_present else 'none',
+                         observer_strength, tphase,
+                         params={"detector_x": 0.0, "detector_sigma": detector_sigma,
+                                 "detector_k": 6.0, "inst_freq": 0.9,
+                                 "human_noise_amp": human_noise_amp,
+                                 "human_bias_x": human_bias_x})
+    psi_obs = psi_base_time + obs + global_noise * np.random.randn(*psi_base.shape)
+    energy_obs = normalize(np.abs(psi_obs)**2)
+
+    fig, axes = plt.subplots(1, 2, figsize=(11, 5))
+    axes[0].imshow(energy_no, origin='lower', cmap='inferno', aspect='auto',
+                   extent=[x_grid[0], x_grid[-1], y_grid[0], y_grid[-1]])
+    axes[0].set_title("Unobserved (Baseline)")
+    axes[1].imshow(energy_obs, origin='lower', cmap='inferno', aspect='auto',
+                   extent=[x_grid[0], x_grid[-1], y_grid[0], y_grid[-1]])
+    axes[1].set_title(f"Observed — {observer_type}")
+    for ax in axes:
+        ax.set_xlabel("x")
+        ax.set_ylabel("y")
+    plt.suptitle(f"Frame {frame_index+1}/{frames} — Comparative View")
+    plot_placeholder.pyplot(fig)
+    plt.close(fig)    
 
 # Export CSV if requested and metrics exist
 if export_csv and metrics_rows:
