@@ -28,3 +28,7 @@ This simulator models the quantum double-slit experiment under the **Compressive
 Observation introduces a harmonic coupling between the observer’s local potential field and the quantum waveform. This coupling reshapes the interference field through additional phase correlations or decoherence harmonics. The effect magnitude and symmetry depend on observer type and interaction strength.
 
 In the **human case**, intrinsic temporal stochasticity and multi-frequency feedback create more complex waveform collapses—consistent with our compressive harmonics theory of participatory curvature.
+
+## 🧩 Launch Simulator
+
+[🚀 **Run the Slit Experiment Simulator**](https://compressive-framework-hjffy3tq6gyffp3kww7xcb.streamlit.app/)
