@@ -38,6 +38,9 @@ extra_javascript:
 
 nav:
   - Home: index.md
+  - Simulators:
+      - Quantum Double Slit: double_slit_observer_simulator.md
+      - Particle Formation Simulator: simulator.md
   - Notebooks:
       - Wave Compression: notebooks/01_wave_compression.md
       - Chronon Dynamics: notebooks/02_chronon_dynamics.md
