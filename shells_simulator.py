@@ -329,7 +329,7 @@ for (let s=0; s<snapshot.shells.length; s++){{
   const loader = new THREE.FontLoader();
   // skip font loading for remote; use simple circle marker
   shellGroup.add(ringGroup);
-}
+}}
 
 // draw inter-shell influence bands (visualize C with lines between mean radii)
 const C = snapshot.C;
