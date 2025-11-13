@@ -315,7 +315,7 @@ for (let s=0; s<snapshot.shells.length; s++){{
   ringGroup.add(ring);
 
   // points
-  for (let i=0; i<shell.x.length; i++){
+  for (let i=0; i<shell.x.length; i++){{
     const a = shell.amps[i];
     const vis = ampToVisual(a);
     const g = new THREE.SphereGeometry(vis.size, 10, 10);
