@@ -357,13 +357,13 @@ scene.add(core);
 
 // animate (gentle pulsing to show amplitude dynamics)
 let t = 0;
-function animate(){
+function animate(){{
   requestAnimationFrame(animate);
   t += 0.02;
   // gently pulse whole group for motion awareness
   shellGroup.rotation.z = 0.002 * t;
   renderer.render(scene, camera);
-}
+}}
 animate();
 
 window.addEventListener('resize', function(){{
