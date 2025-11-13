@@ -303,7 +303,7 @@ function ampToVisual(a){{
 const shellGroup = new THREE.Group();
 scene.add(shellGroup);
 
-for (let s=0; s<snapshot.shells.length; s++){
+for (let s=0; s<snapshot.shells.length; s++){{
   const shell = snapshot.shells[s];
   const ringGroup = new THREE.Group();
   ringGroup.userData.shellIndex = shell.shell_index;
@@ -323,7 +323,7 @@ for (let s=0; s<snapshot.shells.length; s++){
     const pnt = new THREE.Mesh(g, m);
     pnt.position.set(shell.x[i], shell.y[i], 0);
     ringGroup.add(pnt);
-  }
+  }}
 
   // label
   const loader = new THREE.FontLoader();
