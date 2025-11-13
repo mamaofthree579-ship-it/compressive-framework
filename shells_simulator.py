@@ -204,6 +204,7 @@ if st.session_state.run:
     # log periodically
     if int(st.session_state.time / (st.session_state.dt * 6)) != 0 and (len(st.session_state.log) == 0 or st.session_state.log[-1]["t"] < st.session_state.time - 0.1):
         step_n(1)
+    # <--- updated to current Streamlit API --->
     st.rerun()
 
 # ---------------------------
@@ -296,14 +297,14 @@ p.position.set(200,200,200);
 scene.add(p);
 
 // helper to map amplitude -> size & color
-function ampToVisual(a){{
+function ampToVisual(a){
   const minA = 0.1; const maxA = 2.0;
   const t = Math.min(1, Math.max(0, (a - minA) / (maxA - minA)));
   const size = (isMobile?0.9:0.6) + (isMobile?4.5:3.5) * t;
   const col = new THREE.Color();
   col.setHSL(0.52 - 0.18*t, 0.88, 0.45 + 0.28*t);
   return {{ size, color: col }};
-}}
+}
 
 // Draw shells
 const shellGroup = new THREE.Group();
