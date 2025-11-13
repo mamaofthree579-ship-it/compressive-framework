@@ -7,7 +7,7 @@ import json
 import time
 
 st.set_page_config(page_title="Dimensional Shells Simulator", layout="wide")
-st.title("Dimensional Shells — Layered Coupling Simulator")
+st.title("Dimensional Shells — Layered Coupling Simulator (Mobile Optimized)")
 st.markdown(
     "Model shells as coupled oscillator populations. Higher shells influence lower shells via resonance-filtered coupling; "
     "this demonstrates why layers inform each other without collapsing."
@@ -246,15 +246,14 @@ snapshot = build_snapshot_for_viz()
 snapshot_json = json.dumps(snapshot)
 
 # ---------------------------
-# Visualizer HTML (Three.js)
+# Visualizer HTML (Three.js) - mobile optimized
 # ---------------------------
-# note: double braces {{ }} to escape f-string braces for JS object literals
 html = f"""
 <!doctype html>
 <html>
 <head>
 <meta charset="utf-8">
-<title>Dimensional shells viz</title>
+<title>Dimensional shells viz - Mobile Optimized</title>
 <style>
   html,body {{ margin:0; padding:0; height:100%; background:#04121a; color:#dff7fa; overflow:hidden; }}
   #overlay {{ position:absolute; left:12px; top:12px; z-index:999; font-family:monospace; color:#bff; }}
@@ -267,39 +266,46 @@ html = f"""
 
 <script>
 const snapshot = {snapshot_json};
+const isMobile = window.innerWidth < 700;
 
-// Setup
+// Scene + camera
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x04121a);
-const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 2000);
-camera.position.set(0,0,220);
-const renderer = new THREE.WebGLRenderer({{antialias:true, alpha:true}});
+const camera = new THREE.PerspectiveCamera(isMobile?70:60, window.innerWidth/window.innerHeight, 0.1, 2000);
+camera.position.set(0,0, isMobile?140:220);
+
+// Renderer - mobile-safe (disable antialias on many phones)
+const params = {{ alpha: false }};
+if (!isMobile) params.antialias = true;
+const renderer = new THREE.WebGLRenderer(params);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
 renderer.setSize(window.innerWidth*0.98, window.innerHeight*0.95);
+renderer.setClearColor(0x071220, 1);
 document.body.appendChild(renderer.domElement);
 
+// Controls
 const controls = new THREE.OrbitControls(camera, renderer.domElement);
 controls.enablePan = true;
 controls.autoRotate = false;
 
-// lighting
-const ambient = new THREE.AmbientLight(0xffffff, 0.8);
+// Lighting (desktop: stronger PBR; mobile: rely on emissive colors)
+const ambient = new THREE.AmbientLight(0xffffff, isMobile?0.8:1.0);
 scene.add(ambient);
-const p = new THREE.PointLight(0x88ccff, 0.6);
+const p = new THREE.PointLight(0x88ccff, isMobile?0.6:1.4);
 p.position.set(200,200,200);
 scene.add(p);
 
 // helper to map amplitude -> size & color
-function ampToVisual(a){{
+function ampToVisual(a){
   const minA = 0.1; const maxA = 2.0;
   const t = Math.min(1, Math.max(0, (a - minA) / (maxA - minA)));
-  const size = 0.6 + 3.5 * t;
-  // color: low = teal-blue, high = warm-cyan
-  const c = new THREE.Color();
-  c.setHSL(0.52 - 0.18*t, 0.85, 0.45 + 0.2*t);
-  return {{ size, color: c }};
-}}
+  const size = (isMobile?0.9:0.6) + (isMobile?4.5:3.5) * t;
+  const col = new THREE.Color();
+  col.setHSL(0.52 - 0.18*t, 0.88, 0.45 + 0.28*t);
+  return {{ size, color: col }};
+}
 
-// draw shells
+// Draw shells
 const shellGroup = new THREE.Group();
 scene.add(shellGroup);
 
@@ -307,9 +313,12 @@ for (let s=0; s<snapshot.shells.length; s++){{
   const shell = snapshot.shells[s];
   const ringGroup = new THREE.Group();
   ringGroup.userData.shellIndex = shell.shell_index;
-  // ring line
-  const ringGeom = new THREE.RingGeometry(shell.r - 1.0, shell.r + 1.0, 128);
-  const ringMat = new THREE.MeshBasicMaterial({{ color: 0x08343a, side: THREE.DoubleSide, transparent:true, opacity:0.25 }});
+
+  // ring line (thicker and brighter on mobile)
+  const inner = Math.max(0.8, shell.r - (isMobile?2.5:1.0));
+  const outer = shell.r + (isMobile?2.5:1.0);
+  const ringGeom = new THREE.RingGeometry(inner, outer, Math.max(32, shell.x.length));
+  const ringMat = new THREE.MeshBasicMaterial({{ color: 0x0aa9a0, side: THREE.DoubleSide, transparent:true, opacity:isMobile?0.45:0.28 }});
   const ring = new THREE.Mesh(ringGeom, ringMat);
   ring.rotation.x = Math.PI/2;
   ringGroup.add(ring);
@@ -318,29 +327,35 @@ for (let s=0; s<snapshot.shells.length; s++){{
   for (let i=0; i<shell.x.length; i++){{
     const a = shell.amps[i];
     const vis = ampToVisual(a);
-    const g = new THREE.SphereGeometry(vis.size, 10, 10);
-    const m = new THREE.MeshStandardMaterial({{ color: vis.color, emissive: vis.color, emissiveIntensity: 0.4, metalness:0.2, roughness:0.3 }});
-    const pnt = new THREE.Mesh(g, m);
+    const geo = new THREE.SphereGeometry(vis.size, isMobile?8:12, isMobile?8:12);
+
+    // On mobile use MeshBasicMaterial (no lighting) for guaranteed visibility
+    let mat;
+    if (isMobile) {{
+      mat = new THREE.MeshBasicMaterial({{ color: vis.color, transparent:true, opacity:0.95 }});
+    }} else {{
+      mat = new THREE.MeshStandardMaterial({{ color: vis.color, emissive: vis.color, emissiveIntensity: 0.9, metalness:0.25, roughness:0.25 }});
+    }}
+    const pnt = new THREE.Mesh(geo, mat);
     pnt.position.set(shell.x[i], shell.y[i], 0);
     ringGroup.add(pnt);
   }}
 
-  // label
-  const loader = new THREE.FontLoader();
-  // skip font loading for remote; use simple circle marker
   shellGroup.add(ringGroup);
 }}
 
-// draw inter-shell influence bands (visualize C with lines between mean radii)
+// draw inter-shell influence bands (visualize C with translucent tori)
 const C = snapshot.C;
 for (let i=0; i<C.length; i++){{
   for (let j=0; j<C.length; j++){{
     if (C[i][j] > 0.0001 && j>i){{
       const ri = snapshot.shells[i].r;
       const rj = snapshot.shells[j].r;
-      const geom = new THREE.TorusGeometry((ri+rj)/2, Math.abs(rj-ri)/8, 10, 64);
+      const radius = (ri + rj) / 2;
+      const thickness = Math.max(1.0, Math.abs(rj - ri) / 7);
+      const geom = new THREE.TorusGeometry(radius, thickness, 10, 64);
       const alpha = Math.min(0.9, C[i][j]*2.5);
-      const mat = new THREE.MeshBasicMaterial({{ color: 0x4fe0da, transparent:true, opacity: alpha }});
+      const mat = new THREE.MeshBasicMaterial({{ color: 0x4fe0da, transparent:true, opacity: Math.max(0.12, alpha) }});
       const tor = new THREE.Mesh(geom, mat);
       tor.rotation.x = Math.PI/2 * 0.98;
       scene.add(tor);
@@ -349,7 +364,7 @@ for (let i=0; i<C.length; i++){{
 }}
 
 // subtle center core
-const coreGeom = new THREE.CircleGeometry(8, 32);
+const coreGeom = new THREE.CircleGeometry(isMobile?10:8, 32);
 const coreMat = new THREE.MeshBasicMaterial({{ color: 0x022a2c }});
 const core = new THREE.Mesh(coreGeom, coreMat);
 core.rotation.x = Math.PI/2;
@@ -360,16 +375,17 @@ let t = 0;
 function animate(){{
   requestAnimationFrame(animate);
   t += 0.02;
-  // gently pulse whole group for motion awareness
+  // gently rotate group a tiny bit
   shellGroup.rotation.z = 0.002 * t;
   renderer.render(scene, camera);
 }}
 animate();
 
+// responsive resize
 window.addEventListener('resize', function(){{
-  renderer.setSize(window.innerWidth*0.98, window.innerHeight*0.95);
-  camera.aspect = window.innerWidth/window.innerHeight;
+  camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth*0.98, window.innerHeight*0.95);
 }});
 </script>
 </body>
