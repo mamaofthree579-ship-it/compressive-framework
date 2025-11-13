@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-parameter_sweep_double_slit_3d_time_recorder.py
+parameter_sweep_double_slit_3d_time_recorder_v2.py
 
 Compressive Framework Quantum Double-Slit Simulator
 - 3D parameter sweep
-- Time-evolution visualizer
-- Optional GIF/MP4 export
+- Time evolution visualizer
+- GIF + MP4 export with timestamp overlays
 """
 
 import streamlit as st
@@ -15,42 +15,53 @@ import plotly.graph_objects as go
 from scipy import ndimage
 import imageio
 import os
+from moviepy.editor import ImageSequenceClip
 
-st.set_page_config(page_title="Quantum Double-Slit — 3D Sweep + Recorder", layout="wide")
+# ───────────────────────────────────────────────
+# Streamlit setup
+# ───────────────────────────────────────────────
+st.set_page_config(page_title="Quantum Double-Slit — 3D Sweep + Recorder v2", layout="wide")
 
-st.title("🌌 Quantum Double-Slit — 3D Sweep + Temporal Recorder")
+st.title("🌌 Quantum Double-Slit — 3D Sweep + Temporal Recorder (v2)")
 st.markdown(
 """
-This simulator visualizes **observer-induced quantum interference collapse**  
-and lets you record the entire **wave evolution sequence** as a GIF or MP4.  
-Adjust parameters to explore how observation alters particle formation.
+This simulator explores **observer-induced decoherence** in the **quantum double-slit experiment**,  
+and now includes **MP4 & GIF recording with timestamp overlays**.
 """
 )
 
+# ───────────────────────────────────────────────
 # Sidebar controls
+# ───────────────────────────────────────────────
 st.sidebar.header("🎛 Simulation Controls")
 nx = st.sidebar.slider("Grid Resolution", 80, 200, 120, step=20)
 frames = st.sidebar.slider("Frames per Run", 10, 60, 30, step=10)
 observer_type = st.sidebar.selectbox("Observer Type", ["detector", "human", "instrument"])
 run_sweep = st.sidebar.button("Run 3D Sweep")
-record_gif = st.sidebar.button("🎥 Record Simulation")
+record_gif = st.sidebar.button("🎥 Record Simulation (GIF)")
+record_mp4 = st.sidebar.button("🎬 Record Simulation (MP4)")
 
+# ───────────────────────────────────────────────
 # Parameters
+# ───────────────────────────────────────────────
 obs_strengths = np.linspace(0.0, 2.5, 6)
 mem_couplings = np.linspace(0.0, 1.0, 6)
 residual_decays = np.linspace(0.90, 0.99, 4)
 
-# Detector & human parameters
 detector_sigma = 0.8
 human_noise_amp = 0.15
 human_bias_x = -0.5
 
-# Create grid
+# ───────────────────────────────────────────────
+# Spatial grid
+# ───────────────────────────────────────────────
 x = np.linspace(-6, 6, nx)
 y = np.linspace(0, 6, nx // 2)
 X, Y = np.meshgrid(x, y)
 
-# Define fields
+# ───────────────────────────────────────────────
+# Field definitions
+# ───────────────────────────────────────────────
 def base_field(X, Y, sep=1.0, k=2.2):
     slit1 = np.exp(-((X + sep)**2 + (Y - 0.5)**2) / 0.25)
     slit2 = np.exp(-((X - sep)**2 + (Y - 0.5)**2) / 0.25)
@@ -112,8 +123,9 @@ def run_simulation(observer_strength, memory_coupling, residual_decay, frames=fr
 
     return np.mean(particle_counts), frames_data
 
-
-# === 3D Sweep ===
+# ───────────────────────────────────────────────
+# Parameter sweep visualization
+# ───────────────────────────────────────────────
 if run_sweep:
     st.info("Running 3D parameter sweep... please wait ⏳")
 
@@ -132,7 +144,6 @@ if run_sweep:
 
     st.success("✅ Sweep completed")
 
-    # 3D Plot
     data = np.array(results)
     obs_vals, mem_vals, decay_vals, particle_counts = data.T
 
@@ -158,9 +169,11 @@ if run_sweep:
 
     st.plotly_chart(fig, use_container_width=True)
 
-
-# === Time Evolution + Recorder ===
+# ───────────────────────────────────────────────
+# Time evolution + Recorder
+# ───────────────────────────────────────────────
 st.header("🌀 Temporal Field Evolution")
+
 obs_choice = st.select_slider("Observer Strength", obs_strengths.tolist(), value=1.0)
 mem_choice = st.select_slider("Memory Coupling", mem_couplings.tolist(), value=0.5)
 decay_choice = st.select_slider("Residual Decay", residual_decays.tolist(), value=0.95)
@@ -176,36 +189,63 @@ ax.set_title(f"Frame {show_time+1}/{frames} | s={obs_choice}, λ={mem_choice}, �
 plt.colorbar(im, ax=ax, label="Curvature Intensity")
 st.pyplot(fig2)
 
-# Recording feature
-if record_gif:
-    st.info("Recording simulation as GIF — please wait...")
+# ───────────────────────────────────────────────
+# GIF / MP4 Recording
+# ───────────────────────────────────────────────
+def record_simulation(frames_data, fmt="gif"):
+    st.info(f"Recording simulation as {fmt.upper()} — please wait...")
     images = []
-    for frame in frames_data:
+    os.makedirs("frames_tmp", exist_ok=True)
+
+    for i, frame in enumerate(frames_data):
         fig, ax = plt.subplots(figsize=(5, 4))
         ax.imshow(frame, cmap='plasma', extent=[-6, 6, 0, 6], origin='lower')
-        ax.set_axis_off()
-        plt.tight_layout(pad=0)
-        filename = f"frame_{len(images)}.png"
-        plt.savefig(filename, dpi=100, bbox_inches='tight', pad_inches=0)
+        ax.set_title(f"t={i+1}/{len(frames_data)} | s={obs_choice}, λ={mem_choice}, γ={decay_choice}")
+        ax.set_xlabel("X-axis")
+        ax.set_ylabel("Y-axis")
+        plt.tight_layout()
+        filename = f"frames_tmp/frame_{i:03d}.png"
+        plt.savefig(filename, dpi=100)
         plt.close(fig)
         images.append(imageio.imread(filename))
 
-    gif_name = "quantum_double_slit_sim.gif"
-    imageio.mimsave(gif_name, images, fps=8)
-    for f in os.listdir():
-        if f.startswith("frame_") and f.endswith(".png"):
-            os.remove(f)
+    if fmt == "gif":
+        gif_name = "quantum_double_slit_sim.gif"
+        imageio.mimsave(gif_name, images, fps=8)
+        out_file = gif_name
+    else:
+        clip = ImageSequenceClip("frames_tmp", fps=8)
+        mp4_name = "quantum_double_slit_sim.mp4"
+        clip.write_videofile(mp4_name, codec="libx264", audio=False, verbose=False, logger=None)
+        out_file = mp4_name
 
-    st.success("✅ Recording complete! Click below to download.")
-    with open(gif_name, "rb") as f:
-        st.download_button("📥 Download Simulation GIF", f, file_name=gif_name)
+    for f in os.listdir("frames_tmp"):
+        os.remove(os.path.join("frames_tmp", f))
+    os.rmdir("frames_tmp")
 
+    return out_file
+
+if record_gif:
+    out_file = record_simulation(frames_data, fmt="gif")
+    st.success("✅ GIF recording complete!")
+    with open(out_file, "rb") as f:
+        st.download_button("📥 Download Simulation GIF", f, file_name=out_file)
+
+if record_mp4:
+    out_file = record_simulation(frames_data, fmt="mp4")
+    st.success("✅ MP4 recording complete!")
+    with open(out_file, "rb") as f:
+        st.download_button("🎬 Download Simulation MP4", f, file_name=out_file)
+
+# ───────────────────────────────────────────────
+# Interpretation
+# ───────────────────────────────────────────────
 st.markdown(
 """
 ### 🔬 Interpretation
-- **Human observers** introduce stochastic nonlinearities → complex decoherence.
-- **Instrumental observation** produces structured damping.
-- **Memory coupling** delays collapse.
-- Exported GIF captures **temporal decoherence buildup**.
+- **Detectors** dampen interference amplitude.
+- **Instruments** produce structured interference modulation.
+- **Humans** introduce stochastic nonlinear decoherence.
+- **GIF/MP4 recording** captures the temporal buildup of interference collapse.
 """
 )
