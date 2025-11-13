@@ -204,7 +204,7 @@ if st.session_state.run:
     # log periodically
     if int(st.session_state.time / (st.session_state.dt * 6)) != 0 and (len(st.session_state.log) == 0 or st.session_state.log[-1]["t"] < st.session_state.time - 0.1):
         step_n(1)
-    st.experimental_rerun()
+    st.rerun()
 
 # ---------------------------
 # Build snapshot for visualization
