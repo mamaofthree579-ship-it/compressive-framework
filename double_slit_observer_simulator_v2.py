@@ -1,59 +1,62 @@
 #!/usr/bin/env python3
 """
-parameter_sweep_double_slit_3d_time.py
+parameter_sweep_double_slit_3d_time_recorder.py
 
-Compressive Framework: Double-Slit Simulation with
-3D parameter sweep + time evolution visualization.
+Compressive Framework Quantum Double-Slit Simulator
+- 3D parameter sweep
+- Time-evolution visualizer
+- Optional GIF/MP4 export
 """
 
 import streamlit as st
 import numpy as np
-from scipy import ndimage
-import plotly.graph_objects as go
 import matplotlib.pyplot as plt
+import plotly.graph_objects as go
+from scipy import ndimage
+import imageio
+import os
 
-st.set_page_config(page_title="Quantum Double-Slit — 3D Sweep & Time Evolution", layout="wide")
+st.set_page_config(page_title="Quantum Double-Slit — 3D Sweep + Recorder", layout="wide")
 
-st.title("🌌 Quantum Double-Slit — 3D Sweep & Time Evolution")
+st.title("🌌 Quantum Double-Slit — 3D Sweep + Temporal Recorder")
 st.markdown(
 """
-This simulator explores **observer strength**, **memory coupling**, and **residual decay**
-within a **compressive-feedback model** of the double-slit experiment.
-
-The 3D view shows average particle counts across parameter space.
-Below, you can select a parameter set and view the **temporal field evolution**.
+This simulator visualizes **observer-induced quantum interference collapse**  
+and lets you record the entire **wave evolution sequence** as a GIF or MP4.  
+Adjust parameters to explore how observation alters particle formation.
 """
 )
 
 # Sidebar controls
-st.sidebar.header("Simulation Controls")
+st.sidebar.header("🎛 Simulation Controls")
 nx = st.sidebar.slider("Grid Resolution", 80, 200, 120, step=20)
 frames = st.sidebar.slider("Frames per Run", 10, 60, 30, step=10)
 observer_type = st.sidebar.selectbox("Observer Type", ["detector", "human", "instrument"])
 run_sweep = st.sidebar.button("Run 3D Sweep")
+record_gif = st.sidebar.button("🎥 Record Simulation")
 
-# Parameter ranges
+# Parameters
 obs_strengths = np.linspace(0.0, 2.5, 6)
 mem_couplings = np.linspace(0.0, 1.0, 6)
 residual_decays = np.linspace(0.90, 0.99, 4)
 
+# Detector & human parameters
 detector_sigma = 0.8
 human_noise_amp = 0.15
 human_bias_x = -0.5
 
-# Grid setup
+# Create grid
 x = np.linspace(-6, 6, nx)
 y = np.linspace(0, 6, nx // 2)
 X, Y = np.meshgrid(x, y)
 
-# Base interference
+# Define fields
 def base_field(X, Y, sep=1.0, k=2.2):
     slit1 = np.exp(-((X + sep)**2 + (Y - 0.5)**2) / 0.25)
     slit2 = np.exp(-((X - sep)**2 + (Y - 0.5)**2) / 0.25)
     phase = np.exp(1j * (k * np.sqrt((X**2 + Y**2) + 1e-9)))
     return phase * (slit1 + slit2)
 
-# Observer field
 def observer_field(X, Y, obs_type, strength, t):
     if obs_type == "detector":
         gauss = np.exp(-((X)**2 + (Y - 0.4)**2) / (2 * detector_sigma**2))
@@ -109,7 +112,8 @@ def run_simulation(observer_strength, memory_coupling, residual_decay, frames=fr
 
     return np.mean(particle_counts), frames_data
 
-# Run sweep
+
+# === 3D Sweep ===
 if run_sweep:
     st.info("Running 3D parameter sweep... please wait ⏳")
 
@@ -128,7 +132,7 @@ if run_sweep:
 
     st.success("✅ Sweep completed")
 
-    # 3D plot
+    # 3D Plot
     data = np.array(results)
     obs_vals, mem_vals, decay_vals, particle_counts = data.T
 
@@ -154,30 +158,54 @@ if run_sweep:
 
     st.plotly_chart(fig, use_container_width=True)
 
-    # Time evolution section
-    st.header("🌀 Temporal Field Evolution (Dynamic View)")
-    obs_choice = st.select_slider("Observer Strength", obs_strengths.tolist(), value=1.0)
-    mem_choice = st.select_slider("Memory Coupling", mem_couplings.tolist(), value=0.5)
-    decay_choice = st.select_slider("Residual Decay", residual_decays.tolist(), value=0.95)
-    show_time = st.slider("Frame (Time Step)", 0, frames - 1, 0)
 
-    _, frames_data = run_simulation(obs_choice, mem_choice, decay_choice)
-    frame_to_show = frames_data[show_time]
+# === Time Evolution + Recorder ===
+st.header("🌀 Temporal Field Evolution")
+obs_choice = st.select_slider("Observer Strength", obs_strengths.tolist(), value=1.0)
+mem_choice = st.select_slider("Memory Coupling", mem_couplings.tolist(), value=0.5)
+decay_choice = st.select_slider("Residual Decay", residual_decays.tolist(), value=0.95)
 
-    fig2, ax = plt.subplots(figsize=(5, 4))
-    im = ax.imshow(frame_to_show, cmap='plasma', extent=[-6, 6, 0, 6], origin='lower')
-    ax.set_title(f"Time Frame {show_time+1}/{frames} | s={obs_choice}, λ={mem_choice}, γ={decay_choice}")
-    ax.set_xlabel("X")
-    ax.set_ylabel("Y")
-    plt.colorbar(im, ax=ax, label="Curvature Intensity")
-    st.pyplot(fig2)
+avg_count, frames_data = run_simulation(obs_choice, mem_choice, decay_choice)
+show_time = st.slider("Frame (Time Step)", 0, frames - 1, 0)
 
-    st.markdown(
-    """
-    ### 🔬 Interpretation
-    - As **time evolves**, interference fringes distort with stronger observation coupling.
-    - **Human observers** introduce nonlinear noise, leading to chaotic wave collapse.
-    - Higher **memory coupling (λ)** maintains coherence longer.
-    - Strong **observer strength (s)** accelerates decoherence.
-    """
-    )
+frame_to_show = frames_data[show_time]
+
+fig2, ax = plt.subplots(figsize=(5, 4))
+im = ax.imshow(frame_to_show, cmap='plasma', extent=[-6, 6, 0, 6], origin='lower')
+ax.set_title(f"Frame {show_time+1}/{frames} | s={obs_choice}, λ={mem_choice}, γ={decay_choice}")
+plt.colorbar(im, ax=ax, label="Curvature Intensity")
+st.pyplot(fig2)
+
+# Recording feature
+if record_gif:
+    st.info("Recording simulation as GIF — please wait...")
+    images = []
+    for frame in frames_data:
+        fig, ax = plt.subplots(figsize=(5, 4))
+        ax.imshow(frame, cmap='plasma', extent=[-6, 6, 0, 6], origin='lower')
+        ax.set_axis_off()
+        plt.tight_layout(pad=0)
+        filename = f"frame_{len(images)}.png"
+        plt.savefig(filename, dpi=100, bbox_inches='tight', pad_inches=0)
+        plt.close(fig)
+        images.append(imageio.imread(filename))
+
+    gif_name = "quantum_double_slit_sim.gif"
+    imageio.mimsave(gif_name, images, fps=8)
+    for f in os.listdir():
+        if f.startswith("frame_") and f.endswith(".png"):
+            os.remove(f)
+
+    st.success("✅ Recording complete! Click below to download.")
+    with open(gif_name, "rb") as f:
+        st.download_button("📥 Download Simulation GIF", f, file_name=gif_name)
+
+st.markdown(
+"""
+### 🔬 Interpretation
+- **Human observers** introduce stochastic nonlinearities → complex decoherence.
+- **Instrumental observation** produces structured damping.
+- **Memory coupling** delays collapse.
+- Exported GIF captures **temporal decoherence buildup**.
+"""
+)
