@@ -334,8 +334,8 @@ for (let s=0; s<snapshot.shells.length; s++){{
 // draw inter-shell influence bands (visualize C with lines between mean radii)
 const C = snapshot.C;
 for (let i=0; i<C.length; i++){{
-  for (let j=0; j<C.length; j++){
-    if (C[i][j] > 0.0001 && j>i){
+  for (let j=0; j<C.length; j++){{
+    if (C[i][j] > 0.0001 && j>i){{
       const ri = snapshot.shells[i].r;
       const rj = snapshot.shells[j].r;
       const geom = new THREE.TorusGeometry((ri+rj)/2, Math.abs(rj-ri)/8, 10, 64);
