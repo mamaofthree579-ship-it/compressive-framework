@@ -1,77 +1,59 @@
 #!/usr/bin/env python3
+"""
+parameter_sweep_double_slit_3d.py
+
+3D parameter sweep for the Compressive Framework double-slit simulation.
+Explores how observer strength, memory coupling, and residual decay
+jointly influence emergent particle formation patterns.
+"""
+
 import streamlit as st
 import numpy as np
-import matplotlib.pyplot as plt
 from scipy import ndimage
-import io
-import csv
+import plotly.graph_objects as go
 
-st.set_page_config(page_title="Parameter Sweep — Double Slit", layout="wide")
-st.title("🧩 Double-Slit Parameter Sweep")
+st.set_page_config(page_title="3D Parameter Sweep — Double Slit", layout="wide")
+st.title("🌌 3D Parameter Sweep — Double-Slit Simulation")
 st.markdown(
     """
-    This app runs multiple simulated double-slit scenarios varying observer and memory parameters.
-    Each cell in the heatmap shows the **average detected particle count** across frames.
+    This simulator explores how *observer strength*, *memory coupling*, and *residual decay*
+    collectively shape the emergence of particles in the Compressive Framework model of
+    the double-slit experiment.
 
-    Parameters explored:
-    - **Observer strength (s_obs)**
-    - **Memory coupling (λ_mem)**
-    - **Residual decay (γ)**
-
-    The simulation model is simplified from the full app for speed but preserves wave interference,
-    observer influence, and residual memory behavior.
+    Each point in the 3D space represents one simulation run.
+    Color = average number of detected particles.
     """
 )
 
-# -----------------------------------
-# Sidebar configuration
-# -----------------------------------
-st.sidebar.header("Sweep configuration")
+# Sidebar controls
+st.sidebar.header("Simulation Controls")
+nx = st.sidebar.slider("Grid Resolution", 80, 200, 120, step=20)
+frames = st.sidebar.slider("Frames per Run", 10, 60, 30, step=10)
+observer_type = st.sidebar.selectbox("Observer Type", ["detector", "human", "instrument"])
+run_sweep = st.sidebar.button("Run 3D Sweep")
 
-# Grid controls
-nx = st.sidebar.slider("Grid resolution", 80, 200, 120, step=20)
-frames = st.sidebar.slider("Frames per run", 10, 100, 40, step=10)
+# Parameter ranges
+obs_strengths = np.linspace(0.0, 2.5, 6)
+mem_couplings = np.linspace(0.0, 1.0, 6)
+residual_decays = np.linspace(0.90, 0.99, 4)
 
-# Sweep range controls
-s_obs_range = np.linspace(
-    st.sidebar.number_input("Observer strength min", 0.0, 3.0, 0.0, step=0.1),
-    st.sidebar.number_input("Observer strength max", 0.0, 3.0, 2.0, step=0.1),
-    st.sidebar.slider("Observer strength steps", 2, 10, 5),
-)
-mem_coupling_range = np.linspace(
-    st.sidebar.number_input("Memory coupling min", 0.0, 1.0, 0.0, step=0.05),
-    st.sidebar.number_input("Memory coupling max", 0.0, 1.0, 1.0, step=0.05),
-    st.sidebar.slider("Memory coupling steps", 2, 10, 5),
-)
-residual_decay_range = np.linspace(
-    st.sidebar.number_input("Residual decay min", 0.8, 1.0, 0.9, step=0.005),
-    st.sidebar.number_input("Residual decay max", 0.8, 1.0, 0.99, step=0.005),
-    st.sidebar.slider("Residual decay steps", 2, 10, 4),
-)
-
-# Observer type
-observer_type = st.sidebar.selectbox("Observer type", ["detector", "human", "instrument"])
 detector_sigma = 0.8
 human_noise_amp = 0.15
 human_bias_x = -0.5
 
-# Run button
-run_sweep = st.sidebar.button("Run parameter sweep")
-export_csv = st.sidebar.checkbox("Enable CSV export", value=True)
-
-# -----------------------------------
-# Core model
-# -----------------------------------
+# Grid setup
 x = np.linspace(-6, 6, nx)
 y = np.linspace(0, 6, nx // 2)
 X, Y = np.meshgrid(x, y)
 
+# Base wave interference
 def base_field(X, Y, sep=1.0, k=2.2):
     slit1 = np.exp(-((X + sep)**2 + (Y-0.5)**2) / 0.25)
     slit2 = np.exp(-((X - sep)**2 + (Y-0.5)**2) / 0.25)
     phase = np.exp(1j * (k * np.sqrt((X**2 + Y**2) + 1e-9)))
     return phase * (slit1 + slit2)
 
+# Observer modulation
 def observer_field(X, Y, obs_type, strength, t):
     if obs_type == "detector":
         gauss = np.exp(-((X)**2 + (Y-0.4)**2) / (2 * detector_sigma**2))
@@ -85,6 +67,7 @@ def observer_field(X, Y, obs_type, strength, t):
         return strength * (rand_comp * bias + noise)
     return np.zeros_like(X)
 
+# Helpers
 def normalize(arr):
     amin, amax = np.nanmin(arr), np.nanmax(arr)
     if amax - amin < 1e-12:
@@ -106,7 +89,8 @@ def detect_particles(field, sensitivity=1.2, min_area=6):
             count += 1
     return count
 
-def run_single_sim(observer_strength, memory_coupling, residual_decay):
+# Core simulation
+def run_simulation(observer_strength, memory_coupling, residual_decay):
     psi_base = base_field(X, Y)
     residual = np.zeros_like(psi_base.real)
     particle_counts = []
@@ -121,60 +105,65 @@ def run_single_sim(observer_strength, memory_coupling, residual_decay):
         residual = residual * residual_decay + 0.02 * energy_n
         count = detect_particles(residual)
         particle_counts.append(count)
-    return np.mean(particle_counts), np.std(particle_counts)
+    return np.mean(particle_counts)
 
-# -----------------------------------
-# Parameter sweep
-# -----------------------------------
+# Main run
 if run_sweep:
-    st.info("Running parameter sweep — this may take several minutes depending on grid size.")
-    progress = st.progress(0)
+    st.info("Running 3D parameter sweep... please wait ⏳")
+
+    total_points = len(obs_strengths) * len(mem_couplings) * len(residual_decays)
     results = []
-    total_runs = len(s_obs_range) * len(mem_coupling_range) * len(residual_decay_range)
-    completed = 0
+    progress = st.progress(0)
+    done = 0
 
-    # For now: vary observer_strength vs. memory_coupling, fix residual_decay to median
-    decay_fixed = np.median(residual_decay_range)
-    z_data = np.zeros((len(s_obs_range), len(mem_coupling_range)))
+    for obs in obs_strengths:
+        for mem in mem_couplings:
+            for decay in residual_decays:
+                avg_particles = run_simulation(obs, mem, decay)
+                results.append((obs, mem, decay, avg_particles))
+                done += 1
+                progress.progress(done / total_points)
 
-    for i, s_obs in enumerate(s_obs_range):
-        for j, mem_c in enumerate(mem_coupling_range):
-            avg, std = run_single_sim(s_obs, mem_c, decay_fixed)
-            z_data[i, j] = avg
-            results.append({
-                "observer_strength": s_obs,
-                "memory_coupling": mem_c,
-                "residual_decay": decay_fixed,
-                "avg_particles": avg,
-                "std_particles": std
-            })
-            completed += 1
-            progress.progress(completed / total_runs)
+    st.success("✅ Sweep completed")
 
-    # -----------------------------------
-    # Heatmap output
-    # -----------------------------------
-    fig, ax = plt.subplots(figsize=(7,5))
-    im = ax.imshow(z_data, origin="lower", cmap="plasma", aspect="auto",
-                   extent=[mem_coupling_range[0], mem_coupling_range[-1],
-                           s_obs_range[0], s_obs_range[-1]])
-    fig.colorbar(im, ax=ax, label="Avg. particle detections")
-    ax.set_xlabel("Memory coupling (λ_mem)")
-    ax.set_ylabel("Observer strength (s_obs)")
-    ax.set_title(f"Average particle count — observer: {observer_type}, residual_decay={decay_fixed:.3f}")
-    st.pyplot(fig)
-    plt.close(fig)
+    # Convert to numpy arrays for plotting
+    data = np.array(results)
+    obs_vals, mem_vals, decay_vals, particle_counts = data.T
 
-    # -----------------------------------
-    # Optional CSV export
-    # -----------------------------------
-    if export_csv and results:
-        csv_buf = io.StringIO()
-        writer = csv.DictWriter(csv_buf, fieldnames=list(results[0].keys()))
-        writer.writeheader()
-        writer.writerows(results)
-        csv_bytes = csv_buf.getvalue().encode("utf-8")
-        st.download_button("📥 Download Sweep Data (CSV)", csv_bytes, "parameter_sweep_results.csv", mime="text/csv")
+    # Create 3D scatter plot
+    fig = go.Figure(data=[go.Scatter3d(
+        x=obs_vals,
+        y=mem_vals,
+        z=decay_vals,
+        mode='markers',
+        marker=dict(
+            size=6,
+            color=particle_counts,
+            colorscale='Viridis',
+            colorbar=dict(title='Avg Particle Count'),
+            opacity=0.8
+        )
+    )])
 
-    st.success("Sweep completed.")
-    st.markdown("**Interpretation tip:** Brighter areas = higher particle yield → stronger measurement/feedback effects.")
+    fig.update_layout(
+        scene=dict(
+            xaxis_title='Observer Strength (s_obs)',
+            yaxis_title='Memory Coupling (λ_mem)',
+            zaxis_title='Residual Decay (γ)',
+        ),
+        title=f"3D Parameter Influence — Observer: {observer_type.capitalize()}",
+        margin=dict(l=0, r=0, b=0, t=40)
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
+
+    # Interpretive summary
+    st.markdown(
+        """
+        ### 🔍 Interpretation
+        - **Bright regions:** strong particle collapse due to feedback resonance.
+        - **Dark regions:** coherent interference retained (wave-dominant).
+        - **High λ_mem & γ:** energy builds slowly but persists — sustained observation bias.
+        - **Human observers:** introduce higher entropy due to stochastic noise, leading to non-linear collapse dynamics.
+        """
+    )
