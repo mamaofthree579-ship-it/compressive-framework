@@ -1,28 +1,28 @@
 #!/usr/bin/env python3
 """
-parameter_sweep_double_slit_3d.py
+parameter_sweep_double_slit_3d_time.py
 
-3D parameter sweep for the Compressive Framework double-slit simulation.
-Explores how observer strength, memory coupling, and residual decay
-jointly influence emergent particle formation patterns.
+Compressive Framework: Double-Slit Simulation with
+3D parameter sweep + time evolution visualization.
 """
 
 import streamlit as st
 import numpy as np
 from scipy import ndimage
 import plotly.graph_objects as go
+import matplotlib.pyplot as plt
 
-st.set_page_config(page_title="3D Parameter Sweep — Double Slit", layout="wide")
-st.title("🌌 3D Parameter Sweep — Double-Slit Simulation")
+st.set_page_config(page_title="Quantum Double-Slit — 3D Sweep & Time Evolution", layout="wide")
+
+st.title("🌌 Quantum Double-Slit — 3D Sweep & Time Evolution")
 st.markdown(
-    """
-    This simulator explores how *observer strength*, *memory coupling*, and *residual decay*
-    collectively shape the emergence of particles in the Compressive Framework model of
-    the double-slit experiment.
+"""
+This simulator explores **observer strength**, **memory coupling**, and **residual decay**
+within a **compressive-feedback model** of the double-slit experiment.
 
-    Each point in the 3D space represents one simulation run.
-    Color = average number of detected particles.
-    """
+The 3D view shows average particle counts across parameter space.
+Below, you can select a parameter set and view the **temporal field evolution**.
+"""
 )
 
 # Sidebar controls
@@ -46,28 +46,27 @@ x = np.linspace(-6, 6, nx)
 y = np.linspace(0, 6, nx // 2)
 X, Y = np.meshgrid(x, y)
 
-# Base wave interference
+# Base interference
 def base_field(X, Y, sep=1.0, k=2.2):
-    slit1 = np.exp(-((X + sep)**2 + (Y-0.5)**2) / 0.25)
-    slit2 = np.exp(-((X - sep)**2 + (Y-0.5)**2) / 0.25)
+    slit1 = np.exp(-((X + sep)**2 + (Y - 0.5)**2) / 0.25)
+    slit2 = np.exp(-((X - sep)**2 + (Y - 0.5)**2) / 0.25)
     phase = np.exp(1j * (k * np.sqrt((X**2 + Y**2) + 1e-9)))
     return phase * (slit1 + slit2)
 
-# Observer modulation
+# Observer field
 def observer_field(X, Y, obs_type, strength, t):
     if obs_type == "detector":
-        gauss = np.exp(-((X)**2 + (Y-0.4)**2) / (2 * detector_sigma**2))
+        gauss = np.exp(-((X)**2 + (Y - 0.4)**2) / (2 * detector_sigma**2))
         return strength * gauss * np.sin(6.0 * X + 1.5 * np.sin(t))
     if obs_type == "instrument":
-        return strength * 0.6 * np.sin(0.8 * X + 0.3 * np.cos(0.5 * t)) * np.exp(-0.15*(X**2 + Y**2))
+        return strength * 0.6 * np.sin(0.8 * X + 0.3 * np.cos(0.5 * t)) * np.exp(-0.15 * (X**2 + Y**2))
     if obs_type == "human":
-        rand_comp = np.sin(1.8*X + 2.5*Y + 0.9*t) + 0.5*np.cos(2.2*X - 1.2*Y + 0.3*t)
+        rand_comp = np.sin(1.8 * X + 2.5 * Y + 0.9 * t) + 0.5 * np.cos(2.2 * X - 1.2 * Y + 0.3 * t)
         bias = np.exp(-((X - human_bias_x)**2 + Y**2) / 2.2)
         noise = human_noise_amp * np.random.randn(*X.shape)
         return strength * (rand_comp * bias + noise)
     return np.zeros_like(X)
 
-# Helpers
 def normalize(arr):
     amin, amax = np.nanmin(arr), np.nanmax(arr)
     if amax - amin < 1e-12:
@@ -89,13 +88,14 @@ def detect_particles(field, sensitivity=1.2, min_area=6):
             count += 1
     return count
 
-# Core simulation
-def run_simulation(observer_strength, memory_coupling, residual_decay):
+def run_simulation(observer_strength, memory_coupling, residual_decay, frames=frames):
     psi_base = base_field(X, Y)
     residual = np.zeros_like(psi_base.real)
     particle_counts = []
+    frames_data = []
+
     for f in range(frames):
-        t = 2*np.pi*f/frames
+        t = 2 * np.pi * f / frames
         psi_t = psi_base * np.cos(0.4 * t)
         obs = observer_field(X, Y, observer_type, observer_strength, t)
         mem_feedback = memory_coupling * (residual - np.mean(residual))
@@ -105,9 +105,11 @@ def run_simulation(observer_strength, memory_coupling, residual_decay):
         residual = residual * residual_decay + 0.02 * energy_n
         count = detect_particles(residual)
         particle_counts.append(count)
-    return np.mean(particle_counts)
+        frames_data.append(residual.copy())
 
-# Main run
+    return np.mean(particle_counts), frames_data
+
+# Run sweep
 if run_sweep:
     st.info("Running 3D parameter sweep... please wait ⏳")
 
@@ -119,28 +121,23 @@ if run_sweep:
     for obs in obs_strengths:
         for mem in mem_couplings:
             for decay in residual_decays:
-                avg_particles = run_simulation(obs, mem, decay)
+                avg_particles, _ = run_simulation(obs, mem, decay)
                 results.append((obs, mem, decay, avg_particles))
                 done += 1
                 progress.progress(done / total_points)
 
     st.success("✅ Sweep completed")
 
-    # Convert to numpy arrays for plotting
+    # 3D plot
     data = np.array(results)
     obs_vals, mem_vals, decay_vals, particle_counts = data.T
 
-    # Create 3D scatter plot
     fig = go.Figure(data=[go.Scatter3d(
-        x=obs_vals,
-        y=mem_vals,
-        z=decay_vals,
+        x=obs_vals, y=mem_vals, z=decay_vals,
         mode='markers',
         marker=dict(
-            size=6,
-            color=particle_counts,
-            colorscale='Viridis',
-            colorbar=dict(title='Avg Particle Count'),
+            size=6, color=particle_counts,
+            colorscale='Viridis', colorbar=dict(title='Avg Particle Count'),
             opacity=0.8
         )
     )])
@@ -157,13 +154,30 @@ if run_sweep:
 
     st.plotly_chart(fig, use_container_width=True)
 
-    # Interpretive summary
+    # Time evolution section
+    st.header("🌀 Temporal Field Evolution (Dynamic View)")
+    obs_choice = st.select_slider("Observer Strength", obs_strengths.tolist(), value=1.0)
+    mem_choice = st.select_slider("Memory Coupling", mem_couplings.tolist(), value=0.5)
+    decay_choice = st.select_slider("Residual Decay", residual_decays.tolist(), value=0.95)
+    show_time = st.slider("Frame (Time Step)", 0, frames - 1, 0)
+
+    _, frames_data = run_simulation(obs_choice, mem_choice, decay_choice)
+    frame_to_show = frames_data[show_time]
+
+    fig2, ax = plt.subplots(figsize=(5, 4))
+    im = ax.imshow(frame_to_show, cmap='plasma', extent=[-6, 6, 0, 6], origin='lower')
+    ax.set_title(f"Time Frame {show_time+1}/{frames} | s={obs_choice}, λ={mem_choice}, γ={decay_choice}")
+    ax.set_xlabel("X")
+    ax.set_ylabel("Y")
+    plt.colorbar(im, ax=ax, label="Curvature Intensity")
+    st.pyplot(fig2)
+
     st.markdown(
-        """
-        ### 🔍 Interpretation
-        - **Bright regions:** strong particle collapse due to feedback resonance.
-        - **Dark regions:** coherent interference retained (wave-dominant).
-        - **High λ_mem & γ:** energy builds slowly but persists — sustained observation bias.
-        - **Human observers:** introduce higher entropy due to stochastic noise, leading to non-linear collapse dynamics.
-        """
+    """
+    ### 🔬 Interpretation
+    - As **time evolves**, interference fringes distort with stronger observation coupling.
+    - **Human observers** introduce nonlinear noise, leading to chaotic wave collapse.
+    - Higher **memory coupling (λ)** maintains coherence longer.
+    - Strong **observer strength (s)** accelerates decoherence.
+    """
     )
