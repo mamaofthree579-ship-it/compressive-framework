@@ -344,9 +344,9 @@ for (let i=0; i<C.length; i++){{
       const tor = new THREE.Mesh(geom, mat);
       tor.rotation.x = Math.PI/2 * 0.98;
       scene.add(tor);
-    }
-  }
-}
+    }}
+  }}
+}}
 
 // subtle center core
 const coreGeom = new THREE.CircleGeometry(8, 32);
