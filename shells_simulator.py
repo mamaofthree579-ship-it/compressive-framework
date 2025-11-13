@@ -289,7 +289,7 @@ p.position.set(200,200,200);
 scene.add(p);
 
 // helper to map amplitude -> size & color
-function ampToVisual(a){
+function ampToVisual(a){{
   const minA = 0.1; const maxA = 2.0;
   const t = Math.min(1, Math.max(0, (a - minA) / (maxA - minA)));
   const size = 0.6 + 3.5 * t;
@@ -297,7 +297,7 @@ function ampToVisual(a){
   const c = new THREE.Color();
   c.setHSL(0.52 - 0.18*t, 0.85, 0.45 + 0.2*t);
   return {{ size, color: c }};
-}
+}}
 
 // draw shells
 const shellGroup = new THREE.Group();
