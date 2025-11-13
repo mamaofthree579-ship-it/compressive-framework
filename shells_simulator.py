@@ -7,7 +7,7 @@ import json
 import time
 
 st.set_page_config(page_title="Dimensional Shells Simulator", layout="wide")
-st.title("Dimensional Shells — Layered Coupling Simulator (Mobile Optimized)")
+st.title("Dimensional Shells — Layered Coupling Simulator (Mobile Optimized, Reveal Animation)")
 st.markdown(
     "Model shells as coupled oscillator populations. Higher shells influence lower shells via resonance-filtered coupling; "
     "this demonstrates why layers inform each other without collapsing."
@@ -34,19 +34,17 @@ def reset_sim(seed=None):
     rng = np.random.default_rng(seed if seed is not None else int(time.time()%1e9))
     S = st.session_state.shell_count
     N = st.session_state.per_shell
-    # natural frequencies: higher shells biased to higher frequency band
     base = np.linspace(1.0, 6.0, S)  # center frequency per shell
     omegas = np.zeros((S, N))
     amps = np.zeros((S, N))
     phases = np.zeros((S, N))
     for s in range(S):
-        omegas[s] = rng.normal(loc=base[s], scale=0.2, size=N)  # small spread
+        omegas[s] = rng.normal(loc=base[s], scale=0.2, size=N)
         amps[s] = rng.uniform(0.2, 1.0, size=N)
         phases[s] = rng.uniform(0, 2*np.pi, size=N)
     st.session_state.omegas = omegas
     st.session_state.amps = amps
     st.session_state.phases = phases
-    # inter-shell coupling matrix (symmetric for now)
     C = np.zeros((S, S))
     for i in range(S):
         for j in range(S):
@@ -62,7 +60,6 @@ init_state()
 # Simulation functions
 # ---------------------------
 def resonance_filter(dw, sigma):
-    # Gaussian filter: returns weight in [0,1]
     return np.exp(-0.5 * (dw/sigma)**2)
 
 def shell_mean_phase(s):
@@ -75,49 +72,31 @@ def compute_step():
     sigma = st.session_state.resonance_width
     new_phases = st.session_state.phases.copy()
     new_amps = st.session_state.amps.copy()
-
-    # precompute shell mean phases and mean frequencies
     shell_mean_phases = np.array([shell_mean_phase(s) for s in range(S)])
     shell_mean_freqs = np.array([st.session_state.omegas[s].mean() for s in range(S)])
     for s in range(S):
-        # intra-shell coupling via Kuramoto
         phases_s = st.session_state.phases[s]
         omegas_s = st.session_state.omegas[s]
-        # coupling term from shell's own oscillators
-        # compute mean-field term R e^{i Phi}
         z = np.mean(np.exp(1j * phases_s))
         R = np.abs(z)
         Phi = np.angle(z)
-        # use mean-field instead of O(N^2) pairwise for speed
         intra_term = st.session_state.K_intra * R * np.sin(Phi - phases_s)
-
-        # inter-shell influence (sum over neighbor shells)
         inter_term = np.zeros_like(phases_s)
         amp_drive = np.zeros_like(phases_s)
-
         for s2 in range(S):
             if st.session_state.C[s,s2] == 0:
                 continue
-            # resonance weight based on mean freq difference
             dw = shell_mean_freqs[s2] - shell_mean_freqs[s]
             w = resonance_filter(dw, sigma)
-            # drive from shell mean phase
             Phi2 = shell_mean_phases[s2]
             inter_term += st.session_state.C[s,s2] * w * np.sin(Phi2 - phases_s)
-            # amplitude driving: if frequencies align, amplitude increases proportional to w
             amp_drive += w * (st.session_state.amps[s2].mean() - st.session_state.amps[s]) * 0.3
-
-        # update phases
         dphi = omegas_s + intra_term + inter_term
         new_phases[s] = (phases_s + dphi * dt) % (2*np.pi)
-
-        # amplitude dynamics: damping + driven growth from inter-shell drive and phase alignment
         gamma = st.session_state.damping
-        # phase alignment factor (how well oscillator matches its shell mean)
         align = 0.5 * (1 + np.cos(phases_s - Phi))
         dA = -gamma * st.session_state.amps[s] + 0.5 * align + 0.2 * amp_drive
         new_amps[s] = np.clip(st.session_state.amps[s] + dA * dt, 0.0, 5.0)
-
     st.session_state.phases = new_phases
     st.session_state.amps = new_amps
     st.session_state.time += dt
@@ -125,7 +104,6 @@ def compute_step():
 def step_n(n=1):
     for _ in range(n):
         compute_step()
-    # log summary
     S = st.session_state.omegas.shape[0]
     summary = {"t": float(st.session_state.time)}
     for s in range(S):
@@ -151,7 +129,6 @@ with st.sidebar:
     if colA.button("Reset / (new seed)"):
         reset_sim(seed=int(time.time())%1000000)
     if colB.button("Rebuild (apply shell count/per-shell)"):
-        # rebuild with new dimensions keeping random seed
         reset_sim(seed=123)
     st.markdown("---")
     run_toggle = st.checkbox("Run continuously", value=st.session_state.run)
@@ -164,8 +141,6 @@ with st.sidebar:
         st.write("Stepped 10: t =", st.session_state.time)
     st.markdown("---")
     st.subheader("Inter-shell coupling matrix")
-    st.write("You can edit nearest-neighbor coupling constant; diagonal remains zero.")
-    # show current C matrix and allow quick change
     if st.button("Zero inter-shell coupling"):
         st.session_state.C = np.zeros_like(st.session_state.C)
     if st.button("Reset standard nearest-neighbor coupling"):
@@ -198,13 +173,10 @@ with st.sidebar:
 # Auto-run behavior
 # ---------------------------
 if st.session_state.run:
-    # run a fixed number of internal steps per rerun to keep UI responsive
     for _ in range(4):
         compute_step()
-    # log periodically
     if int(st.session_state.time / (st.session_state.dt * 6)) != 0 and (len(st.session_state.log) == 0 or st.session_state.log[-1]["t"] < st.session_state.time - 0.1):
         step_n(1)
-    # <--- updated to current Streamlit API --->
     st.rerun()
 
 # ---------------------------
@@ -212,7 +184,6 @@ if st.session_state.run:
 # ---------------------------
 def build_snapshot_for_viz():
     S, N = st.session_state.amps.shape
-    # pack positions for concentric rings
     rings = []
     max_radius = 60
     for s in range(S):
@@ -247,14 +218,14 @@ snapshot = build_snapshot_for_viz()
 snapshot_json = json.dumps(snapshot)
 
 # ---------------------------
-# Visualizer HTML (Three.js) - mobile optimized
+# Visualizer HTML (Three.js) - mobile optimized + reveal animation
 # ---------------------------
 html = f"""
 <!doctype html>
 <html>
 <head>
 <meta charset="utf-8">
-<title>Dimensional shells viz - Mobile Optimized</title>
+<title>Dimensional shells viz - Mobile Optimized - Reveal</title>
 <style>
   html,body {{ margin:0; padding:0; height:100%; background:#04121a; color:#dff7fa; overflow:hidden; }}
   #overlay {{ position:absolute; left:12px; top:12px; z-index:999; font-family:monospace; color:#bff; }}
@@ -269,13 +240,17 @@ html = f"""
 const snapshot = {snapshot_json};
 const isMobile = window.innerWidth < 700;
 
+// Reveal parameters
+const revealDelay = 0.35;      // seconds between shells starting
+const revealDuration = 0.9;    // seconds each shell takes to fully appear
+
 // Scene + camera
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x04121a);
 const camera = new THREE.PerspectiveCamera(isMobile?70:60, window.innerWidth/window.innerHeight, 0.1, 2000);
 camera.position.set(0,0, isMobile?140:220);
 
-// Renderer - mobile-safe (disable antialias on many phones)
+// Renderer - mobile-safe
 const params = {{ alpha: false }};
 if (!isMobile) params.antialias = true;
 const renderer = new THREE.WebGLRenderer(params);
@@ -289,7 +264,7 @@ const controls = new THREE.OrbitControls(camera, renderer.domElement);
 controls.enablePan = true;
 controls.autoRotate = false;
 
-// Lighting (desktop: stronger PBR; mobile: rely on emissive colors)
+// Lighting
 const ambient = new THREE.AmbientLight(0xffffff, isMobile?0.8:1.0);
 scene.add(ambient);
 const p = new THREE.PointLight(0x88ccff, isMobile?0.6:1.4);
@@ -306,46 +281,59 @@ function ampToVisual(a){{
   return {{ size, color: col }};
 }}
 
-// Draw shells
+// Draw shells and keep references for animation
 const shellGroup = new THREE.Group();
 scene.add(shellGroup);
+
+const ringGroups = [];
+const ringMaterials = [];   // ring material references
+const pointMaterials = [];  // array of arrays: per-shell per-point materials
+const baseRingOpacity = isMobile?0.45:0.28;
 
 for (let s=0; s<snapshot.shells.length; s++){{
   const shell = snapshot.shells[s];
   const ringGroup = new THREE.Group();
   ringGroup.userData.shellIndex = shell.shell_index;
 
-  // ring line (thicker and brighter on mobile)
+  // ring line
   const inner = Math.max(0.8, shell.r - (isMobile?2.5:1.0));
   const outer = shell.r + (isMobile?2.5:1.0);
   const ringGeom = new THREE.RingGeometry(inner, outer, Math.max(32, shell.x.length));
-  const ringMat = new THREE.MeshBasicMaterial({{ color: 0x0aa9a0, side: THREE.DoubleSide, transparent:true, opacity:isMobile?0.45:0.28 }});
+  // use MeshBasicMaterial so we can animate opacity reliably on mobile
+  const ringMat = new THREE.MeshBasicMaterial({{ color: 0x0aa9a0, side: THREE.DoubleSide, transparent:true, opacity:0.0 }});
   const ring = new THREE.Mesh(ringGeom, ringMat);
   ring.rotation.x = Math.PI/2;
   ringGroup.add(ring);
+  ringMaterials.push(ringMat);
 
-  // points
+  // points - keep materials so we can fade them
+  const ptsMats = [];
   for (let i=0; i<shell.x.length; i++){{
     const a = shell.amps[i];
     const vis = ampToVisual(a);
     const geo = new THREE.SphereGeometry(vis.size, isMobile?8:12, isMobile?8:12);
-
-    // On mobile use MeshBasicMaterial (no lighting) for guaranteed visibility
     let mat;
     if (isMobile) {{
-      mat = new THREE.MeshBasicMaterial({{ color: vis.color, transparent:true, opacity:0.95 }});
+      mat = new THREE.MeshBasicMaterial({{ color: vis.color, transparent:true, opacity:0.0 }});
     }} else {{
-      mat = new THREE.MeshStandardMaterial({{ color: vis.color, emissive: vis.color, emissiveIntensity: 0.9, metalness:0.25, roughness:0.25 }});
+      mat = new THREE.MeshStandardMaterial({{ color: vis.color, emissive: vis.color, emissiveIntensity: 0.0, transparent:true, opacity:0.0, metalness:0.25, roughness:0.25 }});
     }}
     const pnt = new THREE.Mesh(geo, mat);
     pnt.position.set(shell.x[i], shell.y[i], 0);
     ringGroup.add(pnt);
+    ptsMats.push(mat);
   }}
+  pointMaterials.push(ptsMats);
 
+  // start groups at small scale for reveal
+  ringGroup.scale.set(0.4, 0.4, 0.4);
+  ringGroup.visible = true;
   shellGroup.add(ringGroup);
+  ringGroups.push(ringGroup);
 }}
 
-// draw inter-shell influence bands (visualize C with translucent tori)
+// draw inter-shell tori (start invisible)
+const torusList = [];
 const C = snapshot.C;
 for (let i=0; i<C.length; i++){{
   for (let j=0; j<C.length; j++){{
@@ -355,11 +343,11 @@ for (let i=0; i<C.length; i++){{
       const radius = (ri + rj) / 2;
       const thickness = Math.max(1.0, Math.abs(rj - ri) / 7);
       const geom = new THREE.TorusGeometry(radius, thickness, 10, 64);
-      const alpha = Math.min(0.9, C[i][j]*2.5);
-      const mat = new THREE.MeshBasicMaterial({{ color: 0x4fe0da, transparent:true, opacity: Math.max(0.12, alpha) }});
+      const mat = new THREE.MeshBasicMaterial({{ color: 0x4fe0da, transparent:true, opacity:0.0 }});
       const tor = new THREE.Mesh(geom, mat);
       tor.rotation.x = Math.PI/2 * 0.98;
       scene.add(tor);
+      torusList.push({{ mesh: tor, mat: mat }});
     }}
   }}
 }}
@@ -371,13 +359,58 @@ const core = new THREE.Mesh(coreGeom, coreMat);
 core.rotation.x = Math.PI/2;
 scene.add(core);
 
-// animate (gentle pulsing to show amplitude dynamics)
+// Reveal animation state
+let clockT = 0;
+const totalShells = ringGroups.length;
+
+// animate (gentle pulsing after reveal, and handle reveal)
 let t = 0;
+function clamp01(x) {{ return Math.max(0, Math.min(1, x)); }}
+
 function animate(){{
   requestAnimationFrame(animate);
   t += 0.02;
-  // gently rotate group a tiny bit
-  shellGroup.rotation.z = 0.002 * t;
+  clockT += 0.02;
+
+  // For each shell compute reveal progress
+  for (let i=0; i<totalShells; i++) {{
+    const start = i * revealDelay;
+    const progress = clamp01((clockT - start) / revealDuration);
+    // scale from 0.4 -> 1.0
+    const sVal = 0.4 + 0.6 * progress;
+    ringGroups[i].scale.set(sVal, sVal, sVal);
+
+    // ring opacity animates from 0 -> baseRingOpacity
+    ringMaterials[i].opacity = baseRingOpacity * progress;
+
+    // points opacity and emissiveIntensity
+    const mats = pointMaterials[i];
+    for (let k=0; k<mats.length; k++) {{
+      const mat = mats[k];
+      if (mat.isMeshBasicMaterial || mat.type === 'MeshBasicMaterial') {{
+        mat.opacity = 0.95 * progress;
+      }} else {{
+        mat.opacity = 0.85 * progress;
+        // try to set emissiveIntensity if available
+        if ('emissiveIntensity' in mat) mat.emissiveIntensity = 0.6 * progress;
+      }}
+    }}
+
+    // also fade in matching torus if exists (simple mapping sequentially)
+    if (i < torusList.length) {{
+      const tor = torusList[i];
+      tor.mat.opacity = Math.max(0.06, (tor.mat.opacity + (0.9 * progress - tor.mat.opacity) * 0.25));
+    }}
+  }}
+
+  // After all shells fully revealed, add a gentle pulsing to points (non-disruptive)
+  if (clockT > (totalShells-1)*revealDelay + revealDuration) {{
+    const pulse = 1.0 + 0.08 * Math.sin(t * 2.5);
+    shellGroup.scale.set(pulse, pulse, pulse);
+  }}
+
+  // render
+  controls.update();
   renderer.render(scene, camera);
 }}
 animate();
@@ -410,11 +443,10 @@ with cols[0]:
     else:
         st.info("No logs yet. Use Step or Run to produce metrics.")
 with cols[1]:
-    # plot mean amplitude per shell (quick)
     S = st.session_state.amps.shape[0]
     means = [float(st.session_state.amps[s].mean()) for s in range(S)]
     df = pd.DataFrame({"shell": list(range(S)), "mean_amp": means})
     st.bar_chart(df.set_index("shell"))
 
 st.markdown("---")
-st.caption("Model notes: inter-shell coupling is filtered by frequency resonance; transfer requires frequency overlap and is time-delayed by dynamics. This prevents instantaneous collapse while enabling influence.")
+st.caption("Model notes: inter-shell coupling is filtered by frequency resonance; transfer requires frequency overlap and is time-delayed by dynamics. Reveal shows shells appearing sequentially.")
