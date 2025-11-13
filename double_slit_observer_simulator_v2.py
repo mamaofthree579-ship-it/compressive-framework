@@ -1,13 +1,4 @@
 #!/usr/bin/env python3
-"""
-parameter_sweep_double_slit.py
-
-Runs a systematic sweep of the double-slit residual memory simulator
-across observer strength, memory coupling, and residual decay parameters.
-
-Outputs: heatmap of average particle yield.
-"""
-
 import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
