@@ -1,5 +1,7 @@
 # shells_simulator.py
-# Corrected: avoids f-string in the big HTML/JS block to prevent single-brace syntax errors
+# Full, stable, mobile-optimized Streamlit app with Three.js visualizer embedded.
+# Rendering mode: Three.js via embedded HTML/JS. Reveal animation: Sequential fade + scale.
+
 import streamlit as st
 import streamlit.components.v1 as components
 import numpy as np
@@ -9,7 +11,7 @@ import time
 from datetime import datetime
 
 st.set_page_config(page_title="Dimensional Shells Simulator — Full", layout="wide")
-st.title("Dimensional Shells — Full Simulator Suite (Fixed HTML injection)")
+st.title("Dimensional Shells — Full Simulator Suite")
 st.markdown("Layers simulator with timeline playback, reveal easing, pulse propagation, extruded shells, inside/out view, energy fields, camera focus, and a performance HUD. Mobile optimized.")
 
 # ---------------------------
@@ -44,6 +46,7 @@ def init_state():
         st.session_state.show_hud = True
         reset_sim(seed=1234)
 
+
 def reset_sim(seed=None):
     rng = np.random.default_rng(seed if seed is not None else int(time.time()%1e9))
     S = st.session_state.shell_count
@@ -70,31 +73,64 @@ def reset_sim(seed=None):
 
 init_state()
 
+# ---------------------------
+# Snapshot builder (defined early so UI can call it)
+# ---------------------------
 def build_snapshot_for_viz():
-    """
-    Capture the current simulator state (time, shells, parameters, etc.)
-    for replay in the visualization timeline.
-    """
-
+    S, N = st.session_state.amps.shape
+    rings = []
+    max_radius = 60
+    for s in range(S):
+        r = max_radius * (s+1) / (S+1)
+        theta = np.linspace(0, 2*np.pi, N, endpoint=False)
+        xs = (r * np.cos(theta)).tolist()
+        ys = (r * np.sin(theta)).tolist()
+        rings.append({
+            "r": r,
+            "x": xs,
+            "y": ys,
+            "amps": st.session_state.amps[s].tolist(),
+            "phases": st.session_state.phases[s].tolist(),
+            "shell_index": s,
+            "mean_amp": float(np.mean(st.session_state.amps[s])),
+            "mean_phase": float(np.angle(np.mean(np.exp(1j*st.session_state.phases[s]))))
+        })
     return {
-        "time": st.session_state.get("time", 0.0),
-        "num_shells": st.session_state.get("num_shells", 1),
-        "shell_params": st.session_state.get("shell_params", {}),
-        "energy_levels": st.session_state.get("energy_levels", []),
-        "amplitudes": st.session_state.get("amplitudes", []),
-        "phases": st.session_state.get("phases", []),
-        "frequencies": st.session_state.get("frequencies", []),
+        "time": float(st.session_state.time),
+        "shells": rings,
+        "C": st.session_state.C.tolist(),
+        "params": {
+            "K_intra": float(st.session_state.K_intra),
+            "C_inter": float(st.session_state.C_inter),
+            "sigma": float(st.session_state.resonance_width)
+        },
+        "visual": {
+            "extruded": bool(st.session_state.extruded),
+            "inside_view": bool(st.session_state.inside_view),
+            "pulse_enabled": bool(st.session_state.pulse_enabled),
+            "pulse_speed": float(st.session_state.pulse_speed),
+            "energy_strength": float(st.session_state.energy_strength),
+            "reveal": {
+                "easing": st.session_state.reveal_easing,
+                "delay": float(st.session_state.reveal_delay),
+                "duration": float(st.session_state.reveal_duration)
+            },
+            "show_hud": bool(st.session_state.show_hud)
+        }
     }
-    
+
 # ---------------------------
-# Simulation core (unchanged)
+# Simulation core
 # ---------------------------
+
 def resonance_filter(dw, sigma):
     return np.exp(-0.5 * (dw/sigma)**2)
+
 
 def shell_mean_phase(s):
     vec = np.exp(1j * st.session_state.phases[s])
     return np.angle(vec.mean())
+
 
 def compute_step():
     S, N = st.session_state.omegas.shape
@@ -130,6 +166,7 @@ def compute_step():
     st.session_state.phases = new_phases
     st.session_state.amps = new_amps
     st.session_state.time += dt
+
 
 def step_n(n=1, record_snapshot=False):
     for _ in range(n):
@@ -218,57 +255,14 @@ if st.session_state.run:
     st.rerun()
 
 # ---------------------------
-# Snapshot builder (for injection to JS)
+# Prepare snapshot for injection
 # ---------------------------
-def build_snapshot_for_viz():
-    S, N = st.session_state.amps.shape
-    rings = []
-    max_radius = 60
-    for s in range(S):
-        r = max_radius * (s+1) / (S+1)
-        theta = np.linspace(0, 2*np.pi, N, endpoint=False)
-        xs = (r * np.cos(theta)).tolist()
-        ys = (r * np.sin(theta)).tolist()
-        rings.append({
-            "r": r,
-            "x": xs,
-            "y": ys,
-            "amps": st.session_state.amps[s].tolist(),
-            "phases": st.session_state.phases[s].tolist(),
-            "shell_index": s,
-            "mean_amp": float(np.mean(st.session_state.amps[s])),
-            "mean_phase": float(np.angle(np.mean(np.exp(1j*st.session_state.phases[s]))))
-        })
-    return {
-        "time": float(st.session_state.time),
-        "shells": rings,
-        "C": st.session_state.C.tolist(),
-        "params": {
-            "K_intra": float(st.session_state.K_intra),
-            "C_inter": float(st.session_state.C_inter),
-            "sigma": float(st.session_state.resonance_width)
-        },
-        "visual": {
-            "extruded": bool(st.session_state.extruded),
-            "inside_view": bool(st.session_state.inside_view),
-            "pulse_enabled": bool(st.session_state.pulse_enabled),
-            "pulse_speed": float(st.session_state.pulse_speed),
-            "energy_strength": float(st.session_state.energy_strength),
-            "reveal": {
-                "easing": st.session_state.reveal_easing,
-                "delay": float(st.session_state.reveal_delay),
-                "duration": float(st.session_state.reveal_duration)
-            },
-            "show_hud": bool(st.session_state.show_hud)
-        }
-    }
-
 snapshot = build_snapshot_for_viz()
 snapshot_json = json.dumps(snapshot)
 snapshot_time = f"{snapshot['time']:.3f}"
 
 # ---------------------------
-# Visualizer HTML + Three.js (FIXED: use placeholders and .replace)
+# HTML template (placeholders) - avoid f-strings to keep braces intact
 # ---------------------------
 html_template = """
 <!doctype html>
