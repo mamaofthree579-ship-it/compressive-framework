@@ -70,6 +70,22 @@ def reset_sim(seed=None):
 
 init_state()
 
+def build_snapshot_for_viz():
+    """
+    Capture the current simulator state (time, shells, parameters, etc.)
+    for replay in the visualization timeline.
+    """
+
+    return {
+        "time": st.session_state.get("time", 0.0),
+        "num_shells": st.session_state.get("num_shells", 1),
+        "shell_params": st.session_state.get("shell_params", {}),
+        "energy_levels": st.session_state.get("energy_levels", []),
+        "amplitudes": st.session_state.get("amplitudes", []),
+        "phases": st.session_state.get("phases", []),
+        "frequencies": st.session_state.get("frequencies", []),
+    }
+    
 # ---------------------------
 # Simulation core (unchanged)
 # ---------------------------
