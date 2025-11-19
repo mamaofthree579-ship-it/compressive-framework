@@ -1,5 +1,5 @@
 # shells_simulator.py
-# Full-featured: mobile-optimized + reveal easing + timeline + pulse + extrude + inside/out + camera focus + energy fields + performance HUD
+# Corrected: avoids f-string in the big HTML/JS block to prevent single-brace syntax errors
 import streamlit as st
 import streamlit.components.v1 as components
 import numpy as np
@@ -9,8 +9,8 @@ import time
 from datetime import datetime
 
 st.set_page_config(page_title="Dimensional Shells Simulator — Full", layout="wide")
-st.title("Dimensional Shells — Full Simulator Suite")
-st.markdown("Layers simulator with timeline playback, reveal easing, pulse propagation, extruded shells, inside/outside view, energy fields, camera focus, and a performance HUD. Mobile optimized.")
+st.title("Dimensional Shells — Full Simulator Suite (Fixed HTML injection)")
+st.markdown("Layers simulator with timeline playback, reveal easing, pulse propagation, extruded shells, inside/out view, energy fields, camera focus, and a performance HUD. Mobile optimized.")
 
 # ---------------------------
 # Initialization & state
@@ -197,7 +197,6 @@ with st.sidebar:
 if st.session_state.run:
     for _ in range(4):
         compute_step()
-    # periodically record summary snapshot
     if st.session_state.record_timeline:
         st.session_state.snapshots.append(build_snapshot_for_viz())
     st.rerun()
@@ -250,27 +249,27 @@ def build_snapshot_for_viz():
 
 snapshot = build_snapshot_for_viz()
 snapshot_json = json.dumps(snapshot)
+snapshot_time = f"{snapshot['time']:.3f}"
 
 # ---------------------------
-# Visualizer HTML + Three.js (implements all features)
+# Visualizer HTML + Three.js (FIXED: use placeholders and .replace)
 # ---------------------------
-# Use double braces {{}} where JS uses braces to avoid f-string interpolation issues.
-html = f"""
+html_template = """
 <!doctype html>
 <html>
 <head>
 <meta charset="utf-8">
 <title>Dimensional Shells — Full Visualizer</title>
 <style>
-  html,body {{ margin:0; padding:0; height:100%; background:#04121a; color:#dff7fa; overflow:hidden; }}
-  #overlay {{ position:absolute; left:12px; top:12px; z-index:999; font-family:monospace; color:#bff; }}
-  #hud {{ position:absolute; right:12px; top:12px; z-index:999; font-family:monospace; color:#bff; text-align:right; }}
-  #timelineControls {{ position:absolute; left:12px; bottom:12px; z-index:999; font-family:monospace; color:#bff; }}
-  .btn {{ background: rgba(255,255,255,0.06); color:#bff; border:0; padding:6px 10px; margin-right:6px; border-radius:6px; cursor:pointer; }}
+  html,body { margin:0; padding:0; height:100%; background:#04121a; color:#dff7fa; overflow:hidden; }
+  #overlay { position:absolute; left:12px; top:12px; z-index:999; font-family:monospace; color:#bff; }
+  #hud { position:absolute; right:12px; top:12px; z-index:999; font-family:monospace; color:#bff; text-align:right; }
+  #timelineControls { position:absolute; left:12px; bottom:12px; z-index:999; font-family:monospace; color:#bff; }
+  .btn { background: rgba(255,255,255,0.06); color:#bff; border:0; padding:6px 10px; margin-right:6px; border-radius:6px; cursor:pointer; }
 </style>
 </head>
 <body>
-<div id="overlay">t = {snapshot['time']:.3f} s</div>
+<div id="overlay">t = {{SNAPSHOT_TIME}} s</div>
 <div id="hud"></div>
 <div id="timelineControls"></div>
 <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
@@ -278,7 +277,7 @@ html = f"""
 
 <script>
 // ===== Snapshot injected from Streamlit =====
-const snapshot = {snapshot_json};
+const snapshot = {{SNAPSHOT_JSON}};
 
 // ===== Mobile detection & camera presets =====
 const isMobile = window.innerWidth < 700;
@@ -290,7 +289,7 @@ scene.background = new THREE.Color(0x04121a);
 const camera = new THREE.PerspectiveCamera(isMobile?70:60, window.innerWidth/window.innerHeight, 0.1, 2000);
 camera.position.set(0,0,cameraDist);
 
-const params = {{ alpha: false }};
+const params = { alpha: false };
 if (!isMobile) params.antialias = true;
 const renderer = new THREE.WebGLRenderer(params);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
@@ -312,23 +311,23 @@ pLight.position.set(200,200,200);
 scene.add(pLight);
 
 // Utility easing functions
-function easeLinear(t) {{ return t; }}
-function easeOutCubic(t) {{ return 1 - Math.pow(1 - t, 3); }}
-function elasticOut(t) {{
+function easeLinear(t) { return t; }
+function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+function elasticOut(t) {
   const p = 0.3;
   return Math.pow(2, -10*t) * Math.sin((t - p/4)*(2*Math.PI)/p) + 1;
-}}
-function backOut(t) {{
+}
+function backOut(t) {
   const s = 1.70158;
   return 1 + (--t)*t*((s+1)*t + s);
-}}
-function getEasing(name) {{
+}
+function getEasing(name) {
   if (name === "linear") return easeLinear;
   if (name === "easeOutCubic") return easeOutCubic;
   if (name === "elasticOut") return elasticOut;
   if (name === "backOut") return backOut;
   return easeOutCubic;
-}}
+}
 
 // Visual groups & state
 const shellGroup = new THREE.Group(); scene.add(shellGroup);
@@ -339,7 +338,7 @@ const torusList = [];
 const energyFields = [];
 
 // Build geometry (supports extruded option)
-function buildVisuals(snap) {{
+function buildVisuals(snap) {
   // Clear previous
   while (shellGroup.children.length) shellGroup.remove(shellGroup.children[0]);
   ringGroups.length = 0; ringMaterials.length = 0; pointMaterials.length = 0;
@@ -350,7 +349,7 @@ function buildVisuals(snap) {{
   const inside = snap.visual && snap.visual.inside_view;
   const baseRingOpacity = isMobile?0.55:0.32;
 
-  for (let s=0; s<S; s++) {{
+  for (let s=0; s<S; s++) {
     const shell = snap.shells[s];
     const group = new THREE.Group();
     group.userData.shellIndex = s;
@@ -359,78 +358,76 @@ function buildVisuals(snap) {{
     const inner = Math.max(0.8, shell.r - (isMobile?2.5:1.0));
     const outer = shell.r + (isMobile?2.5:1.0);
 
-    if (extruded) {{
-      // use Torus-like extruded tube as shell
+    if (extruded) {
       const rad = (inner + outer)/2;
       const thickness = Math.max(1.2, (outer - inner)/2);
       const geom = new THREE.TorusGeometry(rad, thickness, 8, Math.max(32, shell.x.length));
-      const mat = new THREE.MeshBasicMaterial({{ color: 0x0aa9a0, transparent:true, opacity:0.0, side: THREE.DoubleSide }});
+      const mat = new THREE.MeshBasicMaterial({ color: 0x0aa9a0, transparent:true, opacity:0.0, side: THREE.DoubleSide });
       const tor = new THREE.Mesh(geom, mat);
       tor.rotation.x = Math.PI/2;
       group.add(tor);
       ringMaterials.push(mat);
-    }} else {{
+    } else {
       const ringGeom = new THREE.RingGeometry(inner, outer, Math.max(32, shell.x.length));
-      const mat = new THREE.MeshBasicMaterial({{ color: 0x0aa9a0, side: THREE.DoubleSide, transparent:true, opacity:0.0 }});
+      const mat = new THREE.MeshBasicMaterial({ color: 0x0aa9a0, side: THREE.DoubleSide, transparent:true, opacity:0.0 });
       const mesh = new THREE.Mesh(ringGeom, mat);
       mesh.rotation.x = Math.PI/2;
       group.add(mesh);
       ringMaterials.push(mat);
-    }}
+    }
 
     // points
     const mats = [];
-    for (let i=0; i<shell.x.length; i++) {{
+    for (let i=0; i<shell.x.length; i++) {
       const a = shell.amps[i];
       const tnorm = Math.min(1, Math.max(0, (a - 0.1) / (2.0 - 0.1)));
       const size = (isMobile?0.9:0.6) + (isMobile?4.5:3.5)*tnorm;
       const col = new THREE.Color(); col.setHSL(0.52 - 0.18*tnorm, 0.88, 0.45 + 0.28*tnorm);
       const geo = new THREE.SphereGeometry(size, isMobile?8:12, isMobile?8:12);
-      const mat = isMobile ? new THREE.MeshBasicMaterial({{ color: col, transparent:true, opacity:0.0 }}) :
-                            new THREE.MeshStandardMaterial({{ color: col, emissive: col, emissiveIntensity: 0.0, transparent:true, opacity:0.0, metalness:0.25, roughness:0.25 }});
+      const mat = isMobile ? new THREE.MeshBasicMaterial({ color: col, transparent:true, opacity:0.0 }) :
+                            new THREE.MeshStandardMaterial({ color: col, emissive: col, emissiveIntensity: 0.0, transparent:true, opacity:0.0, metalness:0.25, roughness:0.25 });
       const pnt = new THREE.Mesh(geo, mat);
       pnt.position.set(shell.x[i], shell.y[i], 0);
       group.add(pnt);
       mats.push(mat);
-    }}
+    }
     pointMaterials.push(mats);
 
-    // initial scale small for reveal
     group.scale.set(0.4,0.4,0.4);
     shellGroup.add(group);
     ringGroups.push(group);
-  }}
+  }
 
   // inter-shell tori (energy connectors)
   const C = snap.C;
-  for (let i=0;i<C.length;i++) {{
-    for (let j=i+1;j<C.length;j++) {{
-      if (C[i][j] > 0.0001) {{
+  for (let i=0;i<C.length;i++) {
+    for (let j=i+1;j<C.length;j++) {
+      if (C[i][j] > 0.0001) {
         const ri = snap.shells[i].r;
         const rj = snap.shells[j].r;
         const radius = (ri + rj) / 2;
         const thickness = Math.max(0.7, Math.abs(rj - ri) / 8);
         const geom = new THREE.TorusGeometry(radius, thickness, 8, 64);
-        const mat = new THREE.MeshBasicMaterial({{ color: 0x4fe0da, transparent:true, opacity:0.0 }});
+        const mat = new THREE.MeshBasicMaterial({ color: 0x4fe0da, transparent:true, opacity:0.0 });
         const tor = new THREE.Mesh(geom, mat);
         tor.rotation.x = Math.PI/2 * 0.98;
         scene.add(tor);
-        torusList.push({{mesh:tor, mat:mat, i:i, j:j}});
-      }}
-    }}
-  }}
+        torusList.push({mesh:tor, mat:mat, i:i, j:j});
+      }
+    }
+  }
 
-  // energy fields (glow tori) - optional later
-  for (let s=0;s<snap.shells.length;s++) {{
+  // energy fields
+  for (let s=0;s<snap.shells.length;s++) {
     const ri = snap.shells[s].r;
     const geom = new THREE.TorusGeometry(ri, Math.max(0.6, ri*0.02), 8, 64);
-    const mat = new THREE.MeshBasicMaterial({{ color: 0x22f0d8, transparent:true, opacity:0.0 }});
+    const mat = new THREE.MeshBasicMaterial({ color: 0x22f0d8, transparent:true, opacity:0.0 });
     const tor = new THREE.Mesh(geom, mat);
     tor.rotation.x = Math.PI/2 * 0.98;
     scene.add(tor);
-    energyFields.push({{mesh:tor, mat:mat}});
-  }}
-}}
+    energyFields.push({mesh:tor, mat:mat});
+  }
+}
 buildVisuals(snapshot);
 
 // ===== Reveal Animation & Pulse propagation & Focus logic =====
@@ -448,57 +445,50 @@ let lastFrame = performance.now();
 let fps = 0;
 const hudEl = document.getElementById('hud');
 
-function updateHUD() {{
+function updateHUD() {
   const device = navigator.userAgent;
   hudEl.innerHTML = (snapshot.visual.show_hud ? `FPS: ${fps.toFixed(0)}<br/>Device: ${device.split(')')[0]}<br/>Shells: ${snapshot.shells.length}` : '');
-}}
+}
 
 // camera focus function (client-side only)
-function focusShell(index) {{
+function focusShell(index) {
   if (index < 0 || index >= ringGroups.length) return;
   const group = ringGroups[index];
-  // compute world position center (0,0) for shells — zoom to radius
   const r = snapshot.shells[index].r;
-  // set camera to radius * factor
   const z = snapshot.visual.inside_view ? r * 0.6 : r * 3.2;
-  // smooth camera move (lerp)
   const start = camera.position.clone();
   const target = new THREE.Vector3(0, 0, z);
   let t0 = 0;
   const dur = 600;
-  const anim = function(timestamp) {{
+  const anim = function(timestamp) {
     if (!t0) t0 = timestamp;
     const dt = (timestamp - t0)/dur;
     const tt = Math.min(1, dt);
     camera.position.lerpVectors(start, target, tt);
     camera.lookAt(0,0,0);
     if (tt < 1) requestAnimationFrame(anim);
-  }};
+  };
   requestAnimationFrame(anim);
 }
 
 // Click picking for focus
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
-renderer.domElement.addEventListener('click', (ev) => {{
+renderer.domElement.addEventListener('click', (ev) => {
   const rect = renderer.domElement.getBoundingClientRect();
   mouse.x = ((ev.clientX - rect.left) / rect.width) * 2 - 1;
   mouse.y = -((ev.clientY - rect.top) / rect.height) * 2 + 1;
   raycaster.setFromCamera(mouse, camera);
   const intersects = raycaster.intersectObjects(shellGroup.children, true);
-  if (intersects.length) {{
-    // find group index
-    let obj = intersects[0].object;
-    while (obj && !obj.parent) obj = obj.parent;
-    // try to find group index by traversing up
+  if (intersects.length) {
     let parent = intersects[0].object.parent;
     let groupIndex = -1;
-    for (let i=0;i<ringGroups.length;i++) {{
-      if (ringGroups[i].uuid === parent.uuid || ringGroups[i].uuid === parent.parent.uuid) {{ groupIndex = i; break; }}
-    }}
+    for (let i=0;i<ringGroups.length;i++) {
+      if (ringGroups[i].uuid === parent.uuid || (parent.parent && ringGroups[i].uuid === parent.parent.uuid)) { groupIndex = i; break; }
+    }
     if (groupIndex >= 0) focusShell(groupIndex);
-  }}
-}});
+  }
+});
 
 // Timeline playback UI (client-side)
 const timelineDiv = document.getElementById('timelineControls');
@@ -510,150 +500,122 @@ timelineDiv.innerHTML = `
   <button class="btn" id="stepFwdBtn">›</button>
   <span id="timeLabel" style="margin-left:10px"></span>
 `;
-// timeline data injected from Streamlit snapshots (if any)
 let timeline = [];
-try {{
-  timeline = window.parent && window.parent._st_raw_snapshots ? window.parent._st_raw_snapshots : [];
-}} catch(e) {{ timeline = []; }}
-
-// But we will request snapshots from Streamlit via the provided initial JSON if user captured snapshots
-// For safety, we'll also allow the app to use the single current snapshot for playback as a static frame.
-if (!timeline.length && window.__ST_SNAPSHOTS && Array.isArray(window.__ST_SNAPSHOTS)) {{
-  timeline = window.__ST_SNAPSHOTS;
-}}
+if (!timeline.length) {
+  timeline = [snapshot];
+}
 
 // Helper to load a snapshot into the scene quickly (client-side)
-function loadSnapshotLocal(snapObj) {{
-  // rebuild visuals to reflect snapshot (cheap / fast)
-  try {{
+function loadSnapshotLocal(snapObj) {
+  try {
     buildVisuals(snapObj);
-  }} catch(e) {{
+  } catch(e) {
     console.warn("Failed to load snapshot locally:", e);
-  }}
-}}
+  }
+}
 
-// Playback controls (if server-side snapshots exist, Streamlit will inject them via JSON download; for now use current single snapshot)
-let playState = {{ playing:false, index:0, speed:1 }};
-document.getElementById('playBtn').addEventListener('click', ()=>{{ playState.playing=true; }});
-document.getElementById('pauseBtn').addEventListener('click', ()=>{{ playState.playing=false; }});
-document.getElementById('rewindBtn').addEventListener('click', ()=>{{ playState.index=0; playState.playing=false; }});
-document.getElementById('stepBackBtn').addEventListener('click', ()=>{{ playState.index = Math.max(0, playState.index-1); if (timeline.length) loadSnapshotLocal(timeline[playState.index]); }});
-document.getElementById('stepFwdBtn').addEventListener('click', ()=>{{ playState.index = Math.min(timeline.length-1, playState.index+1); if (timeline.length) loadSnapshotLocal(timeline[playState.index]); }});
-
-// If timeline empty, we allow a simple "pulse preview" using the current snapshot object
-if (!timeline.length) {{
-  // create a minimal timeline by sampling small animated states (client-side)
-  timeline = [snapshot]; // single-frame fallback
-}}
+// Playback controls
+let playState = { playing:false, index:0, speed:1 };
+document.getElementById('playBtn').addEventListener('click', ()=>{ playState.playing=true; });
+document.getElementById('pauseBtn').addEventListener('click', ()=>{ playState.playing=false; });
+document.getElementById('rewindBtn').addEventListener('click', ()=>{ playState.index=0; playState.playing=false; });
+document.getElementById('stepBackBtn').addEventListener('click', ()=>{ playState.index = Math.max(0, playState.index-1); if (timeline.length) loadSnapshotLocal(timeline[playState.index]); });
+document.getElementById('stepFwdBtn').addEventListener('click', ()=>{ playState.index = Math.min(timeline.length-1, playState.index+1); if (timeline.length) loadSnapshotLocal(timeline[playState.index]); });
 
 // ===== Animate loop (reveal + pulse + FPS HUD) =====
 let last = performance.now();
-function animate() {{
+function animate() {
   requestAnimationFrame(animate);
   const now = performance.now();
   const dt = (now - last) / 1000;
   last = now;
-  // FPS calc
   fps = 0.9*fps + 0.1*(1/dt);
 
   clockT += dt;
-  // Reveal: sequential fade + scale
   const total = ringGroups.length;
   const easing = getEasing(snapshot.visual.reveal.easing || "easeOutCubic");
-  for (let i=0;i<total;i++) {{
+  for (let i=0;i<total;i++) {
     const start = i * revealDelay;
     const raw = (clockT - start) / revealDuration;
     const p = Math.max(0, Math.min(1, raw));
     const eased = easing(p);
     const sVal = 0.4 + 0.6 * eased;
     ringGroups[i].scale.set(sVal, sVal, sVal);
-    // ring material(s) opacity
     const mats = ringGroups[i].children.filter(c=>c.material).map(c=>c.material);
-    for (let m of mats) {{
-      if (m) m.opacity = (baseOpacity = (isMobile?0.55:0.32)) * eased;
-    }}
-    // points
+    for (let m of mats) {
+      if (m) m.opacity = (isMobile?0.55:0.32) * eased;
+    }
     const pts = pointMaterials[i];
-    if (pts) {{
-      for (let pm of pts) {{
-        if (pm) {{
+    if (pts) {
+      for (let pm of pts) {
+        if (pm) {
           pm.opacity = 0.95 * eased;
           if ('emissiveIntensity' in pm) pm.emissiveIntensity = 0.6 * eased;
-        }}
-      }}
-    }}
-    // torus connectors
-    if (i < torusList.length) {{
+        }
+      }
+    }
+    if (i < torusList.length) {
       torusList[i].mat.opacity = Math.max(0.06, torusList[i].mat.opacity + (0.9*eased - torusList[i].mat.opacity) * 0.15);
-    }}
-    // energy field
-    if (energyFields[i]) {{
+    }
+    if (energyFields[i]) {
       energyFields[i].mat.opacity = Math.min(0.25, eased * (snapshot.visual.energy_strength || 0.5));
       energyFields[i].mesh.rotation.z = clockT * 0.05 * (1 + i*0.02);
-    }}
-  }}
+    }
+  }
 
-  // Pulse propagation: radial brightness ripple
-  if (snapshot.visual.pulse_enabled) {{
+  if (snapshot.visual.pulse_enabled) {
     pulseClock += dt * (snapshot.visual.pulse_speed || 1.0);
     const center = clockT * (snapshot.visual.pulse_speed || 1.0) * 0.5;
-    for (let s=0;s<snapshot.shells.length;s++) {{
+    for (let s=0;s<snapshot.shells.length;s++) {
       const r = snapshot.shells[s].r;
-      // wave function
       const wave = 0.5 + 0.5*Math.sin(center - r*0.06);
-      // apply subtle emissive modulation
       const pts = pointMaterials[s];
-      if (pts) {{
-        for (let pm of pts) {{
+      if (pts) {
+        for (let pm of pts) {
           if ('emissiveIntensity' in pm) pm.emissiveIntensity = 0.2 + 0.6*wave*(snapshot.visual.energy_strength||0.5);
-        }}
-      }}
-    }}
-  }}
+        }
+      }
+    }
+  }
 
-  // Timeline playback client-side if requested
-  if (playState.playing && timeline.length) {{
-    // simple frame-advance per second scaled by speed
+  if (playState.playing && timeline.length) {
     const framesPerSecond = 2 * (playState.speed || 1);
     if (!playState._acc) playState._acc = 0;
     playState._acc += dt * framesPerSecond;
-    if (playState._acc >= 1) {{
+    if (playState._acc >= 1) {
       playState._acc = 0;
       playState.index = Math.min(timeline.length-1, playState.index+1);
       loadSnapshotLocal(timeline[playState.index]);
       document.getElementById('timeLabel').innerText = `frame ${playState.index+1}/${timeline.length}`;
-    }}
-  }}
+    }
+  }
 
-  // update HUD
   if (snapshot.visual.show_hud) updateHUD();
-
   controls.update();
   renderer.render(scene, camera);
-}}
+}
 animate();
 
-// expose a simple API to parent for snapshot injection (Streamlit cannot call client directly easily)
-window.__shells_viz = {{
+// expose simple API
+window.__shells_viz = {
   focusShell: focusShell,
   loadSnapshot: loadSnapshotLocal,
-  setTimeline: function(t){{
-    timeline = t || [];
-  }},
+  setTimeline: function(t){ timeline = t || []; },
   play: function(){ playState.playing = true; },
   pause: function(){ playState.playing = false; },
-  goTo: function(idx){{ playState.index = idx; if (timeline.length) loadSnapshotLocal(timeline[idx]); }},
-  currentTime: function(){{ return clockT; }}
-}};
+  goTo: function(idx){ playState.index = idx; if (timeline.length) loadSnapshotLocal(timeline[idx]); },
+  currentTime: function(){ return clockT; }
+};
 
 </script>
 </body>
 </html>
 """
 
-# ---------------------------
-# Render visualizer
-# ---------------------------
+# Safely insert JSON and time into template (no f-string parsing of braces)
+html = html_template.replace("{{SNAPSHOT_JSON}}", snapshot_json).replace("{{SNAPSHOT_TIME}}", snapshot_time)
+
+# render HTML
 components.html(html, height=860, scrolling=False)
 
 # ---------------------------
@@ -673,7 +635,6 @@ with colB:
     st.write("Snapshots recorded:", len(st.session_state.snapshots))
     if st.session_state.snapshots:
         if st.button("Load last snapshot into visualizer (client-side)"):
-            # inject via JS by rendering a small script that calls our client API
             last_snap = st.session_state.snapshots[-1]
             js = f"<script>if(window.__shells_viz) window.__shells_viz.loadSnapshot({json.dumps(last_snap)});</script>"
             components.html(js, height=10)
