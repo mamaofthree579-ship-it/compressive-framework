@@ -19,6 +19,8 @@ Together, these form a **tri-field architecture**, generating spacetime’s geom
 
 ## 🔬 Research Structure
 
+Please read my scientific paper at [**Article**](CF_Multiarm_Harmonic_Paper.tex)
+
 The notebooks explore CF-DPF progression step-by-step, from wave origin to vacuum crystallization.
 
 ## 📚 Notebooks
