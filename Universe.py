@@ -211,8 +211,10 @@ with st.sidebar.expander("Interaction & Movement", expanded=True):
     R_INT = st.slider("Interaction Radius (R_INT)", 5.0, 100.0, 50.0, 5.0) # Increased max R_INT
     HARMONICITY_FREQ_TOL = st.slider("Harmonicity Freq Tolerance", 0.05, 0.5, 0.4, 0.05)
     HARMONICITY_PHASE_TOL = st.slider("Harmonicity Phase Tolerance", 0.1, math.pi, math.pi * 0.9, 0.1)
-    ETA = st.slider("Movement Learning Rate (ETA)", 0.1, 2.0, 2.0, 0.1)
+    ETA = st.slider("Coherence Learning Rate (ETA)", 0.1, 2.0, 2.0, 0.1)
     DRAG_COEFFICIENT = st.slider("Drag Coefficient", 0.0, 0.1, 0.01, 0.005) # New parameter for movement
+    GRAVITATIONAL_CONSTANT = st.slider("Gravitational Constant (G)", 0.0, 0.5, 0.01, 0.001) # New parameter for gravity
+    COSMIC_ATTRACTION_STRENGTH = st.slider("Cosmic Attractor Strength", 0.0, 10.0, 1.0, 0.1) # New for ray burst centers
 
 with st.sidebar.expander("Cluster & Measurement", expanded=True):
     CLUSTER_DIST_THRESHOLD = st.slider("Cluster Distance Threshold", 1.0, 50.0, 30.0, 1.0) # Increased max CLUSTER_DIST_THRESHOLD
@@ -220,9 +222,9 @@ with st.sidebar.expander("Cluster & Measurement", expanded=True):
     PASSIVE_QC_PERCENTAGE = st.slider("Passive QC Percentage", 0.0, 0.5, 0.1, 0.05)
 
 with st.sidebar.expander("Frequency Bands for Df Analysis", expanded=True):
-    st.write("Define frequency bands (New range: 1.0 to 8.0 for fundamental_frequency_mag)")
-    # IMPORTANT: User must manually adjust these for the new 1.0-8.0 range
-    freq_band_low_max = st.slider("Max Freq Mag for LOW band (1.0 to X)", 1.5, 3.0, 2.5, 0.1) 
+    st.write("Define frequency bands (Range: 1.0 to 8.0 for fundamental_frequency_mag)")
+    # IMPORTANT: User must manually adjust these for the 1.0-8.0 range
+    freq_band_low_max = st.slider("Max Freq Mag for LOW band (1.0 to X)", 1.5, 4.0, 2.5, 0.1) 
     freq_band_mid_max = st.slider(f"Max Freq Mag for MID band ({freq_band_low_max:.1f} to X)", freq_band_low_max + 0.1, 7.5, 5.0, 0.1) 
     # High band is automatically from freq_band_mid_max to 8.0
 
@@ -247,6 +249,10 @@ if st.sidebar.button("Run Simulation", type="primary"):
     st.session_state.avg_coherence_potential_history = []
     st.session_state.avg_mass_history = []
     st.session_state.num_clusters_history = []
+
+    # Define the two fixed ray burst centers
+    RAY_BURST_CENTER_1 = np.array([GRID_SIZE * 0.25, GRID_SIZE * 0.25])
+    RAY_BURST_CENTER_2 = np.array([GRID_SIZE * 0.75, GRID_SIZE * 0.75])
 
     # Initialize QCs
     qcs = []
@@ -318,37 +324,78 @@ if st.sidebar.button("Run Simulation", type="primary"):
         for qc in st.session_state.qcs:
             qc.effective_mass = BASE_MASS + BETA1 * qc.interaction_history_metric + BETA2 * qc.coherence_potential
 
-            target_direction = np.array([0.0, 0.0])
+            # Initialize total force
+            total_force_vector = np.array([0.0, 0.0])
+
+            # 1. Coherence-driven force
+            coherence_force_vector = np.array([0.0, 0.0])
             total_coherence_influence = 0.0
 
             for other_qc in st.session_state.qcs:
                 if qc.id == other_qc.id: continue
                 dist = calculate_distance(qc.position, other_qc.position, GRID_SIZE)
                 
-                influence = other_qc.coherence_potential / (dist**2 + 1e-6)
+                influence = other_qc.coherence_potential / (dist**2 + 1e-6) # Inverse square falloff
                 influence *= calculate_harmonicity(qc, other_qc, HARMONICITY_FREQ_TOL, HARMONICITY_PHASE_TOL)
 
                 if influence > 0.05:
-                    target_direction += (other_qc.position - qc.position) * influence
+                    direction = (other_qc.position - qc.position) # Direction vector
+                    # Handle periodic boundary conditions for direction vector
+                    if direction[0] > GRID_SIZE / 2: direction[0] -= GRID_SIZE
+                    if direction[0] < -GRID_SIZE / 2: direction[0] += GRID_SIZE
+                    if direction[1] > GRID_SIZE / 2: direction[1] -= GRID_SIZE
+                    if direction[1] < -GRID_SIZE / 2: direction[1] += GRID_SIZE
+
+                    coherence_force_vector += direction * influence
                     total_coherence_influence += influence
             
             if total_coherence_influence > 0:
-                # Normalize target_direction and scale by ETA and coherence, inversely by mass
-                # This makes more massive QCs harder to accelerate
-                normalized_target_direction = target_direction / np.linalg.norm(target_direction)
-                
-                # The force / acceleration is proportional to coherence and ETA, and inversely proportional to mass
-                # We blend this new "force" with the existing velocity
+                normalized_coherence_force = coherence_force_vector / np.linalg.norm(coherence_force_vector)
                 if not qc.is_passive:
-                    acceleration = (ETA * qc.coherence_potential / qc.effective_mass) * normalized_target_direction
-                    qc.velocity += acceleration * DT
+                    total_force_vector += ETA * qc.coherence_potential * normalized_coherence_force
                 else:
-                    # Passive QCs still influenced, but less strongly and not by their own coherence
-                    acceleration = (ETA / 2.0 / qc.effective_mass) * normalized_target_direction
-                    qc.velocity += acceleration * DT
+                    total_force_vector += (ETA / 2.0) * normalized_coherence_force
             else:
-                # Small random walk if no coherent influence, also affected by mass for inertia
-                qc.velocity += np.array([random.uniform(-0.01, 0.01), random.uniform(-0.01, 0.01)]) * DT / qc.effective_mass
+                # Small random force if no coherent influence
+                total_force_vector += np.array([random.uniform(-0.01, 0.01), random.uniform(-0.01, 0.01)])
+
+            # 2. Gravitational force from other QCs
+            if GRAVITATIONAL_CONSTANT > 0:
+                gravitational_force_vector = np.array([0.0, 0.0])
+                for other_qc in st.session_state.qcs:
+                    if qc.id == other_qc.id: continue
+                    dist = calculate_distance(qc.position, other_qc.position, GRID_SIZE)
+                    if dist > 1.0: # Avoid division by zero/very large forces for QCs too close
+                        force_magnitude = (GRAVITATIONAL_CONSTANT * qc.effective_mass * other_qc.effective_mass) / (dist**2)
+                        direction = (other_qc.position - qc.position)
+                        # Handle periodic boundary conditions for direction vector
+                        if direction[0] > GRID_SIZE / 2: direction[0] -= GRID_SIZE
+                        if direction[0] < -GRID_SIZE / 2: direction[0] += GRID_SIZE
+                        if direction[1] > GRID_SIZE / 2: direction[1] -= GRID_SIZE
+                        if direction[1] < -GRID_SIZE / 2: direction[1] += GRID_SIZE
+                        
+                        gravitational_force_vector += force_magnitude * (direction / dist)
+                total_force_vector += gravitational_force_vector
+
+            # 3. Attraction from Cosmic Ray Burst Centers
+            if COSMIC_ATTRACTION_STRENGTH > 0:
+                for center in [RAY_BURST_CENTER_1, RAY_BURST_CENTER_2]:
+                    dist_to_center = calculate_distance(qc.position, center, GRID_SIZE)
+                    if dist_to_center > 1.0:
+                        force_magnitude = (COSMIC_ATTRACTION_STRENGTH * qc.effective_mass) / (dist_to_center**1.5) # Slightly less aggressive falloff
+                        direction = (center - qc.position)
+                        # Handle periodic boundary conditions for direction vector
+                        if direction[0] > GRID_SIZE / 2: direction[0] -= GRID_SIZE
+                        if direction[0] < -GRID_SIZE / 2: direction[0] += GRID_SIZE
+                        if direction[1] > GRID_SIZE / 2: direction[1] -= GRID_SIZE
+                        if direction[1] < -GRID_SIZE / 2: direction[1] += GRID_SIZE
+                        
+                        total_force_vector += force_magnitude * (direction / dist_to_center)
+
+            # Update velocity using total force and mass (F = ma => a = F/m)
+            # Add a small epsilon to mass to avoid division by zero if mass somehow becomes 0
+            acceleration = total_force_vector / (qc.effective_mass + 1e-6)
+            qc.velocity += acceleration * DT
 
             # Apply drag/energy dissipation
             qc.velocity *= (1.0 - DRAG_COEFFICIENT)
@@ -449,6 +496,11 @@ if st.sidebar.button("Run Simulation", type="primary"):
                 ax.set_ylabel("Y Position")
                 ax.set_aspect('equal', adjustable='box')
                 
+                # Plot Ray Burst Centers
+                ax.plot(RAY_BURST_CENTER_1[0], RAY_BURST_CENTER_1[1], 'X', color='red', markersize=15, label='Ray Burst Center 1')
+                ax.plot(RAY_BURST_CENTER_2[0], RAY_BURST_CENTER_2[1], 'X', color='red', markersize=15, label='Ray Burst Center 2')
+                ax.legend()
+
                 # Colorbar for frequencies
                 cbar = fig.colorbar(scatter, ax=ax)
                 cbar.set_label("Fundamental Frequency Magnitude")
