@@ -14,7 +14,7 @@ class QC:
         self.velocity = np.array([random.uniform(-0.1, 0.1), random.uniform(-0.1, 0.1)])
         
         # Data Signature Components
-        self.fundamental_frequency_mag = random.uniform(1.0, 2.0)
+        self.fundamental_frequency_mag = random.uniform(1.0, 2.0) # Frequencies from 1.0 to 2.0
         self.fundamental_frequency_phase = random.uniform(0, 2 * math.pi) # 0 to 2pi
         self.local_phase_coherence = 0.5 # Normalized 0 to 1
         self.coherence_potential = base_cp # Dynamic scalar, starts low
@@ -79,6 +79,7 @@ def calculate_fractal_dimension_box_counting(qc_positions, box_sizes, grid_size)
     max_y = max(p[1] for p in qc_positions)
     
     # Define a slightly larger bounding box than the cluster itself for box counting
+    # This ensures that even for very tight clusters, we have some 'space' to count boxes
     bbox_min_x, bbox_max_x = min_x - 0.1, max_x + 0.1
     bbox_min_y, bbox_max_y = min_y - 0.1, max_y + 0.1
     
@@ -139,20 +140,15 @@ def calculate_rho_k_dm(qc_list, grid_size, cell_division):
     return rho_k_dm_grid
 
 def detect_clusters(qcs, dist_threshold, cp_threshold, grid_size):
-    # Consider all QCs for adjacency, but only significant for forming a named cluster
     all_qcs_map = {qc.id: qc for qc in qcs}
     
-    # Identify QCs that are "significant" enough to be part of a cluster we track for Df
-    # These are ACTIVE QCs with CP >= threshold
     significant_active_qcs = [qc for qc in qcs if not qc.is_passive and qc.coherence_potential >= cp_threshold]
     
     if len(significant_active_qcs) < 2:
         for qc in qcs: qc.cluster_id = -1
         return []
 
-    # Build adjacency list considering ALL qcs that are within distance, regardless of passive status
-    # This ensures passive QCs can bridge active QCs if they are close enough
-    adj = {qc.id: [] for qc in qcs} # Use all QCs in the adjacency map
+    adj = {qc.id: [] for qc in qcs}
     for i, qc1 in enumerate(qcs):
         for j, qc2 in enumerate(qcs):
             if i == j: continue 
@@ -162,22 +158,20 @@ def detect_clusters(qcs, dist_threshold, cp_threshold, grid_size):
                 adj[qc2.id].append(qc1.id)
 
     visited_for_components = set()
-    clusters = [] # This will store lists of QC objects that form a significant cluster
+    clusters = []
 
-    # Iterate through only the "significant active" QCs to initiate BFS
     for qc_start in significant_active_qcs:
         if qc_start.id not in visited_for_components:
-            current_component_members = [] # Members of the current connected component
+            current_component_members = []
             queue = [qc_start.id]
             visited_for_components.add(qc_start.id)
             
-            # BFS to find all connected QCs (including passive ones)
             head_of_queue_idx = 0
             while head_of_queue_idx < len(queue):
                 current_qc_id = queue[head_of_queue_idx]
                 head_of_queue_idx += 1
                 
-                current_qc_obj = all_qcs_map[current_qc_id] # Get QC object
+                current_qc_obj = all_qcs_map[current_qc_id]
                 current_component_members.append(current_qc_obj)
                 
                 for neighbor_id in adj[current_qc_id]:
@@ -185,8 +179,6 @@ def detect_clusters(qcs, dist_threshold, cp_threshold, grid_size):
                         visited_for_components.add(neighbor_id)
                         queue.append(neighbor_id)
             
-            # Filter the component members to keep only the significant active ones for the cluster Df calculation
-            # and to ensure the cluster contains at least 2 significant active QCs
             cluster_significant_active_members = [
                 qc for qc in current_component_members 
                 if not qc.is_passive and qc.coherence_potential >= cp_threshold
@@ -194,16 +186,7 @@ def detect_clusters(qcs, dist_threshold, cp_threshold, grid_size):
 
             if len(cluster_significant_active_members) > 1:
                 clusters.append(cluster_significant_active_members)
-            # else: if a significant_active_qc ends up alone or only with passives, it's not a Df cluster
-            # its cluster_id will be set to -1 below
 
-    # Assign cluster_id to QCs that are part of a detected significant cluster
-    for i, cluster in enumerate(clusters):
-        for qc in cluster:
-            qc.cluster_id = i
-    
-    # Ensure all QCs not part of a *tracked* cluster have cluster_id -1
-    # This also covers passive QCs that are connected but not "significant"
     assigned_qc_ids = {qc.id for cluster in clusters for qc in cluster}
     for qc in qcs:
         if qc.id not in assigned_qc_ids:
@@ -213,26 +196,32 @@ def detect_clusters(qcs, dist_threshold, cp_threshold, grid_size):
 
 # --- Streamlit UI ---
 st.set_page_config(layout="wide")
-st.title("🌌 CompresSim: Exploring Coherence-Driven Cosmology")
+st.title("🌌 CompresSim: Exploring Coherence-Driven Cosmology with Frequency-Dimension Link")
 
 st.sidebar.header("Simulation Parameters")
 
 with st.sidebar.expander("General Settings", expanded=True):
-    NUM_QCS = st.slider("Number of QCs", 10, 500, 150, 10)
-    GRID_SIZE = st.slider("Grid Size", 50, 500, 150, 25)
-    TOTAL_TIME_STEPS = st.slider("Total Time Steps", 100, 2000, 700, 50)
+    NUM_QCS = st.slider("Number of QCs", 10, 1000, 500, 10) # Increased max QCs
+    GRID_SIZE = st.slider("Grid Size", 50, 1000, 500, 25) # Increased max Grid Size
+    TOTAL_TIME_STEPS = st.slider("Total Time Steps", 100, 2000, 1000, 50)
     DT = st.slider("Time Step Duration (DT)", 0.01, 0.5, 0.1, 0.01)
 
 with st.sidebar.expander("Interaction & Movement", expanded=True):
-    R_INT = st.slider("Interaction Radius (R_INT)", 5.0, 50.0, 12.5, 2.5)
-    HARMONICITY_FREQ_TOL = st.slider("Harmonicity Freq Tolerance", 0.05, 0.5, 0.3, 0.05)
-    HARMONICITY_PHASE_TOL = st.slider("Harmonicity Phase Tolerance", 0.1, math.pi, math.pi * 0.75, 0.1)
-    ETA = st.slider("Movement Learning Rate (ETA)", 0.1, 2.0, 1.0, 0.1)
+    R_INT = st.slider("Interaction Radius (R_INT)", 5.0, 100.0, 50.0, 5.0) # Increased max R_INT
+    HARMONICITY_FREQ_TOL = st.slider("Harmonicity Freq Tolerance", 0.05, 0.5, 0.4, 0.05)
+    HARMONICITY_PHASE_TOL = st.slider("Harmonicity Phase Tolerance", 0.1, math.pi, math.pi * 0.9, 0.1)
+    ETA = st.slider("Movement Learning Rate (ETA)", 0.1, 2.0, 2.0, 0.1)
 
 with st.sidebar.expander("Cluster & Measurement", expanded=True):
-    CLUSTER_DIST_THRESHOLD = st.slider("Cluster Distance Threshold", 1.0, 20.0, 8.0, 1.0)
-    CLUSTER_CP_THRESHOLD = st.slider("Cluster CP Threshold", 0.1, 1.0, 0.5, 0.1)
+    CLUSTER_DIST_THRESHOLD = st.slider("Cluster Distance Threshold", 1.0, 50.0, 30.0, 1.0) # Increased max CLUSTER_DIST_THRESHOLD
+    CLUSTER_CP_THRESHOLD = st.slider("Coherence Potential Threshold for Df", 0.1, 1.0, 0.5, 0.1)
     PASSIVE_QC_PERCENTAGE = st.slider("Passive QC Percentage", 0.0, 0.5, 0.1, 0.05)
+
+with st.sidebar.expander("Frequency Bands for Df Analysis", expanded=True):
+    st.write("Define frequency bands (1.0 to 2.0 range for fundamental_frequency_mag)")
+    freq_band_low_max = st.slider("Max Freq Mag for LOW band (1.0 to X)", 1.1, 1.5, 1.3, 0.1)
+    freq_band_mid_max = st.slider(f"Max Freq Mag for MID band ({freq_band_low_max:.1f} to X)", freq_band_low_max + 0.1, 1.9, 1.6, 0.1)
+    # High band is automatically from freq_band_mid_max to 2.0
 
 # Fixed parameters not exposed to UI (or less critical for quick tuning)
 R_MERGE = 0.1 
@@ -240,14 +229,17 @@ ALPHA = 0.01
 BASE_MASS = 1.0
 BETA1 = 0.01
 BETA2 = 0.1
-CELL_DIVISION_RHO_K_DM = int(GRID_SIZE / 4) # Maintain ~4x4 unit cell
+CELL_DIVISION_RHO_K_DM = int(GRID_SIZE / 4) # Maintain ~4x4 unit cell for rho_k_dm
 BOX_SIZES_DF = np.array([1.0, 2.0, 4.0, 8.0, 16.0, 32.0]) # Wider range of box sizes for Df
 
 if st.sidebar.button("Run Simulation", type="primary"):
     st.session_state.running_simulation = True
     st.session_state.current_step = 0
     st.session_state.progress_bar_value = 0
-    st.session_state.df_history = []
+    st.session_state.df_overall_history = []
+    st.session_state.df_low_freq_history = []
+    st.session_state.df_mid_freq_history = []
+    st.session_state.df_high_freq_history = []
     st.session_state.rho_k_dm_avg_history = []
     st.session_state.avg_coherence_potential_history = []
     st.session_state.avg_mass_history = []
@@ -352,23 +344,38 @@ if st.sidebar.button("Run Simulation", type="primary"):
             qc.position = qc.position % GRID_SIZE
 
         # --- Measurement & Recording Phase ---
-        current_dfs = []
+        # 1. Overall Coherent Df (of all QCs with CP >= threshold)
+        all_coherent_qcs_for_df = [qc for qc in st.session_state.qcs if not qc.is_passive and qc.coherence_potential >= CLUSTER_CP_THRESHOLD]
+        if len(all_coherent_qcs_for_df) > 1:
+            df_overall = calculate_fractal_dimension_box_counting([qc.position for qc in all_coherent_qcs_for_df], BOX_SIZES_DF, GRID_SIZE)
+            st.session_state.df_overall_history.append(df_overall)
+        else:
+            st.session_state.df_overall_history.append(0.0)
+
+        # 2. Df by Frequency Bands
+        df_low, df_mid, df_high = 0.0, 0.0, 0.0
+
+        # Low Frequency Band
+        low_freq_qcs = [qc for qc in all_coherent_qcs_for_df if qc.fundamental_frequency_mag <= freq_band_low_max]
+        if len(low_freq_qcs) > 1:
+            df_low = calculate_fractal_dimension_box_counting([qc.position for qc in low_freq_qcs], BOX_SIZES_DF, GRID_SIZE)
+        st.session_state.df_low_freq_history.append(df_low)
+
+        # Mid Frequency Band
+        mid_freq_qcs = [qc for qc in all_coherent_qcs_for_df if freq_band_low_max < qc.fundamental_frequency_mag <= freq_band_mid_max]
+        if len(mid_freq_qcs) > 1:
+            df_mid = calculate_fractal_dimension_box_counting([qc.position for qc in mid_freq_qcs], BOX_SIZES_DF, GRID_SIZE)
+        st.session_state.df_mid_freq_history.append(df_mid)
+
+        # High Frequency Band
+        high_freq_qcs = [qc for qc in all_coherent_qcs_for_df if qc.fundamental_frequency_mag > freq_band_mid_max]
+        if len(high_freq_qcs) > 1:
+            df_high = calculate_fractal_dimension_box_counting([qc.position for qc in high_freq_qcs], BOX_SIZES_DF, GRID_SIZE)
+        st.session_state.df_high_freq_history.append(df_high)
+
+        # 3. Traditional Cluster Detection (for counting)
         clusters = detect_clusters(st.session_state.qcs, CLUSTER_DIST_THRESHOLD, CLUSTER_CP_THRESHOLD, GRID_SIZE)
         st.session_state.num_clusters_history.append(len(clusters))
-
-        if clusters:
-            for cluster in clusters:
-                cluster_positions = [qc.position for qc in cluster]
-                df_cluster = calculate_fractal_dimension_box_counting(cluster_positions, BOX_SIZES_DF, GRID_SIZE)
-                if df_cluster > 0: 
-                    current_dfs.append(df_cluster)
-            
-            if current_dfs:
-                st.session_state.df_history.append(np.mean(current_dfs)) 
-            else:
-                st.session_state.df_history.append(0.0) 
-        else:
-            st.session_state.df_history.append(0.0)
 
         rho_k_dm_grid = calculate_rho_k_dm(st.session_state.qcs, GRID_SIZE, CELL_DIVISION_RHO_K_DM)
         st.session_state.rho_k_dm_avg_history.append(np.mean(rho_k_dm_grid))
@@ -379,80 +386,69 @@ if st.sidebar.button("Run Simulation", type="primary"):
         if st.session_state.current_step % 10 == 0 or st.session_state.current_step == TOTAL_TIME_STEPS: # Update more frequently
             with metrics_placeholder.container():
                 st.markdown(f"**Current Metrics (Step {st.session_state.current_step}/{TOTAL_TIME_STEPS})**")
+                st.write(f" Overall Coherent Df: {st.session_state.df_overall_history[-1]:.3f}")
+                st.write(f" Df (Low Freq Band): {df_low:.3f}")
+                st.write(f" Df (Mid Freq Band): {df_mid:.3f}")
+                st.write(f" Df (High Freq Band): {df_high:.3f}")
                 st.write(f" Avg Coherence Potential: {st.session_state.avg_coherence_potential_history[-1]:.3f}")
                 st.write(f" Avg Effective Mass: {st.session_state.avg_mass_history[-1]:.3f}")
-                if current_dfs:
-                    st.write(f" Avg Fractal Dimension (Df) of Clusters: {st.session_state.df_history[-1]:.3f} (from {len(current_dfs)} clusters)")
-                else:
-                    st.write(f" No significant clusters detected for Df calculation.")
                 st.write(f" Avg Kinetic Energy Density (ρ_K_DM): {st.session_state.rho_k_dm_avg_history[-1]:.4f}")
+                st.write(f" Number of Detected Clusters: {len(clusters)}")
             
             with qc_details_placeholder.container():
                 st.markdown("**QC Details (subset)**")
                 details_text = ""
                 printed_count = 0
-                # Sort QCs by cluster_id then by passive status to show clustered ones first
                 sorted_qcs = sorted(st.session_state.qcs, key=lambda qc: (qc.cluster_id == -1, qc.is_passive, qc.id))
                 for qc in sorted_qcs:
-                    if qc.cluster_id!= -1 or qc.is_passive: # Print clustered QCs and passive ones
-                        details_text += f"QC{qc.id}: ({qc.position[0]:.2f}, {qc.position[1]:.2f}), M:{qc.effective_mass:.2f}, CP:{qc.coherence_potential:.2f}, ClID:{qc.cluster_id}, Passive:{qc.is_passive}\n"
+                    if qc.cluster_id!= -1 or qc.is_passive:
+                        details_text += f"QC{qc.id}: ({qc.position[0]:.2f}, {qc.position[1]:.2f}), M:{qc.effective_mass:.2f}, CP:{qc.coherence_potential:.2f}, Freq:{qc.fundamental_frequency_mag:.2f}, ClID:{qc.cluster_id}, Passive:{qc.is_passive}\n"
                         printed_count += 1
-                    if printed_count >= 15: # Limit output for display
+                    if printed_count >= 15:
                         details_text += "... (truncated QCs)\n"
                         break
                 st.text(details_text)
 
-            # Plot QC positions
+            # Plot QC positions, colored by frequency, sized by mass
             with plot_placeholder.container():
                 fig, ax = plt.subplots(figsize=(10, 10))
                 
                 x = [qc.position[0] for qc in st.session_state.qcs]
                 y = [qc.position[1] for qc in st.session_state.qcs]
                 
-                # Color based on cluster_id, grey for unclustered/passive
-                colors = [qc.cluster_id if qc.cluster_id!= -1 else -1 for qc in st.session_state.qcs]
-                
-                # Make colormap for clusters, with grey for -1 (unclustered/passive)
-                cmap = cm.get_cmap('viridis', max(colors) + 1 if max(colors) >= 0 else 1) # Create enough colors
+                freq_mags = [qc.fundamental_frequency_mag for qc in st.session_state.qcs]
+                min_freq, max_freq = 1.0, 2.0 # Defined range of frequencies
                 
                 # Adjust size based on effective_mass, with a minimum size
                 sizes = [max(10, qc.effective_mass * 5) for qc in st.session_state.qcs]
 
-                scatter = ax.scatter(x, y, c=colors, cmap=cmap, s=sizes, alpha=0.7, edgecolors='w', linewidth=0.5)
+                # Use plasma colormap for frequencies
+                cmap_freq = cm.get_cmap('plasma')
+                
+                scatter = ax.scatter(x, y, c=freq_mags, cmap=cmap_freq, s=sizes, alpha=0.7, edgecolors='w', linewidth=0.5)
                 
                 ax.set_xlim(0, GRID_SIZE)
                 ax.set_ylim(0, GRID_SIZE)
-                ax.set_title(f"QC Distribution (Step {st.session_state.current_step})")
+                ax.set_title(f"QC Distribution (Step {st.session_state.current_step}) - Color by Frequency, Size by Mass")
                 ax.set_xlabel("X Position")
                 ax.set_ylabel("Y Position")
                 ax.set_aspect('equal', adjustable='box')
                 
-                # Create a legend for colors (clusters)
-                handles = []
-                labels = []
-                unique_clusters = sorted(list(set(colors)))
-                if -1 in unique_clusters:
-                    handles.append(plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='gray', markersize=10, alpha=0.7))
-                    labels.append('Unclustered/Passive')
-                    unique_clusters.remove(-1)
-
-                for cluster_id in unique_clusters:
-                    handles.append(plt.Line2D([0], [0], marker='o', color='w', markerfacecolor=cmap(cluster_id), markersize=10, alpha=0.7))
-                    labels.append(f'Cluster {cluster_id}')
+                # Colorbar for frequencies
+                cbar = fig.colorbar(scatter, ax=ax)
+                cbar.set_label("Fundamental Frequency Magnitude")
                 
-                ax.legend(handles, labels, title="Clusters", loc='upper left', bbox_to_anchor=(1, 1))
-                plt.tight_layout() # Adjust layout to prevent legend overlap
                 st.pyplot(fig)
                 plt.close(fig) # Close the figure to free up memory
 
-        # Small delay to make updates visible in Streamlit
-        # time.sleep(0.01) # Optional: uncomment if updates are too fast
-
     st.success("Simulation Complete!")
 
-    # --- Final Analysis (Illustrative) ---
+    # --- Final Summary ---
     st.markdown("### Final Summary")
-    st.write(f"Initial Avg Df (Clusters): {st.session_state.df_history[0]:.3f}, Final Avg Df (Clusters): {st.session_state.df_history[-1]:.3f}")
+    st.write(f"Initial Overall Coherent Df: {st.session_state.df_overall_history[0]:.3f}, Final Overall Coherent Df: {st.session_state.df_overall_history[-1]:.3f}")
+    st.write(f"Final Df (Low Freq Band): {st.session_state.df_low_freq_history[-1]:.3f}")
+    st.write(f"Final Df (Mid Freq Band): {st.session_state.df_mid_freq_history[-1]:.3f}")
+    st.write(f"Final Df (High Freq Band): {st.session_state.df_high_freq_history[-1]:.3f}")
     st.write(f"Initial Avg Kinetic Energy Density (ρ_K_DM): {st.session_state.rho_k_dm_avg_history[0]:.4f}, Final Avg ρ_K_DM: {st.session_state.rho_k_dm_avg_history[-1]:.4f}")
     st.write(f"Initial Avg Coherence Potential: {st.session_state.avg_coherence_potential_history[0]:.3f}, Final Avg Coherence Potential: {st.session_state.avg_coherence_potential_history[-1]:.3f}")
     st.write(f"Initial Avg Effective Mass: {st.session_state.avg_mass_history[0]:.3f}, Final Avg Effective Mass: {st.session_state.avg_mass_history[-1]:.3f}")
@@ -460,15 +456,18 @@ if st.sidebar.button("Run Simulation", type="primary"):
 
     final_qc_positions = np.array([qc.position for qc in st.session_state.qcs])
     distances = []
-    for i in range(NUM_QCS):
-        for j in range(i + 1, NUM_QCS):
-            distances.append(calculate_distance(final_qc_positions[i], final_qc_positions[j], GRID_SIZE))
+    # Only calculate for active QCs for more meaningful average distance
+    active_qc_positions = np.array([qc.position for qc in st.session_state.qcs if not qc.is_passive])
+    if len(active_qc_positions) > 1:
+        for i in range(len(active_qc_positions)):
+            for j in range(i + 1, len(active_qc_positions)):
+                distances.append(calculate_distance(active_qc_positions[i], active_qc_positions[j], GRID_SIZE))
 
-    if np.mean(distances) < GRID_SIZE / 2:
-        st.write(f"Observation: QCs appear to have clustered significantly (average pairwise distance: {np.mean(distances):.2f}).")
+    if distances and np.mean(distances) < GRID_SIZE / 2:
+        st.write(f"Observation: Active QCs appear to have clustered significantly (average pairwise distance: {np.mean(distances):.2f}).")
         st.write("This suggests emergent 'compressive gravity' at play.")
     else:
-        st.write(f"Observation: QCs did not show strong clustering (average pairwise distance: {np.mean(distances):.2f}).")
+        st.write(f"Observation: Active QCs did not show strong clustering (average pairwise distance: {np.mean(distances):.2f}).")
         st.write("Further parameter tuning or more time steps may be needed.")
 
     st.session_state.running_simulation = False
