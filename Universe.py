@@ -192,7 +192,8 @@ def detect_clusters(qcs, dist_threshold, cp_threshold, grid_size):
             
             while queue:
                 current_qc_id = queue.pop(0)
-                current_cluster_members.append(next(q for q in significant_qcs if q.id == current_qc_id)) # Get QC object
+                current_qc_obj = next(q for q in significant_qcs if q.id == current_qc_id)
+                current_cluster_members.append(current_qc_obj) # Get QC object
                 
                 for neighbor_id in adj[current_qc_id]:
                     if neighbor_id not in visited:
@@ -248,7 +249,7 @@ for step in range(TOTAL_TIME_STEPS):
         neighbors = []
         for j, qc_j in enumerate(qcs):
             if i == j: continue
-            dist = calculate_distance(qc_i.position, qc_j.position, GRID_size)
+            dist = calculate_distance(qc_i.position, qc_j.position, GRID_SIZE)
             if dist < R_INT:
                 neighbors.append((qc_j, dist))
         
