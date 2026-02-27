@@ -212,6 +212,7 @@ with st.sidebar.expander("Interaction & Movement", expanded=True):
     HARMONICITY_FREQ_TOL = st.slider("Harmonicity Freq Tolerance", 0.05, 0.5, 0.4, 0.05)
     HARMONICITY_PHASE_TOL = st.slider("Harmonicity Phase Tolerance", 0.1, math.pi, math.pi * 0.9, 0.1)
     ETA = st.slider("Movement Learning Rate (ETA)", 0.1, 2.0, 2.0, 0.1)
+    DRAG_COEFFICIENT = st.slider("Drag Coefficient", 0.0, 0.1, 0.01, 0.005) # New parameter for movement
 
 with st.sidebar.expander("Cluster & Measurement", expanded=True):
     CLUSTER_DIST_THRESHOLD = st.slider("Cluster Distance Threshold", 1.0, 50.0, 30.0, 1.0) # Increased max CLUSTER_DIST_THRESHOLD
@@ -221,8 +222,8 @@ with st.sidebar.expander("Cluster & Measurement", expanded=True):
 with st.sidebar.expander("Frequency Bands for Df Analysis", expanded=True):
     st.write("Define frequency bands (New range: 1.0 to 8.0 for fundamental_frequency_mag)")
     # IMPORTANT: User must manually adjust these for the new 1.0-8.0 range
-    freq_band_low_max = st.slider("Max Freq Mag for LOW band (1.0 to X)", 1.5, 3.0, 2.0, 0.1) # Adjusted min/max for new range
-    freq_band_mid_max = st.slider(f"Max Freq Mag for MID band ({freq_band_low_max:.1f} to X)", freq_band_low_max + 0.1, 7.5, 4.0, 0.1) # Adjusted min/max for new range
+    freq_band_low_max = st.slider("Max Freq Mag for LOW band (1.0 to X)", 1.5, 3.0, 2.5, 0.1) 
+    freq_band_mid_max = st.slider(f"Max Freq Mag for MID band ({freq_band_low_max:.1f} to X)", freq_band_low_max + 0.1, 7.5, 5.0, 0.1) 
     # High band is automatically from freq_band_mid_max to 8.0
 
 # Fixed parameters not exposed to UI (or less critical for quick tuning)
@@ -332,13 +333,25 @@ if st.sidebar.button("Run Simulation", type="primary"):
                     total_coherence_influence += influence
             
             if total_coherence_influence > 0:
-                target_direction = target_direction / total_coherence_influence
+                # Normalize target_direction and scale by ETA and coherence, inversely by mass
+                # This makes more massive QCs harder to accelerate
+                normalized_target_direction = target_direction / np.linalg.norm(target_direction)
+                
+                # The force / acceleration is proportional to coherence and ETA, and inversely proportional to mass
+                # We blend this new "force" with the existing velocity
                 if not qc.is_passive:
-                    qc.velocity += ETA * qc.coherence_potential * target_direction * DT
+                    acceleration = (ETA * qc.coherence_potential / qc.effective_mass) * normalized_target_direction
+                    qc.velocity += acceleration * DT
                 else:
-                    qc.velocity += (ETA / 2.0) * target_direction * DT 
+                    # Passive QCs still influenced, but less strongly and not by their own coherence
+                    acceleration = (ETA / 2.0 / qc.effective_mass) * normalized_target_direction
+                    qc.velocity += acceleration * DT
             else:
-                qc.velocity += np.array([random.uniform(-0.01, 0.01), random.uniform(-0.01, 0.01)]) * DT
+                # Small random walk if no coherent influence, also affected by mass for inertia
+                qc.velocity += np.array([random.uniform(-0.01, 0.01), random.uniform(-0.01, 0.01)]) * DT / qc.effective_mass
+
+            # Apply drag/energy dissipation
+            qc.velocity *= (1.0 - DRAG_COEFFICIENT)
 
         # --- Apply Movement ---
         for qc in st.session_state.qcs:
