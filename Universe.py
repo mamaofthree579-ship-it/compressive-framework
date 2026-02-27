@@ -1,7 +1,3 @@
-import random
-import math
-import numpy as np
-
 # --- 1. QC Class Definition ---
 class QC:
     def __init__(self, id, grid_size):
@@ -263,23 +259,3 @@ for step in range(TOTAL_TIME_STEPS):
 
 print("\n--- Simulation Complete ---")
 
-# --- Final Analysis (Illustrative) ---
-print("\n--- Final Summary ---")
-print(f"Initial Average Df: {df_history[0]:.3f}, Final Average Df: {df_history[-1]:.3f}")
-print(f"Initial Average ρ_K_DM: {rho_k_dm_avg_history[0]:.4f}, Final Average ρ_K_DM: {rho_k_dm_avg_history[-1]:.4f}")
-print(f"Initial Avg Coherence Potential: {avg_coherence_potential_history[0]:.3f}, Final Avg Coherence Potential: {avg_coherence_potential_history[-1]:.3f}")
-print(f"Initial Avg Effective Mass: {avg_mass_history[0]:.3f}, Final Avg Effective Mass: {avg_mass_history[-1]:.3f}")
-
-# Check for clustering / formation of structure
-final_qc_positions = np.array([qc.position for qc in qcs])
-distances = []
-for i in range(NUM_QCS):
-    for j in range(i + 1, NUM_QCS):
-        distances.append(calculate_distance(final_qc_positions[i], final_qc_positions[j], GRID_SIZE))
-
-if np.mean(distances) < GRID_SIZE / 2: # Very rough heuristic for clustering
-    print(f"\nObservation: QCs appear to have clustered significantly (average pairwise distance: {np.mean(distances):.2f}).")
-    print("This suggests emergent 'compressive gravity' at play.")
-else:
-    print(f"\nObservation: QCs did not show strong clustering (average pairwise distance: {np.mean(distances):.2f}).")
-    print("Parameter tuning might be needed or more time steps.")
