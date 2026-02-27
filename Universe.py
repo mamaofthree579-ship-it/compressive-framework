@@ -13,8 +13,9 @@ class QC:
         self.position = np.array([random.uniform(0, grid_size), random.uniform(0, grid_size)])
         self.velocity = np.array([random.uniform(-0.1, 0.1), random.uniform(-0.1, 0.1)])
         
-        # Data Signature Components
-        self.fundamental_frequency_mag = random.uniform(1.0, 2.0) # Frequencies from 1.0 to 2.0
+        # Data Signature Components - REVISED FREQUENCY RANGE TO ALLOW HIGHER INTRINSIC DIMENSIONS
+        # The range is now 1.0 to 8.0, allowing QCs to express higher dimensional energy
+        self.fundamental_frequency_mag = random.uniform(1.0, 8.0) 
         self.fundamental_frequency_phase = random.uniform(0, 2 * math.pi) # 0 to 2pi
         self.local_phase_coherence = 0.5 # Normalized 0 to 1
         self.coherence_potential = base_cp # Dynamic scalar, starts low
@@ -218,10 +219,11 @@ with st.sidebar.expander("Cluster & Measurement", expanded=True):
     PASSIVE_QC_PERCENTAGE = st.slider("Passive QC Percentage", 0.0, 0.5, 0.1, 0.05)
 
 with st.sidebar.expander("Frequency Bands for Df Analysis", expanded=True):
-    st.write("Define frequency bands (1.0 to 2.0 range for fundamental_frequency_mag)")
-    freq_band_low_max = st.slider("Max Freq Mag for LOW band (1.0 to X)", 1.1, 1.5, 1.3, 0.1)
-    freq_band_mid_max = st.slider(f"Max Freq Mag for MID band ({freq_band_low_max:.1f} to X)", freq_band_low_max + 0.1, 1.9, 1.6, 0.1)
-    # High band is automatically from freq_band_mid_max to 2.0
+    st.write("Define frequency bands (New range: 1.0 to 8.0 for fundamental_frequency_mag)")
+    # IMPORTANT: User must manually adjust these for the new 1.0-8.0 range
+    freq_band_low_max = st.slider("Max Freq Mag for LOW band (1.0 to X)", 1.5, 3.0, 2.0, 0.1) # Adjusted min/max for new range
+    freq_band_mid_max = st.slider(f"Max Freq Mag for MID band ({freq_band_low_max:.1f} to X)", freq_band_low_max + 0.1, 7.5, 4.0, 0.1) # Adjusted min/max for new range
+    # High band is automatically from freq_band_mid_max to 8.0
 
 # Fixed parameters not exposed to UI (or less critical for quick tuning)
 R_MERGE = 0.1 
@@ -352,23 +354,23 @@ if st.sidebar.button("Run Simulation", type="primary"):
         else:
             st.session_state.df_overall_history.append(0.0)
 
-        # 2. Df by Frequency Bands
+        # 2. Df by Frequency Bands (now spanning 1.0 to 8.0)
         df_low, df_mid, df_high = 0.0, 0.0, 0.0
 
-        # Low Frequency Band
-        low_freq_qcs = [qc for qc in all_coherent_qcs_for_df if qc.fundamental_frequency_mag <= freq_band_low_max]
+        # Low Frequency Band (from 1.0 to freq_band_low_max)
+        low_freq_qcs = [qc for qc in all_coherent_qcs_for_df if qc.fundamental_frequency_mag >= 1.0 and qc.fundamental_frequency_mag <= freq_band_low_max]
         if len(low_freq_qcs) > 1:
             df_low = calculate_fractal_dimension_box_counting([qc.position for qc in low_freq_qcs], BOX_SIZES_DF, GRID_SIZE)
         st.session_state.df_low_freq_history.append(df_low)
 
-        # Mid Frequency Band
-        mid_freq_qcs = [qc for qc in all_coherent_qcs_for_df if freq_band_low_max < qc.fundamental_frequency_mag <= freq_band_mid_max]
+        # Mid Frequency Band (from freq_band_low_max to freq_band_mid_max)
+        mid_freq_qcs = [qc for qc in all_coherent_qcs_for_df if qc.fundamental_frequency_mag > freq_band_low_max and qc.fundamental_frequency_mag <= freq_band_mid_max]
         if len(mid_freq_qcs) > 1:
             df_mid = calculate_fractal_dimension_box_counting([qc.position for qc in mid_freq_qcs], BOX_SIZES_DF, GRID_SIZE)
         st.session_state.df_mid_freq_history.append(df_mid)
 
-        # High Frequency Band
-        high_freq_qcs = [qc for qc in all_coherent_qcs_for_df if qc.fundamental_frequency_mag > freq_band_mid_max]
+        # High Frequency Band (from freq_band_mid_max to 8.0)
+        high_freq_qcs = [qc for qc in all_coherent_qcs_for_df if qc.fundamental_frequency_mag > freq_band_mid_max and qc.fundamental_frequency_mag <= 8.0]
         if len(high_freq_qcs) > 1:
             df_high = calculate_fractal_dimension_box_counting([qc.position for qc in high_freq_qcs], BOX_SIZES_DF, GRID_SIZE)
         st.session_state.df_high_freq_history.append(df_high)
@@ -417,7 +419,7 @@ if st.sidebar.button("Run Simulation", type="primary"):
                 y = [qc.position[1] for qc in st.session_state.qcs]
                 
                 freq_mags = [qc.fundamental_frequency_mag for qc in st.session_state.qcs]
-                min_freq, max_freq = 1.0, 2.0 # Defined range of frequencies
+                min_freq, max_freq = 1.0, 8.0 # Updated min/max for color mapping to the new range
                 
                 # Adjust size based on effective_mass, with a minimum size
                 sizes = [max(10, qc.effective_mass * 5) for qc in st.session_state.qcs]
@@ -425,7 +427,7 @@ if st.sidebar.button("Run Simulation", type="primary"):
                 # Use plasma colormap for frequencies
                 cmap_freq = cm.get_cmap('plasma')
                 
-                scatter = ax.scatter(x, y, c=freq_mags, cmap=cmap_freq, s=sizes, alpha=0.7, edgecolors='w', linewidth=0.5)
+                scatter = ax.scatter(x, y, c=freq_mags, cmap=cmap_freq, vmin=min_freq, vmax=max_freq, s=sizes, alpha=0.7, edgecolors='w', linewidth=0.5)
                 
                 ax.set_xlim(0, GRID_SIZE)
                 ax.set_ylim(0, GRID_SIZE)
