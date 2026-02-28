@@ -25,7 +25,8 @@ def synth_sleep(duration=10,fs=100):
     slow = 0.6*np.sin(2*np.pi*1.5*t) # delta
     spindle = 0.3*np.sin(2*np.pi*13*t)*np.exp(-((t-5)**2))
     noise = 0.05*np.random.randn(len(t))
-    return t, slow+spindle+noise t, eeg = synth_sleep()
+    return t, slow+spindle+noise 
+    t, eeg = synth_sleep()
     
 if uploaded:
     data = np.loadtxt(uploaded, delimiter=",")
