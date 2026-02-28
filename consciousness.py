@@ -54,6 +54,11 @@ awake = ent(38.0)
 sleep = ent(4.0)
 st.write("Awake entropy (38 Hz):", awake)
 st.write("Sleep entropy (4 Hz):", sleep)
-gamma_t = np.ones_like(t)*0.02
-gamma_t[(t>3)&(t<5)] = 0.08  # propofol window
+gamma_t = np.full_like(t, 0.02)
+gamma_t[(t>3)&(t<5)] = 0.08
+drive = 1 + 0.6*np.sin(2*np.pi*0.2*t)
 ψ = np.exp(-gamma_t*t)*drive*np.exp(1j*2*np.pi*38*t)
+P = np.abs(ψ)**2; P/=P.sum()
+win=200
+ent_op = [entropy(P[i:i+win]) for i in range(0,len(P)-win,win)]
+st.line_chart(ent_op)
