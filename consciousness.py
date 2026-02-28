@@ -1,21 +1,18 @@
+import streamlit as st
 import numpy as np
 from scipy.stats import entropy
-import streamlit
-
-def wave_from_freq(freq, t, K=0.6, gamma=0.02, f_drive=0.2):
-    drive = 1 + K*np.sin(2*np.pi*f_drive*t)
-    theta = 2*np.pi*freq*t
-    return np.exp(-gamma*t)*drive*np.exp(1j*theta)
-
-def entropy_from_trace(freq, t):
-    ψ = wave_from_freq(freq, t)
-    P = np.abs(ψ)**2
-    P = P/np.sum(P)
-    win=200
-    return np.mean([entropy(P[i:i+win]) for i in range(0,len(P)-win,win)])
 
 t = np.linspace(0,10,2000)
-awake = entropy_from_trace(38.0, t)
-sleep = entropy_from_trace(4.0, t)
-write("38 Hz (awake) entropy:", awake)
-write("4 Hz (sleep) entropy:", sleep)
+
+def wave(freq, K=0.6, gamma=0.02):
+    drive = 1 + K*np.sin(2*np.pi*0.2*t)
+    return np.exp(-gamma*t)*drive*np.exp(1j*2*np.pi*freq*t)
+
+def ent(freq):
+    ψ = wave(freq); P=np.abs(ψ)**2; P/=P.sum(); win=200
+    return np.mean([entropy(P[i:i+win]) for i in range(0,len(P)-win,win)])
+
+awake = ent(38.0)
+sleep = ent(4.0)
+st.write("Awake entropy (38 Hz):", awake)
+st.write("Sleep entropy (4 Hz):", sleep)
