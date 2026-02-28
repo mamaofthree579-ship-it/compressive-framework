@@ -1,29 +1,48 @@
 import streamlit as st
 import numpy as np
+import matplotlib.pyplot as plt
 from scipy.stats import entropy
 
-t = np.linspace(0,10,1000)  # lower res for mobile
-K = st.sidebar.slider("Coupling K", 0.1,1.5,0.6)
-gamma = st.sidebar.slider("Decoherence γ", 0.001,0.1,0.02)
+st.title("Consciousness Coherence Simulator")
 
-drive = 1 + K*np.sin(2*np.pi*0.2*t)
+# sidebar
+st.sidebar.header("Parameters")
+K = st.sidebar.slider("Coupling strength (K)", 0.1, 1.5, 0.6)
+gamma = st.sidebar.slider("Decoherence rate (gamma)", 0.001, 0.1, 0.02)
+drive_freq = st.sidebar.slider("Drive frequency (Hz)", 0.05, 0.5, 0.2)
 
-def wave(freq):
-    return np.exp(-gamma*t)*drive*np.exp(1j*2*np.pi*freq*t)
+uploaded = st.file_uploader("Upload EEG CSV (time,amp)", type="csv")
 
-# entropy
-ψ = wave(38.0)
-P=np.abs(ψ)**2; P/=P.sum()
+t = np.linspace(0,10,2000)
+drive = 1 + K*np.sin(2*np.pi*drive_freq*t)
+
+def wave(freq, amp, g):
+    theta = 2*np.pi*freq*t
+    return amp*np.exp(-g*t)*drive*np.exp(1j*theta)
+
+if uploaded:
+    data = np.loadtxt(uploaded, delimiter=",")
+    t = data[:,0]
+    eeg = data[:,1]
+    fft = np.abs(np.fft.rfft(eeg))
+    freqs = np.fft.rfftfreq(len(eeg), t[1]-t[0])
+    dom = freqs[np.argmax(fft)]
+    st.write("Dominant freq from upload:", dom)
+    psi_b = wave(dom, 1.0, gamma)
+else:
+    psi_b = wave(38.0, 1.0, gamma) # preloaded awake default
+
+psi_h = wave(1.1, 0.5, gamma*0.5)
+psi_g = wave(0.12, 0.2, gamma*0.2)
+
+P = np.abs(psi_b*psi_h*psi_g)**2
+P_norm = P/np.sum(P)
 win=200
-ent = [entropy(P[i:i+win]) for i in range(0,len(P)-win,win)]
-st.subheader("Entropy")
-st.line_chart(ent)
+ent = [entropy(P_norm[i:i+win]) for i in range(0,len(P_norm)-win,win)]
+t_ent = np.arange(len(ent))*win*(t[1]-t[0])
 
-# network PLV
-freqs = 38 + np.random.randn(10)*0.5
-waves = np.array([wave(f) for f in freqs])
-amp = np.abs(waves) + 1e-8
-phases = waves/amp
-plv = np.abs(phases.mean(axis=0))
-st.subheader("Network PLV")
-st.line_chart(plv)
+fig,(ax1,ax2)=plt.subplots(2,1,figsize=(6,4))
+ax1.plot(t,P); ax1.set_ylabel("Joint density")
+ax2.plot(t_ent,ent); ax2.set_ylabel("Entropy"); ax2.set_xlabel("Time (s)")
+st.pyplot(fig)
+st.caption("Low entropy dips ≈ moments of high coherence (toy consciousness events).")
