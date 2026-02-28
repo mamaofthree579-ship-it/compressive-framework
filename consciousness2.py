@@ -11,10 +11,6 @@ K = st.sidebar.slider("Coupling strength (K)", 0.1, 1.5, 0.6)
 gamma = st.sidebar.slider("Decoherence rate (gamma)", 0.001, 0.1, 0.02)
 drive_freq = st.sidebar.slider("Drive frequency (Hz)", 0.05, 0.5, 0.2)
 
-import mne
-edf = mne.io.read_raw_edf("ST701N1-PSG.edf", preload=True)
-eeg = edf.copy().filter(0.5,40).get_data(picks="EEG")[0]
-t = np.arange(len(eeg))/100.0 # 100 Hz sampling
 uploaded = st.file_uploader("Upload EEG CSV (time,amp)", type="csv")
 
 t = np.linspace(0,10,2000)
@@ -24,6 +20,13 @@ def wave(freq, amp, g):
     theta = 2*np.pi*freq*t
     return amp*np.exp(-g*t)*drive*np.exp(1j*theta)
 
+def synth_sleep(duration=10,fs=100):
+    t = np.arange(0,duration,1/fs)
+    slow = 0.6*np.sin(2*np.pi*1.5*t) # delta
+    spindle = 0.3*np.sin(2*np.pi*13*t)*np.exp(-((t-5)**2))
+    noise = 0.05*np.random.randn(len(t))
+    return t, slow+spindle+noise t, eeg = synth_sleep()
+    
 if uploaded:
     data = np.loadtxt(uploaded, delimiter=",")
     t = data[:,0]
