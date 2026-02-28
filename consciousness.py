@@ -27,6 +27,19 @@ win = 200
 ent = [entropy(P_norm[i:i+win]) for i in range(0, len(P_norm)-win, win)]
 t_ent = np.arange(len(ent))*win*(t[1]-t[0])
 
+# pseudo-code; replace with neurodatasets.load(...)
+eeg_awake = np.sin(2*np.pi*38*t) + 0.2*np.random.randn(len(t))
+eeg_sleep = np.sin(2*np.pi*4*t) + 0.4*np.random.randn(len(t))  # slow delta
+
+def sim_from_trace(trace):
+    ω = freq_from_fft(trace)        # fit dominant freq
+    drive = 1 + 0.6*np.sin(2*np.pi*0.2*t)  # breath drive
+    ψ = wave(ω,1.0,0.02)           # using earlier wave()
+    P = np.abs(ψ)**2; P/=P.sum()
+    return np.mean([entropy(P[i:i+200]) for i in range(0,len(P)-200,200)])
+
+print("Awake entropy:", sim_from_trace(eeg_awake))
+print("Sleep entropy:", sim_from_trace(eeg_sleep))
 fig, (ax1, ax2) = plt.subplots(2,1, figsize=(6,4))
 ax1.plot(t, P)
 ax1.set_ylabel("Joint density")
