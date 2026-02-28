@@ -1,5 +1,5 @@
 import streamlit as st
-import random, math, numpy as np, matplotlib.pyplot as plt, matplotlib.cm as cm
+import random, math, numpy as np, matplotlib.pyplot as plt
 
 class QC:
     def __init__(self, id, gs, passive=False):
@@ -13,6 +13,7 @@ class QC:
         self.interaction_history_metric=0
         self.effective_mass=1.0
         self.is_passive=passive
+        self.energy=0.0
     def update_from_blend(self,b):
         if not self.is_passive:
             self.fundamental_frequency_mag=b['freq_mag']
@@ -48,7 +49,7 @@ def box_count(pos,sz,gs):
     return np.polyfit(logi,logs,1)[0] if len(logs)>=2 else 0.0
 
 st.set_page_config(layout="wide")
-st.title("🌌 CompresSim")
+st.title("🌌 CompresSim + valve")
 with st.sidebar.expander("General",True):
     N=st.slider("QCs",10,800,300,10)
     GS=st.slider("Grid",50,1000,500,25)
@@ -99,17 +100,15 @@ if st.sidebar.button("Run"):
         for qc in qcs:
             qc.effective_mass=1.0+0.01*qc.interaction_history_metric+0.1*qc.coherence_potential
             force=np.array([0.0,0.0])
-            # cosmic
             for cen in (R1,R2):
                 d=dist(qc.position,cen,GS)
                 if d>1:
-                    dir=(cen-qc.position); 
+                    dir=(cen-qc.position)
                     if dir[0]>GS/2: dir[0]-=GS
                     if dir[0]<-GS/2: dir[0]+=GS
                     if dir[1]>GS/2: dir[1]-=GS
                     if dir[1]<-GS/2: dir[1]+=GS
                     force+= (COSMIC*qc.effective_mass/(d**1.5)) * (dir/d)
-            # gravity
             for other in qcs:
                 if qc.id==other.id: continue
                 d=dist(qc.position, other.position, GS)
@@ -124,8 +123,28 @@ if st.sidebar.button("Run"):
             qc.velocity+=accel*DT
             qc.velocity*= (1-DRAG)
             qc.position=(qc.position+qc.velocity*DT)%GS
-        # measurement
+        # energy build
+        for qc in qcs:
+            qc.energy += 0.01*qc.interaction_history_metric
+        # cluster release
         coherent=[qc for qc in qcs if not qc.is_passive and qc.coherence_potential>=CP_T]
+        clusters=[]; visited=set()
+        for qc in coherent:
+            if qc.id in visited: continue
+            cluster=[qc]; visited.add(qc.id)
+            for other in coherent:
+                if other.id in visited: continue
+                if dist(qc.position, other.position, GS) < 30:
+                    cluster.append(other); visited.add(other.id)
+            if len(cluster)>3:
+                clusters.append(cluster)
+        for cl in clusters:
+            if sum(m.coherence_potential for m in cl)/len(cl) > 0.85:
+                for m in cl:
+                    m.velocity += np.array([random.uniform(-1,1), random.uniform(-1,1)])
+                    m.coherence_potential *= 0.4
+                    m.energy = 0.0
+        # measurement
         df_all=box_count([qc.position for qc in coherent],BOX,GS) if len(coherent)>1 else 0.0
         low=[qc for qc in coherent if qc.fundamental_frequency_mag<=lowM]
         mid=[qc for qc in coherent if lowM<qc.fundamental_frequency_mag<=midM]
@@ -133,31 +152,6 @@ if st.sidebar.button("Run"):
         df_low=box_count([qc.position for qc in low],BOX,GS) if len(low)>1 else 0.0
         df_mid=box_count([qc.position for qc in mid],BOX,GS) if len(mid)>1 else 0.0
         df_high=box_count([qc.position for qc in high],BOX,GS) if len(high)>1 else 0.0
-       # --- energy build & release ---
-for qc in qcs:
-    qc.energy = getattr(qc, 'energy', 0.0) + 0.01*qc.interaction_history_metric
-# check clusters
-clusters = []
-visited = set()
-for qc in coherent:
-    if qc.id in visited: continue
-    cluster = [qc]
-    visited.add(qc.id)
-    for other in coherent:
-        if other.id in visited: continue
-        if dist(qc.position, other.position, GS) < 30:
-            cluster.append(other)
-            visited.add(other.id)
-    if len(cluster) > 3:
-        clusters.append(cluster)
-    for cl in clusters:
-    avg_cp = sum(m.coherence_potential for m in cl)/len(cl)
-    if avg_cp > 0.85: # threshold = "ready primed for nova"
-        for m in cl:
-            # release: burst velocity, drop coherence, radiate energy
-            m.velocity += np.array([random.uniform(-1,1), random.uniform(-1,1)])
-            m.coherence_potential *= 0.4
-            m.energy = 0.0
         if step%10==0:
             with metrics.container():
                 st.markdown(f"**Step {step+1}**")
@@ -165,7 +159,7 @@ for qc in coherent:
             with plot.container():
                 fig,ax=plt.subplots(figsize=(6,6))
                 ax.scatter([qc.position[0] for qc in qcs],[qc.position[1] for qc in qcs],
-                           c=[qc.fundamental_frequency_mag for qc in qcs],cmap='plasma',s=8)
+                           c=[qc.energy for qc in qcs],cmap='inferno',s=8)
                 ax.plot(R1[0],R1[1],'rx'); ax.plot(R2[0],R2[1],'rx')
                 ax.set_xlim(0,GS); ax.set_ylim(0,GS)
                 st.pyplot(fig); plt.close(fig)
