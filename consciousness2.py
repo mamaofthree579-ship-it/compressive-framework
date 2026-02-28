@@ -17,9 +17,10 @@ t = np.linspace(0,10,2000)
 drive = 1 + K*np.sin(2*np.pi*drive_freq*t)
 
 def wave(freq, amp, g):
+    drive = 1 + K*np.sin(2*np.pi*drive_freq*t)  # recalc per t
     theta = 2*np.pi*freq*t
     return amp*np.exp(-g*t)*drive*np.exp(1j*theta)
-
+    
 def synth_sleep(duration=10,fs=100):
     t = np.arange(0,duration,1/fs)
     slow = 0.6*np.sin(2*np.pi*1.5*t) # delta
