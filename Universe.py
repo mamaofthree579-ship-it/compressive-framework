@@ -49,7 +49,7 @@ def box_count(pos,sz,gs):
     return np.polyfit(logi,logs,1)[0] if len(logs)>=2 else 0.0
 
 st.set_page_config(layout="wide")
-st.title("🌌 CompresSim + valves + marks")
+st.title("🌌 CompresSim + drifting marks")
 with st.sidebar.expander("General",True):
     N=st.slider("QCs",10,800,300,10)
     GS=st.slider("Grid",50,1000,500,25)
@@ -72,7 +72,7 @@ with st.sidebar.expander("Measure",True):
 if st.sidebar.button("Run"):
     R1=np.array([GS*0.25,GS*0.25]); R2=np.array([GS*0.75,GS*0.75])
     qcs=[QC(i,GS,passive=(i<int(N*0.1))) for i in range(N)]
-    release_sites=[] # fossil marks of high-release events
+    markers=[] # each: {'pos':(x,y), 'active':True/False, 'members':set()}
     progress=st.progress(0); metrics=st.empty(); plot=st.empty()
     for step in range(STEPS):
         progress.progress((step+1)/STEPS)
@@ -127,7 +127,7 @@ if st.sidebar.button("Run"):
         # energy build
         for qc in qcs:
             qc.energy += 0.01*qc.interaction_history_metric
-        # cluster release + mark
+        # cluster detection
         coherent=[qc for qc in qcs if not qc.is_passive and qc.coherence_potential>=CP_T]
         clusters=[]; visited=set()
         for qc in coherent:
@@ -139,15 +139,32 @@ if st.sidebar.button("Run"):
                     cluster.append(other); visited.add(other.id)
             if len(cluster)>3:
                 clusters.append(cluster)
+        # update markers
+        new_markers=[]
         for cl in clusters:
-            if sum(m.coherence_potential for m in cl)/len(cl) > 0.85:
+            m_ids=set(m.id for m in cl)
+            # see if existing active marker matches
+            found=None
+            for mk in markers:
+                if mk['active'] and len(mk['members'] & m_ids)>0:
+                    found=mk; break
+            if found:
+                found['members']=m_ids
                 cx=sum(m.position[0] for m in cl)/len(cl)
                 cy=sum(m.position[1] for m in cl)/len(cl)
-                release_sites.append((cx,cy))
-                for m in cl:
-                    m.velocity += np.array([random.uniform(-1,1), random.uniform(-1,1)])
-                    m.coherence_potential *= 0.4
-                    m.energy = 0.0
+                found['pos']=(cx,cy)
+                if sum(m.coherence_potential for m in cl)/len(cl) > 0.85:
+                    found['active']=False
+                    for m in cl:
+                        m.velocity += np.array([random.uniform(-1,1), random.uniform(-1,1)])
+                        m.coherence_potential *= 0.4
+                        m.energy = 0.0
+                new_markers.append(found)
+            else:
+                cx=sum(m.position[0] for m in cl)/len(cl)
+                cy=sum(m.position[1] for m in cl)/len(cl)
+                new_markers.append({'pos':(cx,cy),'active':True,'members':m_ids})
+        markers=[mk for mk in markers if not mk['active']] + new_markers
         # measurement
         df_all=box_count([qc.position for qc in coherent],BOX,GS) if len(coherent)>1 else 0.0
         low=[qc for qc in coherent if qc.fundamental_frequency_mag<=lowM]
@@ -165,9 +182,11 @@ if st.sidebar.button("Run"):
                 ax.scatter([qc.position[0] for qc in qcs],[qc.position[1] for qc in qcs],
                            c=[qc.energy for qc in qcs],cmap='inferno',s=8)
                 ax.plot(R1[0],R1[1],'rx'); ax.plot(R2[0],R2[1],'rx')
-                if release_sites:
-                    rs=np.array(release_sites)
-                    ax.scatter(rs[:,0], rs[:,1], marker='s', s=35, facecolors='none', edgecolors='red', linewidths=1.2)
+                for mk in markers:
+                    if mk['active']:
+                        ax.scatter(mk['pos'][0], mk['pos'][1], marker='s', s=35, facecolors='none', edgecolors='orange', linewidths=1.2)
+                    else:
+                        ax.scatter(mk['pos'][0], mk['pos'][1], marker='s', s=35, facecolors='none', edgecolors='red', linewidths=1.2)
                 ax.set_xlim(0,GS); ax.set_ylim(0,GS)
                 st.pyplot(fig); plt.close(fig)
     st.markdown("### Final Summary")
