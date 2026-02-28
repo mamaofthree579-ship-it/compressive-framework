@@ -19,13 +19,9 @@ if uploaded:
         key = [k for k in mat.keys() if not k.startswith("__")][0]
         eeg = mat[key].squeeze()
     else:
-        data = np.loadtxt(uploaded, delimiter=",")
-        if data.ndim == 1:
-            eeg = data
-        else:
-            t = data[:,0]; eeg = data[:,1]
-    if 't' not in locals():
-        t = np.arange(len(eeg))/100.0
+        data = np.loadtxt(uploaded, delimiter=None)
+        eeg = data[:,0] if data.ndim > 1 else data
+    t = np.arange(len(eeg))/100.0
     if t[0] > t[-1]:
         t = t[::-1]; eeg = eeg[::-1]
     eeg = eeg - np.mean(eeg)
