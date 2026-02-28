@@ -41,7 +41,7 @@ if eeg is not None:
     freqs = np.fft.rfftfreq(len(eeg), t[1]-t[0])
     dom = abs(freqs[np.argmax(fft)])
     st.write("Dominant freq:", dom)
-    psi_b = wave(dom,1.0,gamma)
+    psi_b = wave(dom,38.0,gamma)
 else:
     psi_b = wave(38.0,1.0,gamma)
 
