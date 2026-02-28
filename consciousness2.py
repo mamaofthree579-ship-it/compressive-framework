@@ -19,11 +19,11 @@ if uploaded:
         mat = loadmat(uploaded)
         key = [k for k in mat.keys() if not k.startswith("__")][0]
         eeg = mat[key].squeeze()
- else:
+    else:
         s = io.StringIO(uploaded.getvalue().decode("utf-8"))
         data = np.genfromtxt(s, delimiter=None, filling_values=0)
         eeg = data[:,0] if data.ndim > 1 else data
-        t = np.arange(len(eeg))/100.0
+    t = np.arange(len(eeg))/100.0
     if t[0] > t[-1]:
         t = t[::-1]; eeg = eeg[::-1]
     eeg = eeg - np.mean(eeg)
