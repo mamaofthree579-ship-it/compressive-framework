@@ -133,6 +133,31 @@ if st.sidebar.button("Run"):
         df_low=box_count([qc.position for qc in low],BOX,GS) if len(low)>1 else 0.0
         df_mid=box_count([qc.position for qc in mid],BOX,GS) if len(mid)>1 else 0.0
         df_high=box_count([qc.position for qc in high],BOX,GS) if len(high)>1 else 0.0
+       # --- energy build & release ---
+for qc in qcs:
+    qc.energy = getattr(qc, 'energy', 0.0) + 0.01*qc.interaction_history_metric
+# check clusters
+clusters = []
+visited = set()
+for qc in coherent:
+    if qc.id in visited: continue
+    cluster = [qc]
+    visited.add(qc.id)
+    for other in coherent:
+        if other.id in visited: continue
+        if dist(qc.position, other.position, GS) < 30:
+            cluster.append(other)
+            visited.add(other.id)
+    if len(cluster) > 3:
+        clusters.append(cluster)
+    for cl in clusters:
+    avg_cp = sum(m.coherence_potential for m in cl)/len(cl)
+    if avg_cp > 0.85: # threshold = "ready primed for nova"
+        for m in cl:
+            # release: burst velocity, drop coherence, radiate energy
+            m.velocity += np.array([random.uniform(-1,1), random.uniform(-1,1)])
+            m.coherence_potential *= 0.4
+            m.energy = 0.0
         if step%10==0:
             with metrics.container():
                 st.markdown(f"**Step {step+1}**")
