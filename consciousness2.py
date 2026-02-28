@@ -20,7 +20,6 @@ st.subheader("Entropy")
 st.line_chart(ent)
 
 # network PLV
-freqs = 38 + np.random.randn(10)*0.5
 waves = np.array([wave(f) for f in freqs])
 amp = np.abs(waves) + 1e-8      # avoid zero-division
 phases = waves/amp
