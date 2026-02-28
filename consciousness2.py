@@ -2,6 +2,7 @@ import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import entropy
+import mne
 
 st.title("Consciousness Coherence Simulator")
 
@@ -11,6 +12,9 @@ K = st.sidebar.slider("Coupling strength (K)", 0.1, 1.5, 0.6)
 gamma = st.sidebar.slider("Decoherence rate (gamma)", 0.001, 0.1, 0.02)
 drive_freq = st.sidebar.slider("Drive frequency (Hz)", 0.05, 0.5, 0.2)
 
+edf = mne.io.read_raw_edf("ST701N1-PSG.edf", preload=True)
+eeg = edf.copy().filter(0.5,40).get_data(picks="EEG")[0]
+t = np.arange(len(eeg))/100.0 # 100 Hz sampling
 uploaded = st.file_uploader("Upload EEG CSV (time,amp)", type="csv")
 
 t = np.linspace(0,10,2000)
