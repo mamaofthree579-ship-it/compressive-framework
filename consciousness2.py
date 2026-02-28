@@ -18,6 +18,11 @@ if uploaded:
         mat = loadmat(uploaded)
         key = [k for k in mat.keys() if not k.startswith("__")][0]
         eeg = mat[key].squeeze()
+    if uploaded:
+    # after loading eeg and t
+    if t[0] > t[-1]: # flip if descending
+        t = t[::-1]; eeg = eeg[::-1]
+    eeg = eeg - np.mean(eeg) # detrend
     else:
         data = np.loadtxt(uploaded, delimiter=",")
         t = data[:,0]; eeg = data[:,1]
