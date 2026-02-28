@@ -14,5 +14,7 @@ def entropy_from_trace(freq, t):
     return np.mean([entropy(P[i:i+win]) for i in range(0,len(P)-win,win)])
 
 t = np.linspace(0,10,2000)
-print("38 Hz (awake):", entropy_from_trace(38.0, t))
-print("4 Hz (sleep):", entropy_from_trace(4.0, t))
+awake = entropy_from_trace(38.0, t)
+sleep = entropy_from_trace(4.0, t)
+st.write("38 Hz (awake) entropy:", awake)
+st.write("4 Hz (sleep) entropy:", sleep)
