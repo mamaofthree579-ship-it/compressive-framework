@@ -52,8 +52,8 @@ def ent(freq):
 
 awake = ent(38.0)
 sleep = ent(4.0)
+st.write("Awake entropy (38 Hz):", awake)
+st.write("Sleep entropy (4 Hz):", sleep)
 gamma_t = np.ones_like(t)*0.02
 gamma_t[(t>3)&(t<5)] = 0.08  # propofol window
 ψ = np.exp(-gamma_t*t)*drive*np.exp(1j*2*np.pi*38*t)
-st.write("Awake entropy (38 Hz):", awake)
-st.write("Sleep entropy (4 Hz):", sleep)
