@@ -17,5 +17,5 @@ def entropy_from_trace(freq, t):
 t = np.linspace(0,10,2000)
 awake = entropy_from_trace(38.0, t)
 sleep = entropy_from_trace(4.0, t)
-st.write("38 Hz (awake) entropy:", awake)
-st.write("4 Hz (sleep) entropy:", sleep)
+write("38 Hz (awake) entropy:", awake)
+write("4 Hz (sleep) entropy:", sleep)
