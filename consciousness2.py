@@ -3,11 +3,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import entropy
 from scipy.io import loadmat
-mat = loadmat("sleep.mat")
-eeg = mat["eeg"].squeeze()
-fs = 100
-t = np.arange(len(eeg))/fs
-np.savetxt("sleep.csv", np.c_[t,eeg], delimiter=",")
 
 st.title("Consciousness Coherence Simulator")
 
@@ -19,6 +14,11 @@ drive_freq = st.sidebar.slider("Drive frequency (Hz)", 0.05, 0.5, 0.2)
 
 uploaded = st.file_uploader("Upload EEG CSV (time,amp)", type="csv")
 
+mat = loadmat("sleep.mat")
+eeg = mat["eeg"].squeeze()
+fs = 100
+t = np.arange(len(eeg))/fs
+np.savetxt("sleep.csv", np.c_[t,eeg], delimiter=",")
 t = np.linspace(0,10,2000)
 drive = 1 + K*np.sin(2*np.pi*drive_freq*t)
 
