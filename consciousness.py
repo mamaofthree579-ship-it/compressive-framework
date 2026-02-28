@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.stats import entropy
+import streamlit
 
 def wave_from_freq(freq, t, K=0.6, gamma=0.02, f_drive=0.2):
     drive = 1 + K*np.sin(2*np.pi*f_drive*t)
