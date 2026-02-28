@@ -18,7 +18,7 @@ if uploaded:
         mat = loadmat(uploaded)
         key = [k for k in mat.keys() if not k.startswith("__")][0]
         eeg = mat[key].squeeze()
-    if uploaded:
+if uploaded:
     # after loading eeg and t
     if t[0] > t[-1]: # flip if descending
         t = t[::-1]; eeg = eeg[::-1]
