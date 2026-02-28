@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import entropy
 from scipy.io import loadmat
+import io
 
 st.title("Consciousness Coherence Simulator")
 
@@ -19,7 +20,8 @@ if uploaded:
         key = [k for k in mat.keys() if not k.startswith("__")][0]
         eeg = mat[key].squeeze()
     else:
-        data = np.loadtxt(uploaded, delimiter=None)
+        s = io.StringIO(uploaded.getvalue().decode("utf-8"))
+        data = np.loadtxt(s, delimiter=None)
         eeg = data[:,0] if data.ndim > 1 else data
     t = np.arange(len(eeg))/100.0
     if t[0] > t[-1]:
