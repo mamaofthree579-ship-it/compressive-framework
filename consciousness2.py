@@ -22,7 +22,7 @@ st.line_chart(ent)
 # network PLV
 freqs = 38 + np.random.randn(10)*0.5
 waves = np.array([wave(f) for f in freqs])
-phases = waves/np.abs(waves)
+amp = np.abs(waves) + 1e-8      # avoid zero-division
+phases = waves/amp
 plv = np.abs(phases.mean(axis=0))
-st.subheader("Network PLV")
 st.line_chart(plv)
