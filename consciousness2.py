@@ -14,12 +14,14 @@ drive_freq = st.sidebar.slider("Drive frequency (Hz)", 0.05,0.5,0.2)
 uploaded = st.file_uploader("Upload EEG (CSV or MAT)", type=["csv","mat"])
 
 if uploaded:
-    if uploaded.name.endswith(".mat"):
-        mat = loadmat(uploaded)
-        key = [k for k in mat.keys() if not k.startswith("__")][0]
-        eeg = mat[key].squeeze()
+  if uploaded.name.endswith(".mat"):
+    ...
+else:
+    data = np.loadtxt(uploaded, delimiter=",")
+    if data.ndim == 1:
+        eeg = data
+        t = np.arange(len(eeg))/100.0
     else:
-        data = np.loadtxt(uploaded, delimiter=",")
         t = data[:,0]; eeg = data[:,1]
     if 't' not in locals():
         t = np.arange(len(eeg))/100.0
