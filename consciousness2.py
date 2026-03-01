@@ -36,8 +36,8 @@ if uploaded:
 else:
     fs=100; t=np.linspace(0,10,2000); eeg1_norm=np.zeros_like(t); eeg2_norm=np.zeros_like(t)
 
-def wave(f,a,g,norm): 
-    d = 1 + K*np.sin(2*np.pi*drive_freq*t)*(1 + norm)
+def wave(f,a,g,norm):
+    d = 1 + K*norm  # norm is eeg_norm, varies with your data
     return a*np.exp(-g*t)*d*np.exp(1j*2*np.pi*f*t)
 
 if uploaded:
