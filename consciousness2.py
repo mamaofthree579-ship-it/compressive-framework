@@ -26,7 +26,9 @@ if uploaded:
         s = io.StringIO(uploaded.getvalue().decode("utf-8"))
         data = np.genfromtxt(s, delimiter=None, filling_values=0)
         eeg = data[:,0] if data.ndim>1 else data
-    t = np.arange(len(eeg))/fs; eeg = eeg - np.mean(eeg)
+    t = np.arange(len(eeg))/fs
+    raw_eeg = eeg.copy()
+    eeg = eeg - np.mean(eeg)
 else:
     st.stop()
 
@@ -61,8 +63,8 @@ if n>1:
 t_ent = np.arange(n)*win/fs
 
 fig,ax = plt.subplots(2,1,sharex=True)
-ax[0].plot(t, eeg); ax[0].set_ylabel("EEG")
+ax[0].plot(t, raw_eeg); ax[0].set_ylabel("EEG raw")
 ax[1].plot(t_ent,ent_theory[:n],label="Theory"); ax[1].plot(t_ent,ent_eeg[:n],label="EEG")
 ax[1].set_ylabel("Entropy"); ax[1].set_xlabel("Time (s)"); ax[1].legend()
 st.pyplot(fig)
-st.caption("Top: raw EEG; bottom: entropy fit; tune parameters to align theory")
+st.caption("Top: raw EEG; bottom: theory vs EEG entropy; adjust parameters to fit")
