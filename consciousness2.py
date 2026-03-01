@@ -46,9 +46,7 @@ psi_b = wave(dom,1.0,gamma); psi_h = wave(1.1,0.5,gamma*0.5); psi_g = wave(0.12,
 P = np.abs(psi_b*psi_h*psi_g)**2; P_norm = P/np.sum(P)
 win = min(200,max(10,len(P_norm)//10))
 dyn_theory = np.array([window_std(P_norm[i:i+win]) for i in range(0,len(P_norm)-win,win)])
-
-eeg_norm = (eeg - eeg.min())/(eeg.max()-eeg.min()) if eeg.max()!=eeg.min() else eeg*0
-dyn_eeg = np.array([window_std(eeg_norm[i:i+win]) for i in range(0,len(eeg_norm)-win,win)])
+dyn_eeg = np.array([window_std(raw_eeg[i:i+win]) for i in range(0,len(raw_eeg)-win,win)])
 n = min(len(dyn_theory),len(dyn_eeg))
 def norm(a):
     return (a - a.min())/(a.max()-a.min()) if a.max()!=a.min() else a*0
@@ -63,4 +61,4 @@ ax[0].plot(t, raw_eeg); ax[0].set_ylabel("EEG avg")
 ax[1].plot(t_ent,dyn_t_n,label="Theory"); ax[1].plot(t_ent,dyn_e_n,label="EEG")
 ax[1].set_ylabel("Std (norm)"); ax[1].set_xlabel("Time (s)"); ax[1].legend()
 st.pyplot(fig)
-st.caption("EEG averages channels (skip index); dynamics via window std; tune parameters")
+st.caption("Dynamics via raw EEG window std; if flat, data may have constant variance per window—consider spectral metrics next")
