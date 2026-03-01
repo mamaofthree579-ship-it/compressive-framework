@@ -40,16 +40,21 @@ if uploaded:
         data = np.genfromtxt(s, delimiter=None, filling_values=0)
         eeg = data[:,1:].mean(axis=1) if data.ndim>1 else data
     eeg = eeg - np.mean(eeg)
-    P_eeg = np.abs(np.fft.rfft(eeg))**2; P_eeg /= P_eeg.sum()
-    ent_eeg = [entropy(P_eeg[i:i+win]) for i in range(0,len(P_eeg)-win,win)]
-    t_eeg = np.arange(len(ent_eeg))*win*(t[1]-t[0])
+    ent_eeg = []
+    eeg_win = win
+    for i in range(0, len(eeg)-eeg_win, eeg_win):
+        seg = eeg[i:i+eeg_win]
+        Ps = np.abs(np.fft.rfft(seg))**2
+        Ps = Ps/Ps.sum() if Ps.sum()>0 else Ps
+        ent_eeg.append(entropy(Ps))
+    t_eeg = np.arange(len(ent_eeg))*eeg_win*(t[1]-t[0])
 else:
     ent_eeg = []; t_eeg = []
 
 fig, (ax1, ax2) = plt.subplots(2,1,figsize=(6,4))
 ax1.plot(t, P); ax1.set_ylabel("Joint density")
-ax2.plot(t_ent, ent_theory, label="Theory"); 
+ax2.plot(t_ent, ent_theory, label="Theory")
 if ent_eeg: ax2.plot(t_eeg, ent_eeg, label="EEG")
 ax2.set_ylabel("Entropy"); ax2.set_xlabel("Time (s)"); ax2.legend()
 st.pyplot(fig)
-st.caption("Low entropy ≈ coherence; compare theory dips to EEG")
+st.caption("Entropy dips = coherence; real EEG now windowed same way")
