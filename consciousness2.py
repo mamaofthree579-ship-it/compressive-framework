@@ -20,13 +20,13 @@ if uploaded:
     if uploaded.name.endswith(".mat"):
         mat = loadmat(uploaded); key=[k for k in mat.keys() if not k.startswith("__")][0]
         eeg_raw = mat[key].squeeze()
-        eeg = eeg_raw.mean(axis=1) if eeg_raw.ndim>1 else eeg_raw
+        eeg = eeg_raw[:,1:].mean(axis=1) if eeg_raw.ndim>1 else eeg_raw
     elif uploaded.name.endswith(".xlsx"):
-        df = pd.read_excel(uploaded); eeg = df.values.mean(axis=1)
+        df = pd.read_excel(uploaded); eeg = df.values[:,1:].mean(axis=1) if df.shape[1]>1 else df.values.mean(axis=1)
     else:
         s = io.StringIO(uploaded.getvalue().decode("utf-8"))
         data = np.genfromtxt(s, delimiter=None, filling_values=0)
-        eeg = data.mean(axis=1) if data.ndim>1 else data
+        eeg = data[:,1:].mean(axis=1) if data.ndim>1 else data
     t = np.arange(len(eeg))/fs
     raw_eeg = eeg.copy()
     eeg = eeg - np.mean(eeg)
@@ -63,4 +63,4 @@ ax[0].plot(t, raw_eeg); ax[0].set_ylabel("EEG avg")
 ax[1].plot(t_ent,dyn_t_n,label="Theory"); ax[1].plot(t_ent,dyn_e_n,label="EEG")
 ax[1].set_ylabel("Std (norm)"); ax[1].set_xlabel("Time (s)"); ax[1].legend()
 st.pyplot(fig)
-st.caption("Top: EEG; bottom: normalised window std as dynamics proxy; tune parameters")
+st.caption("EEG averages channels (skip index); dynamics via window std; tune parameters")
