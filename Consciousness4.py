@@ -49,4 +49,4 @@ if eeg is not None:
     ax.set_ylabel("Unwrapped phase"); ax.legend()
     st.pyplot(fig)
 else:
-    st.write("Upload EEG")
+    st.write("shape:", getattr(eeg, 'shape', None))
