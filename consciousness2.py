@@ -58,14 +58,17 @@ ent_theory = np.array([window_entropy(P_norm[i:i+win]) for i in range(0,len(P_no
 eeg_norm = (eeg - eeg.min())/(eeg.max()-eeg.min()) if eeg.max()!=eeg.min() else eeg*0
 ent_eeg = np.array([window_entropy_nojit(eeg_norm[i:i+win]) for i in range(0,len(eeg_norm)-win,win)])
 n = min(len(ent_theory),len(ent_eeg))
+def norm(a):
+    return (a - a.min())/(a.max()-a.min()) if a.max()!=a.min() else a*0
+ent_t_n = norm(ent_theory[:n]); ent_e_n = norm(ent_eeg[:n])
 if n>1:
-    r,_ = pearsonr(ent_theory[:n],ent_eeg[:n])
-    st.write("Correlation:", r)
+    r,_ = pearsonr(ent_t_n, ent_e_n)
+    st.write("Correlation (shape):", r)
 t_ent = np.arange(n)*win/fs
 
 fig,ax = plt.subplots(2,1,sharex=True)
 ax[0].plot(t, raw_eeg); ax[0].set_ylabel("EEG avg")
-ax[1].plot(t_ent,ent_theory[:n],label="Theory"); ax[1].plot(t_ent,ent_eeg[:n],label="EEG")
-ax[1].set_ylabel("Entropy"); ax[1].set_xlabel("Time (s)"); ax[1].legend()
+ax[1].plot(t_ent,ent_t_n,label="Theory"); ax[1].plot(t_ent,ent_e_n,label="EEG")
+ax[1].set_ylabel("Entropy (norm)"); ax[1].set_xlabel("Time (s)"); ax[1].legend()
 st.pyplot(fig)
-st.caption("Top: average EEG across channels; bottom: entropy fit; tweak parameters")
+st.caption("Entropy curves normalised to compare shape; adjust parameters for fit")
