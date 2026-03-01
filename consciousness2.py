@@ -40,6 +40,11 @@ def window_entropy(x):
     hist = hist[hist>0]
     return entropy(hist) if len(hist)>0 else 0
 
+def window_entropy_nojit(x):
+    hist,_ = np.histogram(x,bins=50,density=True)
+    hist = hist[hist>0]
+    return entropy(hist) if len(hist)>0 else 0
+
 fft = np.abs(np.fft.rfft(eeg)); freqs = np.fft.rfftfreq(len(eeg),1/fs)
 dom = abs(freqs[np.argmax(fft)]) or 38.0
 psi_b = wave(dom,1.0,gamma); psi_h = wave(1.1,0.5,gamma*0.5); psi_g = wave(0.12,0.2,gamma*0.2)
@@ -48,7 +53,7 @@ win = min(200,max(10,len(P_norm)//10))
 ent_theory = np.array([window_entropy(P_norm[i:i+win]) for i in range(0,len(P_norm)-win,win)])
 
 eeg_norm = (eeg - eeg.min())/(eeg.max()-eeg.min()) if eeg.max()!=eeg.min() else eeg*0
-ent_eeg = np.array([window_entropy(eeg_norm[i:i+win]) for i in range(0,len(eeg_norm)-win,win)])
+ent_eeg = np.array([window_entropy_nojit(eeg_norm[i:i+win]) for i in range(0,len(eeg_norm)-win,win)])
 n = min(len(ent_theory),len(ent_eeg))
 if n>1:
     r,_ = pearsonr(ent_theory[:n],ent_eeg[:n])
@@ -59,4 +64,4 @@ fig,ax = plt.subplots()
 ax.plot(t_ent,ent_theory[:n],label="Theory"); ax.plot(t_ent,ent_eeg[:n],label="EEG")
 ax.set_ylabel("Entropy"); ax.set_xlabel("Time (s)"); ax.legend()
 st.pyplot(fig)
-st.caption("Jittered entropy avoids flat zeros; correlation shows model fit")
+st.caption("EEG entropy fixed; tweak theory to maximize correlation")
