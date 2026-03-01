@@ -27,7 +27,7 @@ if uploaded:
         s = io.StringIO(uploaded.getvalue().decode("utf-8"))
         data = np.genfromtxt(s, delimiter=None, filling_values=0)
         eeg = data[:,0] if data.ndim > 1 else data
-    t = np.arange(len(eeg))/100.0
+    t = np.arange(len(eeg))/10.0
     if t[0] > t[-1]:
         t = t[::-1]; eeg = eeg[::-1]
     eeg = eeg - np.mean(eeg)
@@ -56,7 +56,7 @@ psi_g = wave(0.12,0.2,gamma*0.2)
 
 P = np.abs(psi_b*psi_h*psi_g)**2
 P_norm = P/np.sum(P)
-win=200
+win = min(200, len(P_norm)//4) if len(P_norm) > 4 else 1
 ent = [entropy(P_norm[i:i+win]) for i in range(0,len(P_norm)-win,win)]
 t_ent = np.arange(len(ent))*win*(t[1]-t[0])
 
