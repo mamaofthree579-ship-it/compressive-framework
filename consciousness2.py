@@ -46,7 +46,7 @@ def window_feats(x):
     return env, p, dom, env*p*dom
 
 fft = np.abs(np.fft.rfft(eeg)); freqs = np.fft.rfftfreq(len(eeg),1/fs)
- dom = abs(freqs[np.argmax(fft)]) or 38.0
+dom = abs(freqs[np.argmax(fft)]) or 38.0
 psi_b = wave(dom,1.0,gamma); psi_h = wave(1.1,0.5,gamma*0.5); psi_g = wave(0.12,0.2,gamma*0.2)
 P = np.abs(psi_b*psi_h*psi_g)**2; P_norm = P/np.sum(P)
 win = min(200,max(10,len(P_norm)//10))
