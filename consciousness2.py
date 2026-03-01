@@ -11,7 +11,6 @@ st.title("Consciousness Coherence Simulator")
 st.sidebar.header("Parameters")
 K = st.sidebar.slider("Coupling strength (K)", 0.1,1.5,0.6)
 gamma = st.sidebar.slider("Decoherence rate (gamma)", 0.001,0.1,0.02)
-drive_freq = st.sidebar.slider("Drive frequency (Hz)", 0.05,0.5,0.2)
 fs = st.sidebar.slider("Sampling rate (Hz)", 1,500,100)
 
 uploaded = st.file_uploader("Upload EEG (CSV, MAT, XLSX)", type=["csv","mat","xlsx"])
@@ -37,7 +36,7 @@ else:
     fs=100; t=np.linspace(0,10,2000); eeg1_norm=np.zeros_like(t); eeg2_norm=np.zeros_like(t)
 
 def wave(f,a,g,norm):
-    d = 1 + K*norm  # norm is eeg_norm, varies with your data
+    d = 1 + K*norm
     return a*np.exp(-g*t)*d*np.exp(1j*2*np.pi*f*t)
 
 if uploaded:
@@ -55,7 +54,9 @@ else:
     psi_b1=wave(38.0,1.0,gamma,eeg1_norm)
 
 psi_h = wave(1.1,0.5,gamma*0.5,eeg1_norm); psi_g = wave(0.12,0.2,gamma*0.2,eeg1_norm)
-P=np.abs(psi_b1*psi_h*psi_g)**2; P_norm=P/np.sum(P)
+P = np.abs(psi_b1*psi_h*psi_g)**2
+P = np.where(P < 1e-10, 0, P)
+P_norm = P/np.sum(P) if np.sum(P)>0 else P
 win=min(200,max(10,len(P_norm)//10))
 ent=[entropy(P_norm[i:i+win]) for i in range(0,len(P_norm)-win,win)]
 ent=np.array(ent); ent_norm=(ent-ent.min())/(ent.max()-ent.min()) if ent.max()!=ent.min() else ent*0
@@ -65,4 +66,4 @@ fig,(ax1,ax2)=plt.subplots(2,1,figsize=(6,4))
 ax1.plot(t,P); ax1.set_ylabel("Joint density")
 ax2.plot(t_ent,ent_norm); ax2.set_ylabel("Entropy (norm)"); ax2.set_xlabel("Time (s)")
 st.pyplot(fig)
-st.caption("Low entropy dips ≈ moments of high coherence; PLV shown if 2 channels")
+st.caption("Entropy dips ≈ coherence; density clipped; PLV if 2 channels")
