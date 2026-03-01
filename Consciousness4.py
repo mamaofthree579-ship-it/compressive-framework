@@ -6,7 +6,7 @@ from scipy.io import loadmat
 import io
 import pandas as pd
 
-st.title("EEG–Joint PLV persistent")
+st.title("EEG–Joint PLV fixed")
 
 f_gut=0.12; f_heart=1.1; f_brain=38.0
 K=st.sidebar.slider("Coupling",0.1,1.5,0.6)
@@ -29,8 +29,11 @@ if uploaded and st.session_state.get('eeg') is None:
             s=io.StringIO(uploaded.getvalue().decode("utf-8"))
             data=np.genfromtxt(s,delimiter=None,filling_values=0)
         st.write("Data shape:", data.shape)
-        col=st.sidebar.slider("Column",0,data.shape[1]-1 if data.ndim>1 else 0,0)
-        eeg=data[:,col] if data.ndim>1 else data
+        if data.ndim>1:
+            col=st.sidebar.slider("Column",0,data.shape[1]-1,0)
+            eeg=data[:,col]
+        else:
+            eeg=data
         st.session_state.eeg = eeg
     except Exception as ex:
         st.error("Load error: "+str(ex))
