@@ -35,7 +35,8 @@ def wave(f,a,g):
     return a*np.exp(-g*t)*d*np.exp(1j*2*np.pi*f*t)
 
 def window_entropy(x):
-    hist,_ = np.histogram(x,bins=20,density=True)
+    x = x + np.random.uniform(-1e-6,1e-6,len(x))
+    hist,_ = np.histogram(x,bins=50,density=True)
     hist = hist[hist>0]
     return entropy(hist) if len(hist)>0 else 0
 
@@ -58,4 +59,4 @@ fig,ax = plt.subplots()
 ax.plot(t_ent,ent_theory[:n],label="Theory"); ax.plot(t_ent,ent_eeg[:n],label="EEG")
 ax.set_ylabel("Entropy"); ax.set_xlabel("Time (s)"); ax.legend()
 st.pyplot(fig)
-st.caption("Correlation quantifies theory vs EEG match; tune parameters to maximize")
+st.caption("Jittered entropy avoids flat zeros; correlation shows model fit")
