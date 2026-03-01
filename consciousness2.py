@@ -34,15 +34,20 @@ def wave(f,a,g):
     d = 1 + K*np.sin(2*np.pi*drive_freq*t)
     return a*np.exp(-g*t)*d*np.exp(1j*2*np.pi*f*t)
 
+def window_entropy(x):
+    hist,_ = np.histogram(x,bins=20,density=True)
+    hist = hist[hist>0]
+    return entropy(hist) if len(hist)>0 else 0
+
 fft = np.abs(np.fft.rfft(eeg)); freqs = np.fft.rfftfreq(len(eeg),1/fs)
 dom = abs(freqs[np.argmax(fft)]) or 38.0
 psi_b = wave(dom,1.0,gamma); psi_h = wave(1.1,0.5,gamma*0.5); psi_g = wave(0.12,0.2,gamma*0.2)
 P = np.abs(psi_b*psi_h*psi_g)**2; P_norm = P/np.sum(P)
 win = min(200,max(10,len(P_norm)//10))
-ent_theory = np.array([entropy(P_norm[i:i+win]) for i in range(0,len(P_norm)-win,win)])
+ent_theory = np.array([window_entropy(P_norm[i:i+win]) for i in range(0,len(P_norm)-win,win)])
 
 eeg_norm = (eeg - eeg.min())/(eeg.max()-eeg.min()) if eeg.max()!=eeg.min() else eeg*0
-ent_eeg = np.array([entropy(eeg_norm[i:i+win]+1e-12) for i in range(0,len(eeg_norm)-win,win)])
+ent_eeg = np.array([window_entropy(eeg_norm[i:i+win]) for i in range(0,len(eeg_norm)-win,win)])
 n = min(len(ent_theory),len(ent_eeg))
 t_ent = np.arange(n)*win/fs
 
@@ -50,4 +55,4 @@ fig,ax = plt.subplots()
 ax.plot(t_ent,ent_theory[:n],label="Theory"); ax.plot(t_ent,ent_eeg[:n],label="EEG")
 ax.set_ylabel("Entropy"); ax.set_xlabel("Time (s)"); ax.legend()
 st.pyplot(fig)
-st.caption("Align theory dips with EEG entropy dips to validate coupling")
+st.caption("Theory vs EEG entropy—matching dips support coupling model")
