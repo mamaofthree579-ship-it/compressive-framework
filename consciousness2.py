@@ -56,7 +56,7 @@ psi_g = wave(0.12,0.2,gamma*0.2)
 
 P = np.abs(psi_b*psi_h*psi_g)**2
 P_norm = P/np.sum(P)
-win = min(200, len(P_norm)//4) if len(P_norm) > 4 else 1
+win = min 200, len(P_norm)//4) if len(P_norm) > 4 else 1
 ent = [entropy(P_norm[i:i+win]) for i in range(0,len(P_norm)-win,win)]
 t_ent = np.arange(len(ent))*win*(t[1]-t[0])
 
