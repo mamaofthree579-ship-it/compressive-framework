@@ -29,11 +29,12 @@ if uploaded:
         eeg = data[:,0] if data.ndim > 1 else data
     t = np.arange(len(eeg))/fs
     eeg = eeg - np.mean(eeg)
+    eeg_norm = (eeg - eeg.min())/(eeg.max()-eeg.min()) if eeg.max()!=eeg.min() else np.zeros_like(eeg)
 else:
-    fs = 100; t = np.linspace(0,10,2000); eeg = None
+    fs = 100; t = np.linspace(0,10,2000); eeg = None; eeg_norm = np.zeros_like(t)
 
 def wave(f,a,g):
-    d = 1 + K*np.sin(2*np.pi*drive_freq*t)
+    d = 1 + K*np.sin(2*np.pi*drive_freq*t)*(1 + eeg_norm)
     return a*np.exp(-g*t)*d*np.exp(1j*2*np.pi*f*t)
 
 if eeg is not None:
