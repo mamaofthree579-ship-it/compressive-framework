@@ -6,7 +6,7 @@ from scipy.io import loadmat
 import io
 import pandas as pd
 
-st.title("EEG vs Joint Phase (full)")
+st.title("EEG–Joint Phase Locking")
 
 f_gut=0.12; f_heart=1.1; f_brain=38.0
 K=st.sidebar.slider("Coupling",0.1,1.5,0.6)
@@ -32,15 +32,14 @@ if uploaded:
     t_eeg=np.linspace(0,10,len(eeg))
     phase_eeg=np.angle(hilbert(eeg))
     phase_eeg_unwrapped=np.unwrap(phase_eeg)
-    inst_freq=np.diff(phase_eeg_unwrapped)/(2*np.pi*(t_eeg[1]-t_eeg[0]))
+    phase_joint_interp = np.interp(t_eeg, t, phase_joint)
+    plv = np.abs(np.mean(np.exp(1j*(phase_joint_interp - phase_eeg_unwrapped))))
+    st.write("Phase-Locking Value:", plv)
 
-    fig, (ax1,ax2) = plt.subplots(2,1,figsize=(6,4))
-    ax1.plot(t_eeg, eeg); ax1.set_ylabel("EEG")
-    ax2.plot(t_eeg, phase_eeg_unwrapped, label="EEG phase")
-    ax2.plot(t, phase_joint, label="Joint phase")
-    ax2.set_ylabel("Unwrapped phase"); ax2.legend()
+    fig, ax = plt.subplots()
+    ax.plot(t_eeg, phase_eeg_unwrapped, label="EEG phase")
+    ax.plot(t_eeg, phase_joint_interp, label="Joint phase")
+    ax.set_ylabel("Unwrapped phase"); ax.legend()
     st.pyplot(fig)
-    st.line_chart(inst_freq)
-    st.caption("Raw EEG, unwrapped phase vs joint phase, instantaneous freq")
 else:
-    st.write("Upload EEG to compare")
+    st.write("Upload EEG")
