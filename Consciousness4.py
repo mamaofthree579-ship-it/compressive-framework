@@ -49,4 +49,6 @@ if eeg is not None:
     ax.set_ylabel("Unwrapped phase"); ax.legend()
     st.pyplot(fig)
 else:
-    st.write("shape:", getattr(eeg, 'shape', None))
+    st.write("Raw data shape:", data.shape)
+col = st.sidebar.slider("Column",0,data.shape[1]-1,0)
+eeg = data[:,col]
