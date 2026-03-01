@@ -6,7 +6,7 @@ from scipy.io import loadmat
 import io
 import pandas as pd
 
-st.title("EEG–Joint PLV fixed")
+st.title("EEG–Joint PLV robust")
 
 f_gut=0.12; f_heart=1.1; f_brain=38.0
 K=st.sidebar.slider("Coupling",0.1,1.5,0.6)
@@ -39,20 +39,23 @@ if uploaded and st.session_state.get('eeg') is None:
         st.error("Load error: "+str(ex))
 
 eeg = st.session_state.get('eeg')
-if eeg is not None:
-    eeg=eeg-np.mean(eeg)
-    st.write("len:", len(eeg), "std:", np.std(eeg))
-    st.line_chart(eeg)
-    t_eeg=np.linspace(0,10,len(eeg))
-    phase_eeg=np.angle(hilbert(eeg))
-    phase_eeg_unwrapped=np.unwrap(phase_eeg)
-    phase_joint_interp = np.interp(t_eeg, t, phase_joint)
-    plv = np.abs(np.mean(np.exp(1j*(phase_joint_interp - phase_eeg_unwrapped))))
-    st.write("Phase-Locking Value:", plv)
-    fig, ax = plt.subplots()
-    ax.plot(t_eeg, phase_eeg_unwrapped, label="EEG phase")
-    ax.plot(t_eeg, phase_joint_interp, label="Joint phase")
-    ax.set_ylabel("Unwrapped phase"); ax.legend()
-    st.pyplot(fig)
+if eeg is not None and len(eeg)>10:
+    try:
+        eeg=eeg-np.mean(eeg)
+        st.write("len:", len(eeg), "std:", np.std(eeg))
+        st.line_chart(eeg)
+        t_eeg=np.linspace(0,10,len(eeg))
+        phase_eeg=np.angle(hilbert(eeg))
+        phase_eeg_unwrapped=np.unwrap(phase_eeg)
+        phase_joint_interp = np.interp(t_eeg, t, phase_joint)
+        plv = np.abs(np.mean(np.exp(1j*(phase_joint_interp - phase_eeg_unwrapped))))
+        st.write("Phase-Locking Value:", plv)
+        fig, ax = plt.subplots()
+        ax.plot(t_eeg, phase_eeg_unwrapped, label="EEG phase")
+        ax.plot(t_eeg, phase_joint_interp, label="Joint phase")
+        ax.set_ylabel("Unwrapped phase"); ax.legend()
+        st.pyplot(fig)
+    except Exception as ex:
+        st.error("Processing error: "+str(ex))
 else:
-    st.write("Upload EEG")
+    st.write("Upload EEG with enough samples")
