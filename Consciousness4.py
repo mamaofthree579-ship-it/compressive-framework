@@ -1,7 +1,7 @@
 import streamlit as st
 import numpy as np
 
-st.title("EEG chart with column picker")
+st.title("EEG chart with nan‑safe")
 uploaded=st.file_uploader("Upload")
 if uploaded:
     data=np.genfromtxt(uploaded, delimiter=None)
@@ -11,6 +11,7 @@ if uploaded:
         eeg=data[:,col]
     else:
         eeg=data
+    eeg = np.nan_to_num(eeg) # replace nan with 0
     st.write("std:", np.std(eeg))
     st.line_chart(eeg)
 else:
