@@ -6,7 +6,7 @@ from scipy.io import loadmat
 import io
 import pandas as pd
 
-st.title("EEG–Joint Phase Locking")
+st.title("EEG–Joint PLV with debug")
 
 f_gut=0.12; f_heart=1.1; f_brain=38.0
 K=st.sidebar.slider("Coupling",0.1,1.5,0.6)
@@ -27,8 +27,10 @@ if uploaded:
     else:
         s=io.StringIO(uploaded.getvalue().decode("utf-8"))
         data=np.genfromtxt(s,delimiter=None,filling_values=0)
-        eeg=data[:,1:].mean(axis=1) if data.ndim>1 else data
+        eeg=data[:,1:].mean(axis=1) if data.ndim>1 else data 
     eeg=eeg-np.mean(eeg)
+    st.write("EEG mean:", np.mean(eeg), "std:", np.std(eeg))
+    st.line_chart(eeg)
     t_eeg=np.linspace(0,10,len(eeg))
     phase_eeg=np.angle(hilbert(eeg))
     phase_eeg_unwrapped=np.unwrap(phase_eeg)
