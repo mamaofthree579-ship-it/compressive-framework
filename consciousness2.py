@@ -1,12 +1,12 @@
 import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.stats import entropy, pearsonr
+from scipy.stats import pearsonr
 from scipy.io import loadmat
 import io
 import pandas as pd
 
-st.title("Coherence vs EEG Entropy")
+st.title("Coherence vs EEG Dynamics")
 
 st.sidebar.header("Parameters")
 K = st.sidebar.slider("Coupling strength (K)", 0.1,1.5,0.6)
@@ -37,38 +37,30 @@ def wave(f,a,g):
     d = 1 + K*np.sin(2*np.pi*drive_freq*t)
     return a*np.exp(-g*t)*d*np.exp(1j*2*np.pi*f*t)
 
-def window_entropy(x):
-    x = x + np.random.uniform(-1e-6,1e-6,len(x))
-    hist,_ = np.histogram(x,bins=50,density=True)
-    hist = hist[hist>0]
-    return entropy(hist) if len(hist)>0 else 0
-
-def window_entropy_nojit(x):
-    hist,_ = np.histogram(x,bins=50,density=True)
-    hist = hist[hist>0]
-    return entropy(hist) if len(hist)>0 else 0
+def window_std(x):
+    return np.std(x)
 
 fft = np.abs(np.fft.rfft(eeg)); freqs = np.fft.rfftfreq(len(eeg),1/fs)
 dom = abs(freqs[np.argmax(fft)]) or 38.0
 psi_b = wave(dom,1.0,gamma); psi_h = wave(1.1,0.5,gamma*0.5); psi_g = wave(0.12,0.2,gamma*0.2)
 P = np.abs(psi_b*psi_h*psi_g)**2; P_norm = P/np.sum(P)
 win = min(200,max(10,len(P_norm)//10))
-ent_theory = np.array([window_entropy(P_norm[i:i+win]) for i in range(0,len(P_norm)-win,win)])
+dyn_theory = np.array([window_std(P_norm[i:i+win]) for i in range(0,len(P_norm)-win,win)])
 
 eeg_norm = (eeg - eeg.min())/(eeg.max()-eeg.min()) if eeg.max()!=eeg.min() else eeg*0
-ent_eeg = np.array([window_entropy_nojit(eeg_norm[i:i+win]) for i in range(0,len(eeg_norm)-win,win)])
-n = min(len(ent_theory),len(ent_eeg))
+dyn_eeg = np.array([window_std(eeg_norm[i:i+win]) for i in range(0,len(eeg_norm)-win,win)])
+n = min(len(dyn_theory),len(dyn_eeg))
 def norm(a):
     return (a - a.min())/(a.max()-a.min()) if a.max()!=a.min() else a*0
-ent_t_n = norm(ent_theory[:n]); ent_e_n = norm(ent_eeg[:n])
+dyn_t_n = norm(dyn_theory[:n]); dyn_e_n = norm(dyn_eeg[:n])
 if n>1:
-    r,_ = pearsonr(ent_t_n, ent_e_n)
+    r,_ = pearsonr(dyn_t_n, dyn_e_n)
     st.write("Correlation (shape):", r)
 t_ent = np.arange(n)*win/fs
 
 fig,ax = plt.subplots(2,1,sharex=True)
 ax[0].plot(t, raw_eeg); ax[0].set_ylabel("EEG avg")
-ax[1].plot(t_ent,ent_t_n,label="Theory"); ax[1].plot(t_ent,ent_e_n,label="EEG")
-ax[1].set_ylabel("Entropy (norm)"); ax[1].set_xlabel("Time (s)"); ax[1].legend()
+ax[1].plot(t_ent,dyn_t_n,label="Theory"); ax[1].plot(t_ent,dyn_e_n,label="EEG")
+ax[1].set_ylabel("Std (norm)"); ax[1].set_xlabel("Time (s)"); ax[1].legend()
 st.pyplot(fig)
-st.caption("Entropy curves normalised to compare shape; adjust parameters for fit")
+st.caption("Top: EEG; bottom: normalised window std as dynamics proxy; tune parameters")
