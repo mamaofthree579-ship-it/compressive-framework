@@ -39,24 +39,19 @@ def wave(f,a,g):
     return a*np.exp(-g*t)*d*np.exp(1j*2*np.pi*f*t)
 
 def window_feats(x):
-    p = np.mean(x**2)
-    env = np.mean(np.abs(hilbert(x))) if len(x)>2 else 0
+    p = np.mean(x**2) + 1e-9
+    env = (np.mean(np.abs(hilbert(x))) + 1e-9) if len(x)>2 else 1e-9
     fx = np.abs(np.fft.rfft(x)); fx_freqs = np.fft.rfftfreq(len(x),1/fs)
-    dom = fx_freqs[np.argmax(fx)] if len(fx)>0 else 0
-    return env, p, dom, env*p*dom
+    dom = max((fx_freqs[np.argmax(fx)] if len(fx)>0 else 0), 0.1)
+    return env * p * dom
 
 fft = np.abs(np.fft.rfft(eeg)); freqs = np.fft.rfftfreq(len(eeg),1/fs)
 dom = abs(freqs[np.argmax(fft)]) or 38.0
 psi_b = wave(dom,1.0,gamma); psi_h = wave(1.1,0.5,gamma*0.5); psi_g = wave(0.12,0.2,gamma*0.2)
 P = np.abs(psi_b*psi_h*psi_g)**2; P_norm = P/np.sum(P)
-win = min(200,max(10,len(P_norm)//10))
-e0,p0,d0,c0 = window_feats(raw_eeg[:win])
-e1,p1,d1,c1 = window_feats(raw_eeg[win:2*win])
-st.write("Window0 env,power,dom,coh:", e0,p0,d0,c0)
-st.write("Window1 env,power,dom,coh:", e1,p1,d1,c1)
-
-dyn_theory = np.array([window_feats(P_norm[i:i+win])[3] for i in range(0,len(P_norm)-win,win)])
-dyn_eeg = np.array([window_feats(raw_eeg[i:i+win])[3] for i in range(0,len(raw_eeg)-win,win)])
+win = max(50, min(200, len(P_norm)//10))
+dyn_theory = np.array([window_feats(P_norm[i:i+win]) for i in range(0,len(P_norm)-win,win)])
+dyn_eeg = np.array([window_feats(raw_eeg[i:i+win]) for i in range(0,len(raw_eeg)-win,win)])
 n = min(len(dyn_theory),len(dyn_eeg))
 def norm(a):
     return (a - a.min())/(a.max()-a.min()) if a.max()!=a.min() else a*0
@@ -71,3 +66,4 @@ ax[0].plot(t, raw_eeg); ax[0].set_ylabel("EEG avg")
 ax[1].plot(t_ent,dyn_t_n,label="Theory"); ax[1].plot(t_ent,dyn_e_n,label="EEG")
 ax[1].set_ylabel("Norm coherence"); ax[1].set_xlabel("Time (s)"); ax[1].legend()
 st.pyplot(fig)
+st.caption("Zero-guards added; win≥50; dom≥0.1 Hz; should show curves now")
