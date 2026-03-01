@@ -1,61 +1,8 @@
 import streamlit as st
 import numpy as np
-import matplotlib.pyplot as plt
-from scipy.signal import hilbert
-from scipy.io import loadmat
-import io
-import pandas as pd
-
-st.title("EEG–Joint PLV robust")
-
-f_gut=0.12; f_heart=1.1; f_brain=38.0
-K=st.sidebar.slider("Coupling",0.1,1.5,0.6)
-gamma=st.sidebar.slider("Decoherence",0.001,0.1,0.02)
-
-t=np.linspace(0,10,2000)
-drive=1+K*np.sin(2*np.pi*0.2*t)
-joint = np.exp(-gamma*t)*drive*np.exp(1j*2*np.pi*f_gut*t) * np.exp(-gamma*0.5*t)*drive*np.exp(1j*2*np.pi*f_heart*t) * np.exp(-gamma*t)*drive*np.exp(1j*2*np.pi*f_brain*t)
-phase_joint = np.angle(joint)
-
-uploaded=st.file_uploader("Upload EEG",type=["csv","mat","xlsx"])
-if uploaded and st.session_state.get('eeg') is None:
-    try:
-        if uploaded.name.endswith(".mat"):
-            mat=loadmat(uploaded); key=[k for k in mat.keys() if not k.startswith("__")][0]
-            data=mat[key].squeeze()
-        elif uploaded.name.endswith(".xlsx"):
-            df=pd.read_excel(uploaded); data=df.values
-        else:
-            s=io.StringIO(uploaded.getvalue().decode("utf-8"))
-            data=np.genfromtxt(s,delimiter=None,filling_values=0)
-        st.write("Data shape:", data.shape)
-        if data.ndim>1:
-            col=st.sidebar.slider("Column",0,data.shape[1]-1,0)
-            eeg=data[:,col]
-        else:
-            eeg=data
-        st.session_state.eeg = eeg
-    except Exception as ex:
-        st.error("Load error: "+str(ex))
-
-eeg = st.session_state.get('eeg')
-if eeg is not None and len(eeg)>10:
-    try:
-        eeg=eeg-np.mean(eeg)
-        st.write("len:", len(eeg), "std:", np.std(eeg))
-        st.line_chart(eeg)
-        t_eeg=np.linspace(0,10,len(eeg))
-        phase_eeg=np.angle(hilbert(eeg))
-        phase_eeg_unwrapped=np.unwrap(phase_eeg)
-        phase_joint_interp = np.interp(t_eeg, t, phase_joint)
-        plv = np.abs(np.mean(np.exp(1j*(phase_joint_interp - phase_eeg_unwrapped))))
-        st.write("Phase-Locking Value:", plv)
-        fig, ax = plt.subplots()
-        ax.plot(t_eeg, phase_eeg_unwrapped, label="EEG phase")
-        ax.plot(t_eeg, phase_joint_interp, label="Joint phase")
-        ax.set_ylabel("Unwrapped phase"); ax.legend()
-        st.pyplot(fig)
-    except Exception as ex:
-        st.error("Processing error: "+str(ex))
-else:
-    st.write("Upload EEG with enough samples")
+uploaded=st.file_uploader("Upload")
+if uploaded:
+    data=np.genfromtxt(uploaded,delimiter=None)
+    st.write("shape:", data.shape)
+    eeg=data if data.ndim==1 else data[:,0]
+    st.line_chart(eeg)
