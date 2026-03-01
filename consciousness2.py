@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from scipy.stats import entropy
 from scipy.io import loadmat
 import io
+import pandas as pd
 
 st.title("Consciousness Coherence Simulator")
 
@@ -12,13 +13,16 @@ K = st.sidebar.slider("Coupling strength (K)", 0.1,1.5,0.6)
 gamma = st.sidebar.slider("Decoherence rate (gamma)", 0.001,0.1,0.02)
 drive_freq = st.sidebar.slider("Drive frequency (Hz)", 0.05,0.5,0.2)
 
-uploaded = st.file_uploader("Upload EEG (CSV or MAT)", type=["csv","mat"])
+uploaded = st.file_uploader("Upload EEG (CSV, MAT, or XLSX)", type=["csv","mat","xlsx"])
 
 if uploaded:
     if uploaded.name.endswith(".mat"):
         mat = loadmat(uploaded)
         key = [k for k in mat.keys() if not k.startswith("__")][0]
         eeg = mat[key].squeeze()
+    elif uploaded.name.endswith(".xlsx"):
+        df = pd.read_excel(uploaded)
+        eeg = df.iloc[:,0].values
     else:
         s = io.StringIO(uploaded.getvalue().decode("utf-8"))
         data = np.genfromtxt(s, delimiter=None, filling_values=0)
