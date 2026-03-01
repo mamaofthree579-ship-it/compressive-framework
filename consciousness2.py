@@ -30,7 +30,6 @@ if uploaded:
 else:
     st.stop()
 
-# theory wave
 def wave(f,a,g):
     d = 1 + K*np.sin(2*np.pi*drive_freq*t)
     return a*np.exp(-g*t)*d*np.exp(1j*2*np.pi*f*t)
@@ -42,13 +41,13 @@ P = np.abs(psi_b*psi_h*psi_g)**2; P_norm = P/np.sum(P)
 win = min(200,max(10,len(P_norm)//10))
 ent_theory = np.array([entropy(P_norm[i:i+win]) for i in range(0,len(P_norm)-win,win)])
 
-# EEG entropy
 eeg_norm = (eeg - eeg.min())/(eeg.max()-eeg.min()) if eeg.max()!=eeg.min() else eeg*0
-ent_eeg = np.array([entropy(eeg_norm[i:i+win]) for i in range(0,len(eeg_norm)-win,win)])
+ent_eeg = np.array([entropy(eeg_norm[i:i+win]+1e-12) for i in range(0,len(eeg_norm)-win,win)])
+n = min(len(ent_theory),len(ent_eeg))
+t_ent = np.arange(n)*win/fs
 
-t_ent = np.arange(len(ent_theory))*win/fs
 fig,ax = plt.subplots()
-ax.plot(t_ent,ent_theory,label="Theory"); ax.plot(t_ent,ent_eeg[:len(ent_theory)],label="EEG")
+ax.plot(t_ent,ent_theory[:n],label="Theory"); ax.plot(t_ent,ent_eeg[:n],label="EEG")
 ax.set_ylabel("Entropy"); ax.set_xlabel("Time (s)"); ax.legend()
 st.pyplot(fig)
-st.caption("Compare theory entropy dips to EEG entropy—match suggests coupling captures real coherence")
+st.caption("Align theory dips with EEG entropy dips to validate coupling")
