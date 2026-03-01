@@ -1,7 +1,7 @@
 import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.stats import entropy
+from scipy.stats import entropy, pearsonr
 from scipy.io import loadmat
 import io
 import pandas as pd
@@ -49,10 +49,13 @@ ent_theory = np.array([window_entropy(P_norm[i:i+win]) for i in range(0,len(P_no
 eeg_norm = (eeg - eeg.min())/(eeg.max()-eeg.min()) if eeg.max()!=eeg.min() else eeg*0
 ent_eeg = np.array([window_entropy(eeg_norm[i:i+win]) for i in range(0,len(eeg_norm)-win,win)])
 n = min(len(ent_theory),len(ent_eeg))
+if n>1:
+    r,_ = pearsonr(ent_theory[:n],ent_eeg[:n])
+    st.write("Correlation:", r)
 t_ent = np.arange(n)*win/fs
 
 fig,ax = plt.subplots()
 ax.plot(t_ent,ent_theory[:n],label="Theory"); ax.plot(t_ent,ent_eeg[:n],label="EEG")
 ax.set_ylabel("Entropy"); ax.set_xlabel("Time (s)"); ax.legend()
 st.pyplot(fig)
-st.caption("Theory vs EEG entropy—matching dips support coupling model")
+st.caption("Correlation quantifies theory vs EEG match; tune parameters to maximize")
