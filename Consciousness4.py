@@ -6,7 +6,7 @@ from scipy.io import loadmat
 import io
 import pandas as pd
 
-st.title("EEG–Joint PLV safe")
+st.title("EEG–Joint PLV col select")
 
 f_gut=0.12; f_heart=1.1; f_brain=38.0
 K=st.sidebar.slider("Coupling",0.1,1.5,0.6)
@@ -23,19 +23,21 @@ if uploaded:
     try:
         if uploaded.name.endswith(".mat"):
             mat=loadmat(uploaded); key=[k for k in mat.keys() if not k.startswith("__")][0]
-            eeg_raw=mat[key].squeeze(); eeg = eeg_raw[:,1:].mean(axis=1) if eeg_raw.ndim>1 else eeg_raw
+            data=mat[key].squeeze()
         elif uploaded.name.endswith(".xlsx"):
-            df=pd.read_excel(uploaded); eeg=df.values[:,1:].mean(axis=1) if df.shape[1]>1 else df.values.mean(axis=1)
+            df=pd.read_excel(uploaded); data=df.values
         else:
             s=io.StringIO(uploaded.getvalue().decode("utf-8"))
             data=np.genfromtxt(s,delimiter=None,filling_values=0)
-            eeg=data[:,1:].mean(axis=1) if data.ndim>1 else data
+        st.write("Data shape:", data.shape)
+        col=st.sidebar.slider("Column",0,data.shape[1]-1 if data.ndim>1 else 0,0)
+        eeg=data[:,col] if data.ndim>1 else data
     except Exception as ex:
         st.error("Load error: "+str(ex))
 
 if eeg is not None:
     eeg=eeg-np.mean(eeg)
-    st.write("EEG mean:", np.mean(eeg), "std:", np.std(eeg))
+    st.write("len:", len(eeg), "std:", np.std(eeg))
     st.line_chart(eeg)
     t_eeg=np.linspace(0,10,len(eeg))
     phase_eeg=np.angle(hilbert(eeg))
@@ -49,6 +51,4 @@ if eeg is not None:
     ax.set_ylabel("Unwrapped phase"); ax.legend()
     st.pyplot(fig)
 else:
-    st.write("Raw data shape:", data.shape)
-col = st.sidebar.slider("Column",0,data.shape[1]-1,0)
-eeg = data[:,col]
+    st.write("Upload EEG")
