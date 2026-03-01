@@ -60,8 +60,9 @@ if n>1:
     st.write("Correlation:", r)
 t_ent = np.arange(n)*win/fs
 
-fig,ax = plt.subplots()
-ax.plot(t_ent,ent_theory[:n],label="Theory"); ax.plot(t_ent,ent_eeg[:n],label="EEG")
-ax.set_ylabel("Entropy"); ax.set_xlabel("Time (s)"); ax.legend()
+fig,ax = plt.subplots(2,1,sharex=True)
+ax[0].plot(t, eeg); ax[0].set_ylabel("EEG")
+ax[1].plot(t_ent,ent_theory[:n],label="Theory"); ax[1].plot(t_ent,ent_eeg[:n],label="EEG")
+ax[1].set_ylabel("Entropy"); ax[1].set_xlabel("Time (s)"); ax[1].legend()
 st.pyplot(fig)
-st.caption("EEG entropy fixed; tweak theory to maximize correlation")
+st.caption("Top: raw EEG; bottom: entropy fit; tune parameters to align theory")
