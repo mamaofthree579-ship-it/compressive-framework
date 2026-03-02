@@ -1,131 +1,157 @@
 import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
+from scipy.linalg import solve
 import time
 
 st.set_page_config(layout="wide")
-st.title("Advanced Quantum Tunneling Simulator")
+st.title("Quantum Tunneling Research Laboratory")
 
 # ─────────────────────────────────────────────
-# Constants (natural units)
+# Constants
 # ─────────────────────────────────────────────
 hbar = 1.0
 m = 1.0
 
 # ─────────────────────────────────────────────
-# Controls
+# Sidebar Controls
 # ─────────────────────────────────────────────
-st.sidebar.header("Barrier Controls")
+st.sidebar.header("Barrier Settings")
 
-V0 = st.sidebar.slider("Barrier Height (V0)", 0.1, 10.0, 5.0, 0.1)
-a = st.sidebar.slider("Barrier Width (a)", 0.1, 5.0, 1.0, 0.1)
-E_target = st.sidebar.slider("Target Energy (Eigen Solver)", 0.1, 9.9, 2.0, 0.1)
-
+V0 = st.sidebar.slider("Barrier Height V0", 0.1, 10.0, 5.0, 0.1)
+a = st.sidebar.slider("Barrier Width a", 0.1, 5.0, 1.0, 0.1)
 barrier_type = st.sidebar.selectbox("Barrier Type",
-                                     ["Single Barrier", "Double Barrier"])
+                                    ["Single", "Double"])
 
-st.sidebar.header("Gravitational Modification")
+st.sidebar.header("Curvature Term")
 
-alpha = st.sidebar.slider("Coupling Strength (α)", 0.0, 5.0, 0.0, 0.1)
-beta = st.sidebar.slider("Curvature Decay (β)", 0.1, 5.0, 1.0, 0.1)
+alpha = st.sidebar.slider("α (Coupling)", 0.0, 5.0, 0.0, 0.1)
+beta = st.sidebar.slider("β (Decay)", 0.1, 5.0, 1.0, 0.1)
+
+st.sidebar.header("Simulation Controls")
+
+dt = st.sidebar.slider("Time Step", 0.0005, 0.01, 0.002, 0.0005)
+steps = st.sidebar.slider("Time Steps", 100, 600, 300, 50)
 
 # ─────────────────────────────────────────────
-# Spatial Grid
+# Grid
 # ─────────────────────────────────────────────
-N = 600
-x = np.linspace(-5, 5, N)
+N = 800
+x = np.linspace(-10, 10, N)
 dx = x[1] - x[0]
 
 # ─────────────────────────────────────────────
-# Potential Definition
+# Potential
 # ─────────────────────────────────────────────
 V = np.zeros(N)
 
-if barrier_type == "Single Barrier":
+if barrier_type == "Single":
     V[(x >= 0) & (x <= a)] = V0
 else:
     d = 1.5
     V[(x >= 0) & (x <= a)] = V0
     V[(x >= a + d) & (x <= 2*a + d)] = V0
 
-# Gravitational modification
+# Gravitational curvature modification
 V += alpha * np.exp(-beta * np.abs(x))
 
 # ─────────────────────────────────────────────
-# Hamiltonian Construction
+# Absorbing Boundary (Complex Absorber)
 # ─────────────────────────────────────────────
-diag = np.ones(N) * (1/dx**2)
-offdiag = np.ones(N-1) * (-0.5/dx**2)
-
-H = np.diag(2*diag + V) \
-    + np.diag(offdiag, 1) \
-    + np.diag(offdiag, -1)
-
-# ─────────────────────────────────────────────
-# Eigenvalue Solution
-# ─────────────────────────────────────────────
-eigvals, eigvecs = np.linalg.eig(H)
-
-idx = np.argmin(np.abs(eigvals.real - E_target))
-psi = eigvecs[:, idx]
-psi = psi / np.sqrt(np.sum(np.abs(psi)**2) * dx)
+absorb_strength = 0.02
+edge = 8
+absorber = np.zeros(N)
+absorber[np.abs(x) > edge] = absorb_strength * (np.abs(x[np.abs(x) > edge]) - edge)**2
+V_complex = V - 1j * absorber
 
 # ─────────────────────────────────────────────
-# Plot Eigenstate
+# Hamiltonian (finite difference)
 # ─────────────────────────────────────────────
-st.subheader("Stationary Schrödinger Solution")
+diag = np.ones(N) * (-2)
+off = np.ones(N-1)
 
-fig1, ax1 = plt.subplots()
-ax1.plot(x, np.real(psi), label="Re(ψ)")
-ax1.plot(x, V/np.max(V0+1e-6)*2 - 2, '--', label="Potential (scaled)")
-ax1.set_title("Eigenstate Near Selected Energy")
-ax1.legend()
-st.pyplot(fig1)
-
-st.markdown(f"**Closest Eigen Energy:** {eigvals[idx].real:.4f}")
+laplacian = (np.diag(diag) + np.diag(off,1) + np.diag(off,-1)) / dx**2
+H = -(hbar**2)/(2*m) * laplacian + np.diag(V_complex)
 
 # ─────────────────────────────────────────────
-# Time-Dependent Wavepacket
+# Crank–Nicolson Setup
 # ─────────────────────────────────────────────
-st.subheader("Time-Dependent Wavepacket Tunneling")
-
-animate = st.checkbox("Animate Wavepacket")
-
-if animate:
-    placeholder = st.empty()
-
-    x0 = -3
-    sigma = 0.5
-    k0 = 3.0
-
-    psi_t = np.exp(-(x-x0)**2/(2*sigma**2)) * np.exp(1j*k0*x)
-    psi_t /= np.sqrt(np.sum(np.abs(psi_t)**2) * dx)
-
-    dt = 0.001
-    steps = 200
-
-    H_complex = H.astype(complex)
-
-    for i in range(steps):
-        psi_t = psi_t - 1j * dt * (H_complex @ psi_t)
-        psi_t /= np.sqrt(np.sum(np.abs(psi_t)**2) * dx)
-
-        fig2, ax2 = plt.subplots()
-        ax2.plot(x, np.abs(psi_t)**2, label="|ψ|²")
-        ax2.plot(x, V/np.max(V0+1e-6)*2 - 0.5, '--', label="Potential")
-        ax2.set_ylim(0, 2)
-        ax2.set_title("Wavepacket Evolution")
-        ax2.legend()
-
-        placeholder.pyplot(fig2)
-        time.sleep(0.02)
+I = np.identity(N)
+A = I + 1j*dt*H/2
+B = I - 1j*dt*H/2
 
 # ─────────────────────────────────────────────
-# Transmission Estimation
+# Initial Wavepacket
 # ─────────────────────────────────────────────
-st.subheader("Approximate Transmission Measurement")
+x0 = -6
+sigma = 0.7
+k0 = 3.0
 
-if animate:
-    transmitted_region = x > 2
-    T_numeric = np.sum(np.abs(psi_t[transmitted_region])**2) * dx
-    st.markdown(f"**Estimated Transmission Probability:** {T_numeric:.5f}")
+psi = np.exp(-(x-x0)**2/(2*sigma**2)) * np.exp(1j*k0*x)
+psi /= np.sqrt(np.sum(np.abs(psi)**2) * dx)
+
+# ─────────────────────────────────────────────
+# Time Evolution
+# ─────────────────────────────────────────────
+st.subheader("Wavepacket Evolution (Crank–Nicolson)")
+
+placeholder = st.empty()
+
+for t in range(steps):
+    psi = solve(A, B @ psi)
+    psi /= np.sqrt(np.sum(np.abs(psi)**2) * dx)
+
+    if t % 5 == 0:
+        fig, ax = plt.subplots()
+        ax.plot(x, np.abs(psi)**2, label="|ψ|²")
+        ax.plot(x, V/np.max(V0+1e-6)*2 - 0.5, '--', label="Barrier")
+        ax.set_ylim(0, 2)
+        ax.set_title("Quantum Tunneling Evolution")
+        ax.legend()
+        placeholder.pyplot(fig)
+
+# ─────────────────────────────────────────────
+# Transmission (flux-based)
+# ─────────────────────────────────────────────
+right_region = x > 5
+T = np.sum(np.abs(psi[right_region])**2) * dx
+
+st.markdown(f"### Transmission Probability ≈ {T:.5f}")
+
+# ─────────────────────────────────────────────
+# Heatmap Generator
+# ─────────────────────────────────────────────
+st.subheader("Transmission vs Energy Heatmap")
+
+generate_map = st.checkbox("Generate Heatmap")
+
+if generate_map:
+    energies = np.linspace(0.5, 8, 40)
+    widths = np.linspace(0.5, 3.0, 40)
+
+    heatmap = np.zeros((len(energies), len(widths)))
+
+    for i, E in enumerate(energies):
+        for j, width in enumerate(widths):
+            kappa = np.sqrt(max(2*m*(V0-E),0))
+            heatmap[i,j] = np.exp(-2*kappa*width)
+
+    fig2, ax2 = plt.subplots()
+    c = ax2.imshow(heatmap,
+                   extent=[widths.min(), widths.max(),
+                           energies.min(), energies.max()],
+                   origin='lower',
+                   aspect='auto')
+    fig2.colorbar(c, label="Transmission")
+    ax2.set_xlabel("Barrier Width")
+    ax2.set_ylabel("Energy")
+    ax2.set_title("Tunneling Probability Map")
+    st.pyplot(fig2)
+
+    # Export
+    df = pd.DataFrame(heatmap,
+                      index=np.round(energies,2),
+                      columns=np.round(widths,2))
+    csv = df.to_csv().encode()
+    st.download_button("Download Heatmap CSV", csv, "tunneling_map.csv", "text/csv")
