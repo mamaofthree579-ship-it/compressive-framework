@@ -1,15 +1,14 @@
+import streamlit as st
 import numpy as np
 import pandas as pd
 
-np.random.seed(2)
-n=36
-grp = np.repeat([1,2,3], n//3)
+st.header("Gut intuition ↔ HRV entropy demo")
+n = st.slider("Sample size", 20, 100, 40)
+noise = st.slider("Noise level", 0.01, 0.2, 0.08)
+
 gut = np.random.uniform(1,7,n)
-entropy = 0.9 - 0.1*gut + np.random.normal(0,0.1,n)
-entropy[grp!=3] += np.random.normal(0.3,0.05,(grp!=3).sum())
-df = pd.DataFrame({'grp':grp,'gut':gut,'entropy':entropy})
-for m in [1,2,3]:
-    sub = df[df.grp==m]
-    if len(sub)>1:
-        r = sub.gut.corr(sub.entropy)
-        write(m, r)
+entropy = 0.9 - 0.1*gut + np.random.normal(0,noise,n)
+df = pd.DataFrame({'gut':gut,'entropy':entropy})
+r = df.gut.corr(df.entropy)
+st.write("Correlation r:", round(r,3))
+st.scatter_chart(df, x='gut', y='entropy')
