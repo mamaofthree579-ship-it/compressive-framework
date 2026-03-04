@@ -31,7 +31,7 @@ def simulate(brain_mode='both', emotion='fear'):
     # locking check
     for j in range(len(fb)):
         diff = np.angle(np.exp(1j*(phases[1]-phases[2+j])))
-        win = int(3/(heart_freq(emotion)) / dt))
+        win = int(3/(heart_freq(emotion)) / dt)
         locked = any(np.all(np.abs(diff[k:k+win])<0.5) for k in range(len(diff)-win))
         print('brain', j, 'locked:', locked)
 
