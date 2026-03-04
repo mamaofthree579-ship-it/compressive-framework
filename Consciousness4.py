@@ -1,5 +1,5 @@
 import numpy as np
-pandas as pd
+import pandas as pd
 
 np.random.seed(2)
 n=36
