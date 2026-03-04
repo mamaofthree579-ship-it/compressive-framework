@@ -12,4 +12,4 @@ for m in [1,2,3]:
     sub = df[df.grp==m]
     if len(sub)>1:
         r = sub.gut.corr(sub.entropy)
-        print(m, r)
+        st.write(m, r)
