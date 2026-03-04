@@ -26,8 +26,10 @@ for i in range(1, len(t)):
     for j, fbj in enumerate(fb):
         phases[2+j,i] = phases[2+j,i-1] + dt*(2*np.pi*fbj + K*np.sin(phases[1,i-1]-phases[2+j,i-1]))
 
-win = int(3/dt) # 3-second window
-for j in range(len(fb)):
-    diff = np.angle(np.exp(1j*(phases[1]-phases[2+j])))
+win = int(3/dt)
+for j, fbj in enumerate(fb):
+    ratio = fbj / heart_freq(emotion)
+    phase_brain = phases[2+j] / ratio
+    diff = np.angle(np.exp(1j*(phases[1]-phase_brain)))
     locked = any(np.all(np.abs(diff[k:k+win])<threshold) for k in range(len(diff)-win))
     st.write(f'brain {j} locked: {locked}')
