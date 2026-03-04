@@ -12,12 +12,12 @@ for m in modes:
     gut = np.random.uniform(1,7,n)
     entropy = 0.9 - 0.1*gut + np.random.normal(0,noise,n)
     if m != "both":
-        entropy += np.random.normal(0.3,0.05,n)  # weaker link
+        entropy += np.random.normal(0.3,0.05,n)
     data.append(pd.DataFrame({'mode':m,'gut':gut,'entropy':entropy}))
 df = pd.concat(data)
 
 for m in modes:
-    sub = df[df.mode==m]
-    r = sub.gut.corr(sub.entropy)
+    sub = df[df['mode']==m]
+    r = sub['gut'].corr(sub['entropy'])
     st.subheader(f"{m} (r={r:.2f})")
     st.scatter_chart(sub, x='gut', y='entropy')
