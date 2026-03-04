@@ -1,8 +1,8 @@
+import streamlit as st
 import numpy as np
 
 dt = 0.01
 t = np.arange(0, 60, dt)
-
 f_gut, f_heart = 0.05, 1.2
 f_brain_voice, f_brain_visual = 5.0, 10.0
 K, gut_drive = 0.8, 0.2
@@ -22,14 +22,7 @@ def simulate(brain_mode='both', emotion='fear'):
     for j in range(len(fb)):
         diff = np.angle(np.exp(1j*(phases[1]-phases[2+j])))
         win = int(3/heart_freq(emotion)/dt)
-        locked = False
-        for k in range(len(diff)-win):
-            if np.all(np.abs(diff[k:k+win])<0.5):
-                locked = True
-                break
-        print('brain', j, 'locked:', locked)
+        locked = any(np.all(np.abs(diff[k:k+win])<0.5) for k in range(len(diff)-win))
+        st.write(f'brain {j} locked: {locked}')
 
 simulate('both','fear')
-
-simulate('both','fear')
-print('done')
