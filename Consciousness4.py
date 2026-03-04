@@ -1,35 +1,13 @@
-import streamlit as st
-import numpy as np
-
-st.sidebar.header("Controls")
-brain_mode = st.sidebar.selectbox("Brain mode", ["voice", "visual", "both"])
-emotion = st.sidebar.selectbox("Emotion", ["calm", "fear", "joy"])
-K = st.sidebar.slider("Coupling K", 0.1, 3.0, 1.5, 0.1)
-gut_drive = st.sidebar.slider("Gut drive", 0.0, 1.0, 0.3, 0.05)
-threshold = st.sidebar.slider("Lock threshold (rad)", 0.1, 1.5, 1.0, 0.1)
-
-dt = 0.01
-t = np.arange(0, 60, dt)
-f_gut, f_heart = 0.05, 1.2
-f_brain_voice, f_brain_visual = 5.0, 10.0
-
-def heart_freq(em):
-    return f_heart + {'calm':0, 'fear':0.3, 'joy':0.1}[em]
-
-fb = [f_brain_voice] if brain_mode=='voice' else [f_brain_visual] if brain_mode=='visual' else [f_brain_voice, f_brain_visual]
-phases = np.zeros((2+len(fb), len(t)))
-
-for i in range(1, len(t)):
-    drive = gut_drive*np.sin(2*np.pi*0.2*t[i]) if 19<t[i]<21 else 0
-    phases[0,i] = phases[0,i-1] + dt*(2*np.pi*f_gut + K*np.sin(phases[1,i-1]-phases[0,i-1]) + drive)
-    phases[1,i] = phases[1,i-1] + dt*(2*np.pi*heart_freq(emotion) + K*np.sin(phases[0,i-1]-phases[1,i-1]))
-    for j, fbj in enumerate(fb):
-        phases[2+j,i] = phases[2+j,i-1] + dt*(2*np.pi*fbj + K*np.sin(phases[1,i-1]-phases[2+j,i-1]))
-
-win = int(3/dt)
-for j, fbj in enumerate(fb):
-    ratio = fbj / heart_freq(emotion)
-    phase_brain = phases[2+j] / ratio
-    diff = np.angle(np.exp(1j*(phases[1]-phase_brain)))
-    locked = any(np.all(np.abs(diff[k:k+win])<threshold) for k in range(len(diff)-win))
-    st.write(f'brain {j} locked: {locked}')
+import numpy as np, pandas as pd
+np.random.seed(1)
+n=30
+mode = np.random.choice([1,2,3], n)
+gut = np.random.uniform(1,7,n)
+# HRV entropy inversely related to gut only for mode 3
+entropy = 0.9 - 0.1*gut + np.random.normal(0,0.1,n)
+entropy[mode!=3] += np.random.normal(0.3,0.05,(mode!=3).sum())
+df = pd.DataFrame({'mode':mode,'gut':gut,'entropy':entropy})
+for m in [1,2,3]:
+    sub = df[df.mode==m]
+    r = sub.gut.corr(sub.entropy)
+    print(m, r)
