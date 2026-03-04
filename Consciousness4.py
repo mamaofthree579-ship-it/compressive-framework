@@ -41,7 +41,7 @@ def simulate(brain_mode='both', emotion='fear'):
     lock = {}
     for j, mode in enumerate(['voice','visual'][:len(fb)]):
         diff = np.angle(np.exp(1j*(phases[1]-phases[2+j])))
-        lock[mode] = np.any([
+        lock[mode] = np.any(
             np.all(np.abs(diff[k:k+int(3/(heart_freq(emotion)) / dt)])<0.5
             for k in range(len(diff)-int(3/(heart_freq(emotion)) / dt)) )
     return lock
