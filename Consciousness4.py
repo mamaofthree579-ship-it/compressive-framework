@@ -30,3 +30,6 @@ def simulate(brain_mode='both', emotion='fear'):
         print('brain', j, 'locked:', locked)
 
 simulate('both','fear')
+
+simulate('both','fear')
+print('done')
