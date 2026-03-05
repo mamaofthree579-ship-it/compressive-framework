@@ -3,37 +3,31 @@ import numpy as np
 from scipy.integrate import odeint
 import matplotlib.pyplot as plt
 
-# --- chord pressure waveform (simplified) ---
-def chord_pressure(t):
-    freqs = [392, 494, 587, 784]  # G Maj7 fundamentals
-    amp = 0.02  # Pa, ~40 dB
+def chord_pressure(t, amp):
+    freqs = [392, 494, 587, 784]
     return sum(amp * np.sin(2 * np.pi * f * t) for f in freqs) / len(freqs)
 
-# --- ODE system with damping ---
-def model(y, t, sound=False):
+def model(y, t, sound, amp, coup):
     Ca, Repair, D = y
-    F = chord_pressure(t) if sound else 0.0
-
-    dCa = -0.1 * Ca + 0.005 * F           # weaker coupling
+    F = chord_pressure(t, amp) if sound else 0.0
+    dCa = -0.1 * Ca + coup * F
     dRepair = 0.2 * Ca - 0.05 * Repair
-    dRepair = min(dRepair, 5 - Repair)      # optional cap
-    dD = -0.3 * Repair + 0.1 - 0.05 * D    # damage decay term
-
+    dD = -0.3 * Repair + 0.1 - 0.05 * D
     return [dCa, dRepair, dD]
 
-st.title("Lullaby‑chord cell‑repair simulation (stable)")
+st.title("Lullaby‑chord repair simulation")
 
 sound = st.checkbox("Play chord pressure?", value=True)
+amp = st.slider("Pressure amplitude (Pa)", 0.0, 0.05, 0.02, 0.005)
+coup = st.slider("Ca coupling", 0.0, 0.02, 0.005, 0.001)
+
 t = np.linspace(0, 200, 1000)
-y0 = [0.0, 0.0, 1.0]  # Ca, Repair, Damage
-sol = odeint(model, y0, t, args=(sound,))
+y0 = [0.0, 0.0, 1.0]
+sol = odeint(model, y0, t, args=(sound, amp, coup))
 
 fig, ax = plt.subplots()
 ax.plot(t, sol[:, 2], label="Damage D(t)")
 ax.set_xlabel("Time")
 ax.set_ylabel("Relative damage")
-ax.set_ylim(bottom=0)
 ax.legend()
 st.pyplot(fig)
-
-st.caption("Tweaked coupling and added -0.05·D decay keeps the curve bounded. Adjust sliders for deeper exploration.")
