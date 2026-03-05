@@ -12,10 +12,10 @@ def model(y, t, sound, amp, coup):
     F = chord_pressure(t, amp) if sound else 0.0
     dCa = -0.1 * Ca + coup * F
     dRepair = 0.2 * Ca - 0.05 * Repair
-    dD = -0.3 * Repair + 0.1 - 0.05 * D
+    dD = -0.1 * Repair + 0.3 - 0.05 * D  # raised damage source, weaker repair term
     return [dCa, dRepair, dD]
 
-st.title("Lullaby‑chord repair simulation")
+st.title("Lullaby‑chord repair simulation (visible damage)")
 
 sound = st.checkbox("Play chord pressure?", value=True)
 amp = st.slider("Pressure amplitude (Pa)", 0.0, 0.05, 0.02, 0.005)
@@ -25,7 +25,6 @@ t = np.linspace(0, 200, 1000)
 y0 = [0.0, 0.0, 1.0]
 sol = odeint(model, y0, t, args=(sound, amp, coup))
 
-# Guard against overflow
 damage = np.where(np.isfinite(sol[:, 2]), sol[:, 2], np.nan)
 
 fig, ax = plt.subplots()
@@ -35,4 +34,6 @@ ax.set_ylabel("Relative damage")
 ax.set_ylim(bottom=0)
 ax.legend()
 st.pyplot(fig)
-plt.close(fig)  # free memory / avoid Streamlit tick bug
+plt.close(fig)
+
+st.caption("Baseline damage raised to 0.3 and Repair coupling lowered—keeps D(t) visible across slider range.")
