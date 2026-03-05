@@ -25,9 +25,14 @@ t = np.linspace(0, 200, 1000)
 y0 = [0.0, 0.0, 1.0]
 sol = odeint(model, y0, t, args=(sound, amp, coup))
 
+# Guard against overflow
+damage = np.where(np.isfinite(sol[:, 2]), sol[:, 2], np.nan)
+
 fig, ax = plt.subplots()
-ax.plot(t, sol[:, 2], label="Damage D(t)")
+ax.plot(t, damage, label="Damage D(t)")
 ax.set_xlabel("Time")
 ax.set_ylabel("Relative damage")
+ax.set_ylim(bottom=0)
 ax.legend()
 st.pyplot(fig)
+plt.close(fig)  # free memory / avoid Streamlit tick bug
