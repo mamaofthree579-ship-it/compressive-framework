@@ -11,3 +11,10 @@ V_ellipsoid = 4/3 * math.pi * a * b * c
 V_hole = 2 * (1/3 * math.pi * r**2 * a)
 V = V_ellipsoid - V_hole
 st.write(f"Volume ≈ {V:.1f} cm³")
+
+density = 2.65  # g/cm³ quartzite
+mass = V * density
+I = (1/5) * mass * (b**2 + c**2)  # ellipsoid approx
+
+st.write(f"Mass ≈ {mass:.1f} g")
+st.write(f"Inertia ≈ {I:.1f} g·cm²")
