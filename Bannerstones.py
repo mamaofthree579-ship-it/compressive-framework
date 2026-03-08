@@ -19,6 +19,11 @@ I = (1/5) * mass * (b**2 + c**2)  # ellipsoid approx
 st.write(f"Mass ≈ {mass:.1f} g")
 st.write(f"Inertia ≈ {I:.1f} g·cm²")
 
+a = st.slider("Semi‑major axis", 4.0, 10.0, 6.0)
+b = st.slider("Semi‑minor axis", 2.0, 6.0, 3.0)
+c = st.slider("Vertical semi‑axis", 1.0, 4.0, 2.0)
+# then recompute V_ell and the arrays each run
+
 a,b,c = 6,3,2
 density = 2.65
 V_ell = 4/3*math.pi*a*b*c
