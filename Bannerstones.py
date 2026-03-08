@@ -45,6 +45,10 @@ ax.set_xlabel('Hole radius (cm)')
 ax.set_ylabel('Depth per area (mm/cm²)')
 st.pyplot(fig3)
 
+for rad in [0.32, 0.64, 0.95]:
+    ax.plot([rad,rad], [0, max(eff_area)], 'r--')
+ax.text(0.64, max(eff_area)*0.9, "typical bannerstone radii")
+
 import pandas as pd
 df = pd.DataFrame({
     "radius": radii,
