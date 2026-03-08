@@ -37,6 +37,14 @@ ax.set_xlabel('Hole radius (cm)')
 ax.set_ylabel('Depth/Inertia (mm per g·cm²)')
 st.pyplot(fig2)
 
+area = [2*math.pi*rad*a for rad in radii]
+eff2 = [d/ar for d,ar in zip(depths, area)]
+fig3, ax = plt.subplots()
+ax.plot(radii, eff2, 'c-')
+ax.set_xlabel('Hole radius (cm)')
+ax.set_ylabel('Depth per area (mm/cm²)')
+st.pyplot(fig3)
+
 import pandas as pd
 df = pd.DataFrame({
     "radius": radii,
