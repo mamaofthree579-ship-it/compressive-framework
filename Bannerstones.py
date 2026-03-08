@@ -29,3 +29,10 @@ ax2 = ax1.twinx()
 ax2.plot(radii, depths, 'g-')
 ax2.set_ylabel('Est. depth/spin (mm)', color='g')
 st.pyplot(fig)
+
+eff = [d/i for d,i in zip(depths, inertias)]
+fig2, ax = plt.subplots()
+ax.plot(radii, eff, 'm-')
+ax.set_xlabel('Hole radius (cm)')
+ax.set_ylabel('Depth/Inertia (mm per g·cm²)')
+st.pyplot(fig2)
