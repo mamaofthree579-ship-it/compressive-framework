@@ -36,3 +36,12 @@ ax.plot(radii, eff, 'm-')
 ax.set_xlabel('Hole radius (cm)')
 ax.set_ylabel('Depth/Inertia (mm per g·cm²)')
 st.pyplot(fig2)
+
+import pandas as pd
+df = pd.DataFrame({
+    "radius": radii,
+    "inertia": inertias,
+    "depth_per_spin": depths,
+    "efficiency": eff
+})
+st.download_button("Download data", df.to_csv(index=False), "bannerstone_data.csv")
