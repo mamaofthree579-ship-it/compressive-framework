@@ -31,5 +31,17 @@ ax.set_xlabel('Hole radius (cm)')
 ax.set_ylabel('Depth per area (mm/cm²)')
 st.pyplot(fig)
 
+Bs = np.linspace(2,6,20)
+Cs = np.linspace(1,4,20)
+heat = np.zeros((len(Bs),len(Cs)))
+for i,bv in enumerate(Bs):
+    for j,cv in enumerate(Cs):
+        I = (1/5)*(V_ell-2/3*math.pi*0.64**2*a)*density*(bv**2+cv**2)
+        heat[i,j] = (k*torque*(I*omega0/torque))/(2*math.pi*0.64*a)
+fig,ax=plt.subplots()
+im=ax.imshow(heat, origin='lower', extent=[1,4,2,6])
+plt.colorbar(im, label='eff @ 0.64cm')
+st.pyplot(fig)
+
 df = pd.DataFrame({"radius":radii,"eff_area":eff_area})
 st.download_button("Download data", df.to_csv(index=False), "efficiency.csv")
