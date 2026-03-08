@@ -22,11 +22,11 @@ for r in radii:
     depths.append(k*torque*t)
 
 fig, ax1 = plt.subplots()
-ax1.plot(radii, inertias, 'b-')
+ax1.plot(radii, inertias, 'b-', label='Inertia')
 ax1.set_xlabel('Hole radius (cm)')
 ax1.set_ylabel('Inertia (g·cm²)', color='b')
 ax2 = ax1.twinx()
-ax2.plot(radii, depths, 'g-')
+ax2.plot(radii, depths, 'g-', label='Depth/spin')
 ax2.set_ylabel('Est. depth/spin (mm)', color='g')
 st.pyplot(fig)
 
