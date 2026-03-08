@@ -27,3 +27,13 @@ ax2 = ax1.twinx()
 ax2.plot(radii, spin_times, 'r-', label='Spin‑down (s)')
 ax2.set_ylabel('Spin‑down time (s)', color='r')
 st.pyplot(fig)
+
+hardness = st.selectbox("Stone hardness", ["Quartzite", "Granite", "Slate"], index=0)
+k = {"Quartzite":1e-4, "Granite":2e-4, "Slate":5e-4}[hardness]
+depths = [k*torque*t for t in spin_times]
+
+fig, ax = plt.subplots()
+ax.plot(radii, depths, 'g-')
+ax.set_xlabel('Hole radius (cm)')
+ax.set_ylabel('Est. depth per spin (mm)')
+st.pyplot(fig)
