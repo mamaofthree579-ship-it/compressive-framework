@@ -27,17 +27,15 @@ priors=bilby.core.prior.PriorDict(dict(
 
 if st.button("Run"):
     with tempfile.TemporaryDirectory() as out:
-        res=bilby.run_sampler(like,priors,sampler='dynesty',nlive=200,
-                              outdir=out,label='demo',verbose=False)
-        st.write(f"Samples: {len(res.samples)}")
+        res=bilby.run_sampler(...)
+        st.write(f"Samples: {len(res.posterior)}")
         st.pyplot(res.plot_corner(['A','phi']))
-        p=res.samples[0]
+        p=res.posterior.iloc[0].to_dict()
         w_mod=sine_waveform(p)
         p0=p.copy(); p0['alpha']=0
         w_plain=sine_waveform(p0)
         fig,ax=plt.subplots()
         ax.plot(t,w_plain,label='GR')
         ax.plot(t,w_mod,label='CGUP')
-        ax.set_xlabel('Time'); ax.legend()
-        st.pyplot(fig)
-        st.success("Demo complete with waveform!")
+        ax.legend(); st.pyplot(fig)
+        st.success("Demo fixed!")
