@@ -25,6 +25,10 @@ priors=bilby.core.prior.PriorDict(dict(
     lam=bilby.core.prior.DeltaFunction(0.5)
 ))
 
+alpha=st.slider("alpha",0.0,0.2,0.08,0.01)
+lam=st.slider("lam",0.1,1.0,0.5,0.1)
+p_demo=dict(A=1.0,phi=0.0,alpha=alpha,lam=lam)
+
 if st.button("Run"):
     with tempfile.TemporaryDirectory() as out:
         res=bilby.run_sampler(like,priors,sampler='dynesty',nlive=200,
