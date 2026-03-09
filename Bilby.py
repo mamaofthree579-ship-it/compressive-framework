@@ -1,4 +1,11 @@
-import streamlit as st, numpy as np, bilby, tempfile, matplotlib.pyplot as plt
+import streamlit as st
+import numpy as np
+import bilby
+import tempfile
+import matplotlib.pyplot as plt
+import numpy as np
+from lal import SimInspiralFD
+
 st.set_page_config(page_title="CGUP Demo",layout="centered")
 st.title("Gravitational‑Wave Toy Model + CGUP Modulation")
 st.markdown("Adjust alpha and lam to see how a CGUP correction deforms a sine‑Gaussian GW.")
@@ -38,3 +45,6 @@ if st.button("Run Inference"):
                                   outdir=out,label='demo',verbose=False)
             st.pyplot(res.plot_corner(['A','phi']))
     st.success("Inference complete")
+
+# generate h+, hx, save h = h+ as array
+np.save("h_lal.npy", h.real)
