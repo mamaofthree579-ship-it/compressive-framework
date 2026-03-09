@@ -7,6 +7,7 @@ imageio
 bilby
 bilby[gw]
 lalsuite 
+gwpy
 # --- Core MkDocs setup ---
 mkdocs>=1.6.0
 mkdocs-material>=9.5.0
@@ -23,6 +24,7 @@ ipykernel>=6.29.0
 numpy>=1.26.0
 matplotlib>=3.9.0
 scipy>=1.13.0
+
 sympy>=1.13.0
 pandas>=2.2.0
 
