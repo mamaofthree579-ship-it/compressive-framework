@@ -13,13 +13,16 @@ beta = 0.4
 omega_GR = 0.3737
 
 if st.button("Load GW250114 data"):
-    st.write("Fetching data…")
+    st.write("Fetching GW250114 strain…")
     try:
-        data = utils.get_event_data('GW250114', interferometers=['H1','L1'],
-                                   duration=4, sampling_frequency=2048)
-        st.success("Data loaded")
-    except Exception:
-        st.warning("GWOSC fetch failed—using toy likelihood instead")
+        data = utils.get_event_data('GW250114',
+                                     gps_time=1420878141.2,
+                                     interferometers=['H1','L1'],
+                                     duration=4,
+                                     sampling_frequency=2048)
+        st.success("Real data loaded")
+    except Exception as e:
+        st.warning(f"Fetch failed ({e}), using toy path")
         data = None
 
     if data:
@@ -48,7 +51,7 @@ if st.button("Load GW250114 data"):
             'lam': bilby.core.prior.DeltaFunction(lam)
         })
 
-        st.write("Running Bilby…")
+        st.write("Running Bilby on GW250114…")
         with tempfile.TemporaryDirectory() as d:
             res = bilby.run_sampler(likelihood=like, priors=priors,
                                     sampler='dynesty', nlive=200,
