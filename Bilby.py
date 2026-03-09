@@ -38,3 +38,10 @@ if st.button("Run Inference"):
                                   outdir=out,label='demo',verbose=False)
             st.pyplot(res.plot_corner(['A','phi']))
     st.success("Inference complete")
+
+h = np.sin(np.linspace(0, 2*np.pi, 100))
+np.save("h_placeholder.npy", h.real)
+# load it back to verify
+loaded = np.load("h_placeholder.npy")
+st.write(loaded[:5])
+st.line_chart(h)
