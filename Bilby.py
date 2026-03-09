@@ -1,5 +1,5 @@
-import streamlit as st, numpy as np, bilby, tempfile
-st.title("Toy GW + CGUP Modulation")
+import streamlit as st, numpy as np, bilby, tempfile, matplotlib.pyplot as plt
+st.title("Toy GW + CGUP Visual Demo")
 
 duration=4; fs=2048; N=int(duration*fs)
 t=np.arange(N)/fs; f0=30
@@ -27,17 +27,17 @@ priors=bilby.core.prior.PriorDict(dict(
 
 if st.button("Run"):
     with tempfile.TemporaryDirectory() as out:
-        res=bilby.run_sampler(...)
+        res=bilby.run_sampler(like,priors,sampler='dynesty',nlive=200,
+                              outdir=out,label='demo',verbose=False)
         st.write(f"Samples: {len(res.samples)}")
         st.pyplot(res.plot_corner(['A','phi']))
-        # plot waveform example
         p=res.samples[0]
         w_mod=sine_waveform(p)
-        p_no=p.copy(); p_no['alpha']=0
-        w_plain=sine_waveform(p_no)
-        import matplotlib.pyplot as plt
+        p0=p.copy(); p0['alpha']=0
+        w_plain=sine_waveform(p0)
         fig,ax=plt.subplots()
         ax.plot(t,w_plain,label='GR')
         ax.plot(t,w_mod,label='CGUP')
-        ax.legend(); st.pyplot(fig)
-        st.success("CGUP demo with waveform plot")
+        ax.set_xlabel('Time'); ax.legend()
+        st.pyplot(fig)
+        st.success("Demo complete with waveform!")
