@@ -32,3 +32,21 @@ if st.button("Run"):
         st.write(f"Samples: {len(res.samples)}")
         st.pyplot(res.plot_corner(['A','phi']))
         st.success("CGUP toy run complete!")
+        
+if st.button("Run"):
+    with tempfile.TemporaryDirectory() as out:
+        res=bilby.run_sampler(...)
+        st.write(f"Samples: {len(res.samples)}")
+        st.pyplot(res.plot_corner(['A','phi']))
+        # plot waveform example
+        p=res.samples[0]
+        w_mod=sine_waveform(p)
+        p_no=p.copy(); p_no['alpha']=0
+        w_plain=sine_waveform(p_no)
+        import matplotlib.pyplot as plt
+        fig,ax=plt.subplots()
+        ax.plot(t,w_plain,label='GR')
+        ax.plot(t,w_mod,label='CGUP')
+        ax.legend(); st.pyplot(fig)
+        st.success("CGUP demo with waveform plot")
+        
