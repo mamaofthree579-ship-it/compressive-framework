@@ -31,13 +31,14 @@ if st.button("Run"):
                               outdir=out,label='demo',verbose=False)
         st.write(f"Samples: {len(res.posterior)}")
         st.pyplot(res.plot_corner(['A','phi']))
-        p=res.posterior.iloc[0].to_dict()
-        w_mod=sine_waveform(p)
-        p0=p.copy(); p0['alpha']=0
+        # fixed demo waveforms
+        p_demo=dict(A=1.0,phi=0.0,alpha=0.08,lam=0.5)
+        w_mod=sine_waveform(p_demo)
+        p0=p_demo.copy(); p0['alpha']=0
         w_plain=sine_waveform(p0)
         fig,ax=plt.subplots()
-        ax.plot(t,w_plain,label='GR')
-        ax.plot(t,w_mod,label='CGUP')
+        ax.plot(t,w_plain,label='GR',color='blue')
+        ax.plot(t,w_mod,label='CGUP',color='orange')
         ax.set_xlabel('Time'); ax.legend()
         st.pyplot(fig)
-        st.success("Demo complete!")
+        st.success("Demo complete — blue GR, orange CGUP!")
