@@ -1,30 +1,31 @@
 import streamlit as st
 import bilby, os, tempfile
+import numpy as np
 
 os.environ["BILBY_INCLUDE_GLOBAL_METADATA"] = "False"
 
-st.title("CGUP GW250114 Analysis (working baseline)")
+st.title("CGUP Toy Inference (α*, λ sampled)")
 
-alpha = st.sidebar.slider("α*", 0.0, 0.2, 0.08, 0.005)
-lam = st.sidebar.slider("λ", 0.3, 0.7, 0.5, 0.01)
-
-class ToyLike(bilby.core.likelihood.Likelihood):
+class CGUPToyLike(bilby.core.likelihood.Likelihood):
     def __init__(self):
-        super().__init__(parameters={'mass_1':None, 'mass_2':None})
+        super().__init__(parameters={'mass_1':None,'mass_2':None,
+                                     'alpha':None,'lam':None})
     def log_likelihood(self):
-        m1, m2 = self.parameters['mass_1'], self.parameters['mass_2']
-        return -(((m1-33.6)/1.2)**2 + ((m2-32.2)/0.8)**2)
+        m1,m2,a,l = [self.parameters[k] for k in ('mass_1','mass_2','alpha','lam')]
+        # toy CGUP penalty: pull toward GW250114 values with α*,λ modulation
+        return -(((m1-33.6)/(1.2*a))**2 + ((m2-32.2)/(0.8*l))**2)
 
-if st.button("Run Toy Bilby"):
+if st.button("Run CGUP Toy Sampler"):
     with tempfile.TemporaryDirectory() as outdir:
-        like = ToyLike()
+        like = CGUPToyLike()
         priors = bilby.core.prior.PriorDict({
             'mass_1': bilby.core.prior.Uniform(30,38),
-            'mass_2': bilby.core.prior.Uniform(28,36)
+            'mass_2': bilby.core.prior.Uniform(28,36),
+            'alpha': bilby.core.prior.Uniform(0.05,0.12),
+            'lam': bilby.core.prior.Uniform(0.4,0.6)
         })
-        st.write("Sampling…")
         res = bilby.run_sampler(likelihood=like, priors=priors,
-                                sampler='dynesty', nlive=200,
-                                outdir=outdir, label='toy', verbose=False)
+                                sampler='dynesty', nlive=300,
+                                outdir=outdir, label='cgup_toy', verbose=False)
         st.pyplot(res.plot_corner())
     st.success("Done!")
