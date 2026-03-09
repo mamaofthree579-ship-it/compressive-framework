@@ -28,9 +28,10 @@ class CGUPWG(WaveformGenerator):
             parameter_conversion=bilby.gw.conversion.convert_to_lal_binary_black_hole_parameters,
             waveform_arguments={'waveform_approximant':'IMRPhenomPv2','reference_frequency':50})
     def frequency_domain_strain(self,params):
-        h=super().frequency_domain_strain(params)
-        a,l=params.get('alpha',0.08),params.get('lam',0.5)
-        return {k:h[k]*(1+(a**2)*(l**i)) for i,k in enumerate(h)}
+    h=super().frequency_domain_strain(params)
+    # a,l=params.get('alpha',0.08),params.get('lam',0.5)
+    # return {k:h[k]*(1+(a**2)*(l**i)) for i,k in enumerate(h)}
+    return h # <-- plain GR waveform
 
 wf=CGUPWG()
 like=bilby.gw.likelihood.GravitationalWaveTransient(ifos,wf)
