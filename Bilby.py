@@ -15,7 +15,7 @@ omega_GR = 0.3737
 if st.button("Load GW250114 data"):
     st.write("Fetching GW250114 strain…")
     try:
-        data = utils.get_event_data('GW250114',
+        data = utils.get_open_strain_data('GW250114',
                                      gps_time=1420878141.2,
                                      interferometers=['H1','L1'],
                                      duration=4,
