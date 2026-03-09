@@ -6,3 +6,4 @@ np.save("h_placeholder.npy", h.real)
 # load it back to verify
 loaded = np.load("h_placeholder.npy")
 st.write(loaded[:5])
+st.line_chart(h)
