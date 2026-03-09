@@ -58,9 +58,10 @@ priors=bilby.core.prior.PriorDict({
 if st.button("Run"):
     with tempfile.TemporaryDirectory() as outdir:
         try:
-            res=bilby.run_sampler(likelihood=like,priors=priors,sampler='dynesty',nlive=200,
-                                    outdir=outdir,label='full',verbose=False)
-            st.pyplot(res.plot_corner(['mass_1','mass_2']))
+            res=bilby.run_sampler(...)
+            st.write(f"Samples: {len(res.samples)}")
+            fig=res.plot_corner(['mass_1','mass_2'])
+            st.pyplot(fig)
             st.success("Done!")
         except Exception as e:
-            st.error(f"Sampler crashed: {e}")
+            st.error(...)
