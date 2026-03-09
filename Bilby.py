@@ -4,7 +4,7 @@ from bilby.gw.waveform_generator import WaveformGenerator
 
 os.environ["BILBY_INCLUDE_GLOBAL_METADATA"] = "False"
 
-st.title("CGUP Full Inference (spins patched)")
+st.title("CGUP Full Run (distance patched)")
 
 gps=1420878141.2; duration=4
 try:
@@ -51,10 +51,8 @@ priors=bilby.core.prior.PriorDict({
     'tilt_1':bilby.core.prior.DeltaFunction(0.0),
     'tilt_2':bilby.core.prior.DeltaFunction(0.0),
     'phi_12':bilby.core.prior.DeltaFunction(0.0),
-    'phi_jl':bilby.core.prior.DeltaFunction(0.0)
-})
-priors.update({
-    'luminosity_distance': bilby.core.prior.Uniform(100,1000)
+    'phi_jl':bilby.core.prior.DeltaFunction(0.0),
+    'luminosity_distance':bilby.core.prior.Uniform(100,1000)
 })
 
 if st.button("Run"):
