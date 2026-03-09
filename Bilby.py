@@ -38,3 +38,36 @@ if st.button("Run Inference"):
                                   outdir=out,label='demo',verbose=False)
             st.pyplot(res.plot_corner(['A','phi']))
     st.success("Inference complete")
+
+import streamlit as st
+import numpy as np
+from lal import SimInspiralFD # Ensure lalsuite is installed in your environment
+import os
+
+st.title("LALSimulation Waveform Generator")
+
+# Cache data to prevent re-calculating on every rerun
+@st.cache_data
+def generate_waveform():
+    # --- YOUR CODE ---
+    # (Assuming h and h_lal.npy generation logic here)
+    # Example placeholder:
+    h_real = np.random.randn(1000) # Replace with h.real from lal
+    np.save('h_lal.npy', h_real)
+    return 'h_lal.npy'
+
+if st.button("Generate Waveform"):
+    with st.spinner("Generating..."):
+        file_path = generate_waveform()
+        st.success(f"Saved: {file_path}")
+        
+        # Optionally display the data
+        data = np.load(file_path)
+        st.line_chart(data)
+
+# Create an in-memory buffer to store the file
+buffer = io.BytesIO()
+# Example data
+h_real = np.random.randn(1000) 
+np.save(buffer, h_real)
+buffer.seek(0)
