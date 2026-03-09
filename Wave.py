@@ -1,4 +1,7 @@
 import numpy as np
-from lal import SimInspiralFD
-# generate h+, hx, save h = h+ as array
-np.save("h_lal.npy", h.real)
+# placeholder waveform: a simple sine wave
+h = np.sin(np.linspace(0, 2*np.pi, 100))
+np.save("h_placeholder.npy", h.real)
+# load it back to verify
+loaded = np.load("h_placeholder.npy")
+print(loaded[:5])
