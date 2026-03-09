@@ -1,14 +1,11 @@
-import streamlit as st
-import bilby, os, tempfile
+import streamlit as st, bilby, os, tempfile
+from bilby.gw.detector import InterferometerList
 
 os.environ["BILBY_INCLUDE_GLOBAL_METADATA"] = "False"
 
-st.title("CGUP Toy Explorer")
+st.title("CGUP Explorer with optional GW data")
 
-m1_lo, m1_hi = st.sidebar.slider("mass_1 prior", 25.0,45.0,(30.0,38.0))
-m2_lo, m2_hi = st.sidebar.slider("mass_2 prior", 25.0,45.0,(28.0,36.0))
-a_lo, a_hi = st.sidebar.slider("α* prior", 0.01,0.2,(0.05,0.12))
-l_lo, l_hi = st.sidebar.slider("λ prior", 0.3,0.7,(0.4,0.6))
+use_real = st.sidebar.checkbox("Use real GWOSC data (H1/L1)", False)
 
 class ToyLike(bilby.core.likelihood.Likelihood):
     def __init__(self):
@@ -20,14 +17,30 @@ class ToyLike(bilby.core.likelihood.Likelihood):
 
 if st.button("Run"):
     with tempfile.TemporaryDirectory() as outdir:
+        if use_real:
+            try:
+                from gwpy.timeseries import TimeSeries
+                gps=1420878141.2
+                h1 = TimeSeries.fetch_open_data('H1', gps-2, gps+2, cache=True)
+                l1 = TimeSeries.fetch_open_data('L1', gps-2, gps+2, cache=True)
+                ifos = InterferometerList(['H1','L1'])
+                ifos[0].strain_data.set_from_gwpy_timeseries(h1)
+                ifos[1].strain_data.set_from_gwpy_timeseries(l1)
+                st.write("Fetched real strain.")
+            except Exception as e:
+                st.warning(f"Fetch failed ({e}), using toy likelihood.")
+                ifos = None
+        else:
+            ifos = None
+
         priors = bilby.core.prior.PriorDict({
-            'mass_1': bilby.core.prior.Uniform(m1_lo,m1_hi),
-            'mass_2': bilby.core.prior.Uniform(m2_lo,m2_hi),
-            'alpha': bilby.core.prior.Uniform(a_lo,a_hi),
-            'lam': bilby.core.prior.Uniform(l_lo,l_hi)
+            'mass_1': bilby.core.prior.Uniform(30,38),
+            'mass_2': bilby.core.prior.Uniform(28,36),
+            'alpha': bilby.core.prior.Uniform(0.05,0.12),
+            'lam': bilby.core.prior.Uniform(0.4,0.6)
         })
         res = bilby.run_sampler(likelihood=ToyLike(), priors=priors,
                                 sampler='dynesty', nlive=200,
-                                outdir=outdir, label='ui', verbose=False)
+                                outdir=outdir, label='run', verbose=False)
         st.pyplot(res.plot_corner())
     st.success("Done!")
