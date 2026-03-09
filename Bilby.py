@@ -27,14 +27,6 @@ priors=bilby.core.prior.PriorDict(dict(
 
 if st.button("Run"):
     with tempfile.TemporaryDirectory() as out:
-        res=bilby.run_sampler(like,priors,sampler='dynesty',nlive=200,
-                              outdir=out,label='toy_cgup',verbose=False)
-        st.write(f"Samples: {len(res.samples)}")
-        st.pyplot(res.plot_corner(['A','phi']))
-        st.success("CGUP toy run complete!")
-        
-if st.button("Run"):
-    with tempfile.TemporaryDirectory() as out:
         res=bilby.run_sampler(...)
         st.write(f"Samples: {len(res.samples)}")
         st.pyplot(res.plot_corner(['A','phi']))
@@ -49,4 +41,3 @@ if st.button("Run"):
         ax.plot(t,w_mod,label='CGUP')
         ax.legend(); st.pyplot(fig)
         st.success("CGUP demo with waveform plot")
-        
