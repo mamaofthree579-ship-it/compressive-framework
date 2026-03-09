@@ -4,7 +4,7 @@ from bilby.gw.waveform_generator import WaveformGenerator
 
 os.environ["BILBY_INCLUDE_GLOBAL_METADATA"] = "False"
 
-st.title("CGUP Full Run (distance patched)")
+st.title("CGUP Debug Run")
 
 gps=1420878141.2; duration=4
 try:
@@ -58,10 +58,12 @@ priors=bilby.core.prior.PriorDict({
 if st.button("Run"):
     with tempfile.TemporaryDirectory() as outdir:
         try:
-            res=bilby.run_sampler(...)
+            res=bilby.run_sampler(likelihood=like,priors=priors,
+                                  sampler='dynesty',nlive=200,
+                                  outdir=outdir,label='debug',verbose=False)
             st.write(f"Samples: {len(res.samples)}")
             fig=res.plot_corner(['mass_1','mass_2'])
             st.pyplot(fig)
             st.success("Done!")
         except Exception as e:
-            st.error(...)
+            st.error(f"Sampler crashed: {e}")
