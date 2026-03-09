@@ -6,9 +6,8 @@ scipy
 imageio
 bilby
 bilby[gw]
-lalsuite>=7.0 
+lalsuite[siminspiralfd]
 gwpy
-conda-forge
 
 # --- Core MkDocs setup ---
 mkdocs>=1.6.0
