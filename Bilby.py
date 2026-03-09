@@ -6,29 +6,24 @@ from bilby.gw.detector import InterferometerList
 
 os.environ["BILBY_INCLUDE_GLOBAL_METADATA"] = "False"
 
-st.title("CGUP GW250114 Analysis")
+st.title("CGUP GW250114 Analysis (PSD noise)")
 
 alpha = st.sidebar.slider("α*", 0.0, 0.2, 0.08, 0.005)
 lam = st.sidebar.slider("λ", 0.3, 0.7, 0.5, 0.01)
 
 gps = 1420878141.2
-pre, post = 2, 2
+duration = 4
 
-if st.button("Load GW250114 data"):
+if st.button("Run Bilby"):
     with tempfile.TemporaryDirectory() as outdir:
-        st.write("Fetching H1/L1 strain…")
         ifos = InterferometerList(['H1','L1'])
-        ifos.get_open_strain_data(start_time=gps-pre,
-                                   end_time=gps+post,
-                                   outdir=outdir)
-        ifos = InterferometerList(['H1','L1'])
-ifos.set_strain_data_from_power_spectral_densities(
-    sampling_frequency=2048, duration=pre+post, start_time=gps-pre)
+        ifos.set_strain_data_from_power_spectral_densities(
+            sampling_frequency=2048, duration=duration, start_time=gps-2)
 
- class CGUPWaveform(WaveformGenerator):
+        class CGUPWaveform(WaveformGenerator):
             def __init__(self, alpha, lam):
                 super().__init__(
-                    duration=pre+post, sampling_frequency=2048,
+                    duration=duration, sampling_frequency=2048,
                     waveform_function=bilby.gw.source.lal_binary_black_hole,
                     waveform_arguments={'waveform_approximant':'pSEOBNRv5PHM'}
                 )
@@ -50,7 +45,7 @@ ifos.set_strain_data_from_power_spectral_densities(
             'lam': bilby.core.prior.DeltaFunction(lam)
         })
 
-        st.write("Running Bilby…")
+        st.write("Running Bilby on synthetic PSD noise…")
         res = bilby.run_sampler(likelihood=like, priors=priors,
                                 sampler='dynesty', nlive=200,
                                 outdir=outdir, label='cgup_gw', verbose=False)
