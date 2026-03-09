@@ -4,7 +4,7 @@ from bilby.gw.waveform_generator import WaveformGenerator
 
 os.environ["BILBY_INCLUDE_GLOBAL_METADATA"] = "False"
 
-st.title("CGUP Debug Run")
+st.title("Baseline GR Run (CGUP off)")
 
 gps=1420878141.2; duration=4
 try:
@@ -28,10 +28,8 @@ class CGUPWG(WaveformGenerator):
             parameter_conversion=bilby.gw.conversion.convert_to_lal_binary_black_hole_parameters,
             waveform_arguments={'waveform_approximant':'IMRPhenomPv2','reference_frequency':50})
     def frequency_domain_strain(self,params):
-    h=super().frequency_domain_strain(params)
-    # a,l=params.get('alpha',0.08),params.get('lam',0.5)
-    # return {k:h[k]*(1+(a**2)*(l**i)) for i,k in enumerate(h)}
-    return h # <-- plain GR waveform
+        h=super().frequency_domain_strain(params)
+        return h # CGUP disabled
 
 wf=CGUPWG()
 like=bilby.gw.likelihood.GravitationalWaveTransient(ifos,wf)
@@ -39,8 +37,6 @@ like=bilby.gw.likelihood.GravitationalWaveTransient(ifos,wf)
 priors=bilby.core.prior.PriorDict({
     'mass_1':bilby.core.prior.Uniform(30,38),
     'mass_2':bilby.core.prior.Uniform(28,36),
-    'alpha':bilby.core.prior.DeltaFunction(0.08),
-    'lam':bilby.core.prior.DeltaFunction(0.5),
     'theta_jn':bilby.core.prior.Uniform(0,3.14),
     'phase':bilby.core.prior.Uniform(0,3.14),
     'geocent_time':bilby.core.prior.Uniform(gps-0.1,gps+0.1),
@@ -61,10 +57,10 @@ if st.button("Run"):
         try:
             res=bilby.run_sampler(likelihood=like,priors=priors,
                                   sampler='dynesty',nlive=200,
-                                  outdir=outdir,label='debug',verbose=False)
+                                  outdir=outdir,label='baseline',verbose=False)
             st.write(f"Samples: {len(res.samples)}")
             fig=res.plot_corner(['mass_1','mass_2'])
             st.pyplot(fig)
-            st.success("Done!")
+            st.success("Baseline complete!")
         except Exception as e:
             st.error(f"Sampler crashed: {e}")
