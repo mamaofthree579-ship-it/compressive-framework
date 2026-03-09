@@ -1,7 +1,8 @@
 import streamlit as st
 import bilby, os, tempfile
-from bilby.gw import likelihood, utils
+from bilby.gw import likelihood
 from bilby.gw.waveform_generator import WaveformGenerator
+from bilby.gw.detector import InterferometerList
 
 os.environ["BILBY_INCLUDE_GLOBAL_METADATA"] = "False"
 
@@ -9,27 +10,22 @@ st.title("CGUP GW250114 Analysis")
 
 alpha = st.sidebar.slider("α*", 0.0, 0.2, 0.08, 0.005)
 lam = st.sidebar.slider("λ", 0.3, 0.7, 0.5, 0.01)
-beta = 0.4
-omega_GR = 0.3737
+
+gps = 1420878141.2
+pre, post = 2, 2
 
 if st.button("Load GW250114 data"):
-    st.write("Fetching GW250114 strain…")
-    try:
-        data = utils.get_open_strain_data('GW250114',
-                                     gps_time=1420878141.2,
-                                     interferometers=['H1','L1'],
-                                     duration=4,
-                                     sampling_frequency=2048)
-        st.success("Real data loaded")
-    except Exception as e:
-        st.warning(f"Fetch failed ({e}), using toy path")
-        data = None
+    with tempfile.TemporaryDirectory() as outdir:
+        st.write("Fetching H1/L1 strain…")
+        ifos = InterferometerList(['H1','L1'])
+        ifos.get_open_strain_data(start_time=gps-pre,
+                                   end_time=gps+post,
+                                   outdir=outdir)
 
-    if data:
         class CGUPWaveform(WaveformGenerator):
             def __init__(self, alpha, lam):
                 super().__init__(
-                    duration=4, sampling_frequency=2048,
+                    duration=pre+post, sampling_frequency=2048,
                     waveform_function=bilby.gw.source.lal_binary_black_hole,
                     waveform_arguments={'waveform_approximant':'pSEOBNRv5PHM'}
                 )
@@ -41,7 +37,7 @@ if st.button("Load GW250114 data"):
                 return h
 
         wf = CGUPWaveform(alpha, lam)
-        like = likelihood.GravitationalWaveTransient(interferometers=data,
+        like = likelihood.GravitationalWaveTransient(interferometers=ifos,
                                                      waveform_generator=wf)
 
         priors = bilby.core.prior.PriorDict({
@@ -51,10 +47,9 @@ if st.button("Load GW250114 data"):
             'lam': bilby.core.prior.DeltaFunction(lam)
         })
 
-        st.write("Running Bilby on GW250114…")
-        with tempfile.TemporaryDirectory() as d:
-            res = bilby.run_sampler(likelihood=like, priors=priors,
-                                    sampler='dynesty', nlive=200,
-                                    outdir=d, label='cgup_gw', verbose=False)
-            st.pyplot(res.plot_corner(['mass_1','mass_2']))
-        st.success("Done!")
+        st.write("Running Bilby…")
+        res = bilby.run_sampler(likelihood=like, priors=priors,
+                                sampler='dynesty', nlive=200,
+                                outdir=outdir, label='cgup_gw', verbose=False)
+        st.pyplot(res.plot_corner(['mass_1','mass_2']))
+    st.success("Done!")
