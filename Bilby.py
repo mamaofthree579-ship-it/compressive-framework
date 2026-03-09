@@ -9,6 +9,14 @@ st.title("CGUP Inference with real data")
 gps=1420878141.2
 duration=4
 
+priors.update({
+    'a_1': bilby.core.prior.DeltaFunction(0.0),
+    'a_2': bilby.core.prior.DeltaFunction(0.0),
+    'tilt_1': bilby.core.prior.DeltaFunction(0.0),
+    'tilt_2': bilby.core.prior.DeltaFunction(0.0),
+    'phi_12': bilby.core.prior.DeltaFunction(0.0),
+    'phi_jl': bilby.core.prior.DeltaFunction(0.0)
+})
 # fetch
 try:
     from gwpy.timeseries import TimeSeries
