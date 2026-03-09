@@ -20,6 +20,13 @@ ax.plot(t,wave(p_demo),label='CGUP',color='darkorange')
 ax.set_xlabel('Time [s]'); ax.set_ylabel('Strain'); ax.legend()
 st.pyplot(fig)
 
+# placeholder waveform: a simple sine wave
+h = np.sin(np.linspace(0, 2*np.pi, 100))
+np.save("h_placeholder.npy", h.real)
+# load it back to verify
+loaded = np.load("h_placeholder.npy")
+print(loaded[:5])
+
 class ToyLik(bilby.Likelihood):
     def __init__(self):
         super().__init__(dict(A=1,phi=0,alpha=0.08,lam=0.5)); self.d=np.zeros(N)
@@ -38,10 +45,3 @@ if st.button("Run Inference"):
                                   outdir=out,label='demo',verbose=False)
             st.pyplot(res.plot_corner(['A','phi']))
     st.success("Inference complete")
-
-# placeholder waveform: a simple sine wave
-h = np.sin(np.linspace(0, 2*np.pi, 100))
-np.save("h_placeholder.npy", h.real)
-# load it back to verify
-loaded = np.load("h_placeholder.npy")
-print(loaded[:5])
