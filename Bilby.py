@@ -4,7 +4,7 @@ import bilby
 import tempfile
 import matplotlib.pyplot as plt
 import numpy as np
-from lal import SimInspiralFD
+import SimInspiralFD
 
 st.set_page_config(page_title="CGUP Demo",layout="centered")
 st.title("Gravitational‑Wave Toy Model + CGUP Modulation")
