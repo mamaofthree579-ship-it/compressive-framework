@@ -20,15 +20,14 @@ if st.button("Run Bilby"):
         ifos.set_strain_data_from_power_spectral_densities(
             sampling_frequency=2048, duration=duration, start_time=gps-2)
 
-        class CGUPWaveform(WaveformGenerator):
-            def __init__(self, alpha, lam):
-                super().__init__(
-                    duration=duration,
-                    sampling_frequency=2048,
-                    frequency_domain_source_model=bilby.gw.source.lal_binary_black_hole,
-                    waveform_arguments={'waveform_approximant':'pSEOBNRv5PHM'}
-                )
-                self.alpha, self.lam = alpha, lam
+        class ToyLike(bilby.core.likelihood.Likelihood):
+    def __init__(self):
+        super().__init__(parameters={'mass_1':None, 'mass_2':None})
+    def log_likelihood(self):
+        m1, m2 = self.parameters['mass_1'], self.parameters['mass_2']
+        return -(((m1-33.6)/1.2)**2 + ((m2-32.2)/0.8)**2)
+
+like = ToyLike()
             def frequency_domain_strain(self, params):
                 h = super().frequency_domain_strain(params)
                 for i in range(len(h)):
