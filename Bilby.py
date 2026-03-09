@@ -21,6 +21,9 @@ if st.button("Load GW250114 data"):
         ifos.get_open_strain_data(start_time=gps-pre,
                                    end_time=gps+post,
                                    outdir=outdir)
+        ifos = InterferometerList(['H1','L1'])
+ifos.set_strain_data_from_power_spectral_densities(
+    sampling_frequency=2048, duration=pre+post, start_time=gps-pre)
 
         class CGUPWaveform(WaveformGenerator):
             def __init__(self, alpha, lam):
