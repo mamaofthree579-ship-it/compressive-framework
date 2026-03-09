@@ -8,7 +8,7 @@ alpha=st.slider("alpha",0.0,0.2,0.08,0.01)
 lam=st.slider("lam",0.1,1.0,0.5,0.1)
 
 # load real waveform (must match duration,fs)
-h_lal=np.load("h_lal.npy") # shape (N,)
+h_lal=np.sin(2*np.pi*30*t)*np.exp(-0.5*((t-2)/0.5)**2)  # fallback
 duration,fs=4,2048; N=int(duration*fs)
 t=np.arange(N)/fs
 
