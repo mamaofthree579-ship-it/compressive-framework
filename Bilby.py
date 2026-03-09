@@ -43,19 +43,18 @@ if st.button("Run Bilby toy fit"):
     })
 
     likelihood = bilby.likelihood.Likelihood()
-    likelihood.log_likelihood = loglike
+likelihood.log_likelihood = loglike
 
-    with tempfile.TemporaryDirectory() as d:
-        res = bilby.run_sampler(
-            likelihood=likelihood,
-            priors=priors,
-            sampler='dynesty',
-            nlive=200,
-            outdir=d,
-            label='cgup_demo',
-            verbose=False
-        )
-        st.pyplot(res.plot_corner())
+res = bilby.run_sampler(
+    likelihood=likelihood,
+    priors=priors,
+    sampler='dynesty',
+    nlive=200,
+    outdir=d,
+    label='cgup_demo',
+    verbose=False
+)
+    st.pyplot(res.plot_corner())
     st.success("Done!")
 
 # note
