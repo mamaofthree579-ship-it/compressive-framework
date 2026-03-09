@@ -2,6 +2,10 @@ import streamlit as st
 import bilby, os, tempfile
 from bilby.gw import detector, likelihood
 from bilby.gw.waveform_generator import WaveformGenerator
+from bilby.gw import utils
+
+data = utils.get_event_data('GW250114', interferometers=['H1','L1'],
+                             duration=4, sampling_frequency=2048)
 
 os.environ["BILBY_INCLUDE_GLOBAL_METADATA"] = "False"
 
