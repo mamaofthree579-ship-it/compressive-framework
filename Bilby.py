@@ -54,7 +54,7 @@ res = bilby.run_sampler(
     label='cgup_demo',
     verbose=False
 )
-    st.pyplot(res.plot_corner())
+     st.pyplot(res.plot_corner())
     st.success("Done!")
 
 # note
