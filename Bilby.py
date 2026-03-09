@@ -25,7 +25,7 @@ if st.button("Load GW250114 data"):
 ifos.set_strain_data_from_power_spectral_densities(
     sampling_frequency=2048, duration=pre+post, start_time=gps-pre)
 
-        class CGUPWaveform(WaveformGenerator):
+ class CGUPWaveform(WaveformGenerator):
             def __init__(self, alpha, lam):
                 super().__init__(
                     duration=pre+post, sampling_frequency=2048,
