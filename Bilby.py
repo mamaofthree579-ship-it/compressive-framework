@@ -1,6 +1,7 @@
 import streamlit as st
 import bilby, os, tempfile
-from bilby.gw import detector, waveform, likelihood
+from bilby.gw import detector, likelihood
+from bilby.gw.waveform_generator import WaveformGenerator
 
 os.environ["BILBY_INCLUDE_GLOBAL_METADATA"] = "False"
 
