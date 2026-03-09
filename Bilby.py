@@ -53,6 +53,9 @@ priors=bilby.core.prior.PriorDict({
     'phi_12':bilby.core.prior.DeltaFunction(0.0),
     'phi_jl':bilby.core.prior.DeltaFunction(0.0)
 })
+priors.update({
+    'luminosity_distance': bilby.core.prior.Uniform(100,1000)
+})
 
 if st.button("Run"):
     with tempfile.TemporaryDirectory() as outdir:
