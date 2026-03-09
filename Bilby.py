@@ -21,14 +21,14 @@ if st.button("Run Bilby"):
             sampling_frequency=2048, duration=duration, start_time=gps-2)
 
         class CGUPWaveform(WaveformGenerator):
-    def __init__(self, alpha, lam):
-        super().__init__(
-            duration=duration,
-            sampling_frequency=2048,
-            frequency_domain_source_model=bilby.gw.source.lal_binary_black_hole,
-            waveform_arguments={'waveform_approximant':'pSEOBNRv5PHM'}
-        )
-        self.alpha, self.lam = alpha, lam
+            def __init__(self, alpha, lam):
+                super().__init__(
+                    duration=duration,
+                    sampling_frequency=2048,
+                    frequency_domain_source_model=bilby.gw.source.lal_binary_black_hole,
+                    waveform_arguments={'waveform_approximant':'pSEOBNRv5PHM'}
+                )
+                self.alpha, self.lam = alpha, lam
             def frequency_domain_strain(self, params):
                 h = super().frequency_domain_strain(params)
                 for i in range(len(h)):
@@ -46,7 +46,7 @@ if st.button("Run Bilby"):
             'lam': bilby.core.prior.DeltaFunction(lam)
         })
 
-        st.write("Running Bilby on synthetic PSD noise…")
+        st.write("Running Bilby…")
         res = bilby.run_sampler(likelihood=like, priors=priors,
                                 sampler='dynesty', nlive=200,
                                 outdir=outdir, label='cgup_gw', verbose=False)
