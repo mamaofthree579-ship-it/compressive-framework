@@ -6,8 +6,9 @@ scipy
 imageio
 bilby
 bilby[gw]
-lalsuite==7.19.0 
+lalsuite>=7.0 
 gwpy
+
 
 # --- Core MkDocs setup ---
 mkdocs>=1.6.0
