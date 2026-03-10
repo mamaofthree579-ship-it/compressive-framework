@@ -32,8 +32,8 @@ class ToyLik(bilby.Likelihood):
 
 like=ToyLik()
 priors=bilby.core.prior.PriorDict(dict(
-    alpha=bilby.core.prior.DeltaFunction(0.08),
-    lam=bilby.core.prior.DeltaFunction(0.5)
+    alpha=bilby.core.prior.Uniform(0,0.2),
+    lam=bilby.core.prior.Uniform(0.1,1.0)
 ))
 
 if st.button("Run Inference"):
