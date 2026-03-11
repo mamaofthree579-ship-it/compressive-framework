@@ -1,107 +1,111 @@
 import streamlit as st
 import numpy as np
-import matplotlib.pyplot as plt
 import pandas as pd
+import matplotlib.pyplot as plt
+import io
 
-# --- App Config ---
+# --- 1. SET UP PAGE & STYLING ---
 st.set_page_config(page_title="FGD Theory Tester", layout="wide")
-st.title("🌌 Fractal Gravity Dynamics (FGD) Analyzer")
+st.title("🌌 Fractal Gravity Dynamics (FGD) Research Dashboard")
 st.markdown("""
-**Objective:** Test Hope Jones's $r^{-4}$ potential correction against General Relativity. 
-Find the 'Falsification Point' by comparing the Fractal Core to M87* EHT data.
+**Research Partner:** Testing 'Mathematical Expansion & Simulation' by Hope Jones.
+This tool evaluates the $r^{-4}$ correction against Black Hole (EHT) and Galactic (.DENS) data.
 """)
 
-# --- Sidebar Controls ---
-st.sidebar.header("Simulation Parameters")
-M = st.sidebar.slider("Black Hole Mass (M_sun x 10^9)", 1.0, 10.0, 6.5) # M87* is ~6.5
-L_f = st.sidebar.slider("Fractal Length (l_f)", 0.0, 5.0, 1.2, help="The Hope Jones correction factor")
-r_range = st.sidebar.slider("Radius Range (GM/c^2)", 0.1, 15.0, (0.5, 10.0))
+# --- 2. SIDEBAR PARAMETERS ---
+st.sidebar.header("Global Theory Constants")
+L_f = st.sidebar.slider("Fractal Length Scale (ℓ_f)", 0.0, 10.0, 1.2, 
+                       help="The characteristic scale where fractal repulsion begins.")
+D_t = st.sidebar.slider("Temporal Dimension (D_t)", 0.5, 1.0, 0.81,
+                       help="Hope Jones's proposed temporal fractal dimension.")
 
-# --- Constants & Physics Logic ---
-G_M = 1.0  # Normalized units
-r = np.linspace(r_range[0], r_range[1], 1000)
+# --- 3. CORE PHYSICS FUNCTIONS ---
+def calculate_fgd_potential(r, M, L_f):
+    G_M = 1.0 # Normalized
+    # V = -GM/r + (GM * L_f^2) / (3 * r^3)
+    return -G_M / r + (G_M * L_f**2) / (3 * r**3)
 
-# Potentials
-v_gr = -G_M / r  # Simplified Newtonian/GR Limit
-# FGD Potential: V = -GM/r + (GM * l_f^2) / (3 * r^3)
-v_fgd = -G_M / r + (G_M * L_f**2) / (3 * r**3)
-
-# Force Balance (The 'Repulsion' Check)
-# Repulsion dominates where r < sqrt(3) * L_f
-r_core = np.sqrt(3) * L_f
-
-# --- Visualizations ---
-col1, col2 = st.columns(2)
-
-with col1:
-    st.subheader("Potential Well Analysis")
-    fig, ax = plt.subplots()
-    ax.plot(r, v_gr, 'k--', label="Standard GR (Singularity)")
-    ax.plot(r, v_fgd, 'r-', linewidth=2, label="FGD (Fractal Core)")
+def parse_dens_file(uploaded_file):
+    # Reads [x y z rho] format common in .DENS files
+    content = uploaded_file.getvalue().decode("utf-8")
+    # Using sep=r'\s+' to handle spaces/tabs
+    df = pd.read_csv(io.StringIO(content), sep=r'\s+', names=['x', 'y', 'z', 'rho'], comment='#')
     
-    if L_f > 0:
-        ax.axvspan(0, r_core, color='red', alpha=0.1, label="Repulsive Core Zone")
-        ax.axvline(r_core, color='red', linestyle=':', alpha=0.5)
+    # Calculate radius and mass
+    df['r'] = np.sqrt(df['x']**2 + df['y']**2 + df['z']**2)
+    df = df.sort_values('r')
+    df['mass_enclosed'] = df['rho'].cumsum() # Cumulative mass profile
     
-    ax.set_ylim(-3, 1)
-    ax.set_xlabel("Radius (r)")
-    ax.set_ylabel("Potential (V)")
-    ax.legend()
-    st.pyplot(fig)
+    # Binning for smoothness
+    bins = np.linspace(df['r'].min(), df['r'].max(), 50)
+    df['bin'] = pd.cut(df['r'], bins)
+    binned = df.groupby('bin', observed=True).agg({'r': 'mean', 'mass_enclosed': 'max'}).dropna()
+    return binned['r'].values, binned['mass_enclosed'].values
 
-with col2:
-    st.subheader("Comparison to EHT M87* Shadow")
-    st.write(f"**Calculated Core Radius:** {r_core:.2f} units")
+# --- 4. MODULE 1: BLACK HOLE SINGULARITY TESTER ---
+tab1, tab2 = st.tabs(["🕳️ Black Hole Shadow (EHT)", "🌌 Galaxy Density (.DENS)"])
+
+with tab1:
+    st.subheader("Singularity Resolution & Shadow Diameter")
+    col1_a, col1_b = st.columns([2, 1])
     
-    # EHT Shadow for M87* is approx 5.5 units (3*sqrt(3))
-    eht_shadow_limit = 5.2 
-    deviation = ((r_core / eht_shadow_limit) * 100) if L_f > 0 else 0
+    r_bh = np.linspace(0.4, 10, 500)
+    v_gr = -1.0 / r_bh
+    v_fgd = calculate_fgd_potential(r_bh, 1.0, L_f)
+    r_core = np.sqrt(3) * L_f
     
-    st.metric("Shadow Deviation", f"{deviation:.2f}%", 
-              delta="-Falsified" if deviation > 10 else "Potential Support",
-              delta_color="inverse")
-
-    st.info("""
-    **Testing Logic:**
-    1. If **Shadow Deviation > 10%**, the Fractal Core is too large and contradicts EHT's clean circular shadow.
-    2. If **Deviation is < 2%**, the theory is 'Observationally Consistent' with current resolution limits.
-    """)
-
-# --- NEW: Galaxy Data Uploader Section ---
-st.divider()
-st.header("📊 Galaxy Rotation Curve Tester")
-st.markdown("Upload a CSV with `radius` and `velocity` columns to test the Dark Matter vs. FGD claim.")
-
-uploaded_file = st.file_uploader("Upload SPARC or custom CSV", type="csv")
-
-if uploaded_file is not None:
-    import pandas as pd
-    df = pd.read_csv(uploaded_file)
-    df = pd.read_csv("file.dat", sep="\t") # Change sep if not tab-delimited
-    df.to_csv("file.csv", index=False)
-
-    # Required columns check
-    if 'radius' in df.columns and 'velocity' in df.columns:
-        # Physics Calculation for Galaxy Scale
-        # In FGD, the 'Extra' velocity comes from the r^-4 term integration
-        r_gal = df['radius'].values
-        v_obs = df['velocity'].values
+    with col1_a:
+        fig1, ax1 = plt.subplots(figsize=(8, 4))
+        ax1.plot(r_bh, v_gr, 'k--', label="Standard GR (Singularity)")
+        ax1.plot(r_bh, v_fgd, 'r-', label="FGD (Fractal Core)")
+        ax1.axvspan(0, r_core, color='red', alpha=0.1, label="Repulsive Zone")
+        ax1.set_ylim(-4, 1)
+        ax1.set_ylabel("Potential (V)")
+        ax1.legend()
+        st.pyplot(fig1)
         
-        # Theoretical FGD Velocity (Baryonic + Fractal Correction)
-        # Using the L_f from the sidebar scaled to galactic kpc
-        v_fgd_gal = np.sqrt((G_M * M / r_gal) + (G_M * M * (L_f**2) / r_gal**3))
-        
-        fig3, ax3 = plt.subplots(figsize=(10, 5))
-        ax3.scatter(r_gal, v_obs, color='black', label='Observed Data (SPARC)', alpha=0.5)
-        ax3.plot(r_gal, v_fgd_gal, color='blue', label='FGD Prediction (No Dark Matter)')
-        
-        ax3.set_xlabel("Radius (kpc)")
-        ax3.set_ylabel("Velocity (km/s)")
-        ax3.legend()
-        st.pyplot(fig3)
-        
-        # Falsification Metric
-        rmse = np.sqrt(np.mean((v_obs - v_fgd_gal)**2))
-        st.metric("Model Fit Error (RMSE)", f"{rmse:.2f} km/s")
+    with col1_b:
+        eht_limit = 5.2 # M87* shadow size in normalized units
+        deviation = (r_core / eht_limit) * 100
+        st.metric("Shadow Deviation", f"{deviation:.2f}%", 
+                  delta="Falsified" if deviation > 15 else "Consistent", 
+                  delta_color="inverse")
+        st.write(f"**Core Radius:** {r_core:.2f}")
+        st.info("If Deviation > 15%, the fractal core would be visible to EHT, potentially falsifying the theory.")
+
+# --- 5. MODULE 2: .DENS GALAXY TESTER ---
+with tab2:
+    st.subheader("Rotation Curve from Simulation Data")
+    uploaded_file = st.file_uploader("Upload .DENS or .TXT file (Format: x y z rho)", type=["dens", "txt"])
+    
+    if uploaded_file:
+        try:
+            r_data, m_data = parse_dens_file(uploaded_file)
+            
+            # Velocity Calculations
+            v_classic = np.sqrt(m_data / r_data)
+            # FGD Velocity includes the r^-4 force correction integrated
+            v_fgd_curve = np.sqrt((m_data / r_data) + (m_data * (L_f**2) / r_data**3))
+            
+            fig2, ax2 = plt.subplots(figsize=(10, 5))
+            ax2.plot(r_data, v_classic, 'k--', label="Newtonian (No Dark Matter)")
+            ax2.plot(r_data, v_fgd_curve, 'b-', label="FGD Prediction")
+            ax2.set_xlabel("Radius (r)")
+            ax2.set_ylabel("Velocity (v)")
+            ax2.legend()
+            st.pyplot(fig2)
+            
+            st.success("Analysis Complete: Check if the blue line stays 'flat' at high radii.")
+        except Exception as e:
+            st.error(f"Error: {e}. Ensure the file is space-separated columns of x, y, z, and density.")
     else:
-        st.error("CSV must contain 'radius' and 'velocity' columns.")
+        st.warning("Please upload a .DENS file from the research datasets to see results.")
+
+# --- 6. TEMPORAL DYNAMICS ---
+st.divider()
+st.subheader("Fractal Temporal Flux (D_t Scaling)")
+st.write(f"Simulating signal noise for D_t = {D_t}")
+t = np.linspace(1, 100, 1000)
+# Power law noise simulation
+signal = np.cumsum(np.random.normal(0, 1, 1000) * (t**(D_t - 1)))
+st.line_chart(signal)
