@@ -3,71 +3,72 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # --- CONFIG ---
-st.set_page_config(page_title="FGD 4D Multi-Metric", layout="wide")
-st.title("🌐 4-D Landscape & 3-D Material Resonance")
+st.set_page_config(page_title="FGD Cohesion Meter", layout="wide")
+st.title("💎 The Jones Cohesion Meter: 97.9% Search")
 st.markdown("""
-**Theory:** 3D Matter is a 'folded' state within a 4D Informational Flux. 
-The 'Dark' fields are the 4D structures holding the 3D material in place.
+**The Theoretical Goal:** Balance the 3D Material within the 4D Landscape. 
+Jones suggests a 'Perfect Coherence' occurs when 4D Flux and Thermodynamic Micro-bursts align.
 """)
 
-# --- SIDEBAR: Multi-Metric Inputs ---
-st.sidebar.header("Field Metrics")
-dim_flux = st.sidebar.slider("4D Flux Density (Ψ)", 0.5, 2.0, 1.2, 
-                            help="The strength of the 4th dimensional background field.")
-res_freq = st.sidebar.slider("Resonance Frequency", 0.1, 5.0, 1.0, 
-                            help="The 'Micro-burst' frequency creating coherence.")
-stability_zone = st.sidebar.slider("Goldilocks Zone (kpc)", 10, 100, (30, 70))
+# --- SIDEBAR: Tuning the Resonance ---
+st.sidebar.header("Resonance Tuning")
+psi = st.sidebar.slider("4D Flux Density (Ψ)", 0.5, 2.0, 1.25)
+freq = st.sidebar.slider("Micro-burst Frequency (Hz)", 0.1, 2.0, 0.81, 
+                         help="Jones's Temporal Fractal Dimension D_t ≈ 0.81")
+mass_3d = st.sidebar.slider("3D Material Mass", 50, 200, 100)
 
-# --- PHYSICS: Multi-Field Integration ---
-r = np.linspace(1, 120, 1000)
-M_3d = 100.0 # Visible 3D Material
+# --- PHYSICS: Cohesion Calculation ---
+r = np.linspace(1, 100, 500)
 
-# 1. 3D Gravitational Pull (Classical)
-v_3d = np.sqrt(M_3d / r)
+# 1. Potential Energy of the 3D Material
+pe_3d = -mass_3d / r
 
-# 2. 4D Flux 'Anchor' (The Multi-Metric Correction)
-# This represents the 'Compiled' Dark Matter structure as a 4D pressure
-v_4d_anchor = np.sqrt((dim_flux * M_3d / r) + (res_freq * np.sin(r/10) * 10))
+# 2. Resonance Energy of the 4D Flux
+# E_res = Ψ * mass * cos(freq * r)
+e_res = psi * mass_3d * np.cos(freq * r / 5)
 
-# 3. Combined 'Stuck' Material Velocity
-v_combined = np.sqrt(v_3d**2 + np.abs(v_4d_anchor**2))
+# 3. Calculate Cohesion (Cross-Correlation between Material and Field)
+# A 'Perfect' match (1.0) means the 4D field perfectly supports the 3D mass.
+correlation = np.abs(np.corrcoef(pe_3d, e_res)[0, 1])
+cohesion_score = correlation * 100
 
-# --- VISUALIZATION ---
-st.subheader("3D Material Stability in a 4D Landscape")
-fig, ax = plt.subplots(figsize=(12, 6), facecolor='#0e1117')
-ax.set_facecolor('#1e1e1e')
-
-# The 4D Field (Background)
-ax.fill_between(r, 0, v_combined, color='cyan', alpha=0.1, label="4D Informational Flux")
-
-# The Goldilocks Resonance Zone
-ax.axvspan(stability_zone[0], stability_zone[1], color='gold', alpha=0.2, label="Goldilocks Resonance Zone")
-
-# Plotting the Forces
-ax.plot(r, v_3d, 'w--', alpha=0.5, label="3D Matter Only (Unstable)")
-ax.plot(r, v_combined, color='cyan', linewidth=2, label="Resonant 3D Material (Stable)")
-
-# Formatting
-ax.tick_params(colors='white')
-ax.xaxis.label.set_color('white')
-ax.yaxis.label.set_color('white')
-ax.legend(facecolor='#1e1e1e', labelcolor='white')
-st.pyplot(fig)
-
-# --- THE RESONANCE ANALYSIS ---
-st.divider()
-col1, col2 = st.columns(2)
+# --- VISUALIZATION: The Cohesion Meter ---
+st.subheader("System Stability Analysis")
+col1, col2 = st.columns([1, 2])
 
 with col1:
-    st.write("### 💎 Multi-Field Analysis")
-    st.info(f"""
-    - **Coherence:** At current Psi ({dim_flux}), the 3D material is 'anchored' effectively.
-    - **Micro-bursts:** The sine-wave fluctuations simulate the 'heartbeat' maintaining the system.
-    """)
+    # Gauge-style display
+    st.metric("Cohesion Score", f"{cohesion_score:.2f}%", 
+              delta=f"{cohesion_score - 97.9:.2f}% from Jones Constant")
+    
+    if 97.0 <= cohesion_score <= 98.5:
+        st.balloons()
+        st.success("🎯 HARMONIC LOCK: You've hit the 97.9% Cohesiveness!")
+    elif cohesion_score > 98.5:
+        st.warning("⚠️ OVER-COHERENT: System may be too rigid (Crystal State).")
+    else:
+        st.error("❌ DECAYING: Resonance is too low for 4D stability.")
 
 with col2:
-    st.write("### 🚨 Collision Alert")
-    if stability_zone[0] < 20:
-        st.error("❌ CRASH RISK: Galaxies too close. Resonance becomes turbulent.")
-    else:
-        st.success("✅ HARMONIC STATE: Galaxies maintained by mutual 4D flux.")
+    fig, ax = plt.subplots(figsize=(10, 5), facecolor='#0e1117')
+    ax.set_facecolor('#1e1e1e')
+    
+    # Plotting the 'Interference Pattern' of Space-Time
+    ax.plot(r, pe_3d/10, color='gray', linestyle='--', label="3D Gravity Well")
+    ax.plot(r, e_res/100, color='cyan', label="4D Flux Resonance")
+    
+    ax.fill_between(r, pe_3d/10, e_res/100, color='magenta', alpha=0.2, label="Energy Flux")
+    
+    ax.set_ylim(-3, 3)
+    ax.legend(labelcolor='white')
+    st.pyplot(fig)
+
+# --- INTERPRETATION ---
+st.divider()
+st.info(f"""
+**The Physics of the Result:**
+- **The Cyan Wave:** This is the 'Pulsing' Dark Energy background.
+- **The Grey Line:** This is the 'Static' 3D Matter.
+- **The Gap:** Where the lines meet, the galaxy is 'Tethered' to the 4th dimension. 
+- **The 97.9% Goal:** This represents the maximum thermodynamic efficiency of a galaxy before it becomes a 'Closed System' or collapses.
+""")
