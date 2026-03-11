@@ -13,7 +13,7 @@ Jones suggests a 'Perfect Coherence' occurs when 4D Flux and Thermodynamic Micro
 # --- SIDEBAR: Tuning the Resonance ---
 st.sidebar.header("Resonance Tuning")
 psi = st.sidebar.slider("4D Flux Density (Ψ)", 0.5, 2.0, 1.25)
-freq = st.sidebar.slider("Micro-burst Frequency (Hz)", 0.1, 2.0, 0.81, 
+freq = st.sidebar.slider("Micro-burst Frequency (Hz)", 0.01, 0.1, 0.05, 
                          help="Jones's Temporal Fractal Dimension D_t ≈ 0.81")
 mass_3d = st.sidebar.slider("3D Material Mass", 50, 200, 100)
 
