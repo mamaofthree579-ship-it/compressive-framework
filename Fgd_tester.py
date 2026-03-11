@@ -4,80 +4,74 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import io
 
-# --- PAGE CONFIG ---
-st.set_page_config(page_title="Universal FGD Tester", layout="wide")
-st.title("🌌 Universal Fractal Gravity Research Dashboard")
-st.markdown("Testing Hope Jones's **Particle-Time** dynamics against `.DAT` and `.DENS` datasets.")
+# --- CONFIG ---
+st.set_page_config(page_title="FGD Falsifier", layout="wide")
+st.title("🔬 FGD Theory Falsifier: SPARC Edition")
+st.markdown("Testing Hope Jones's $r^{-4}$ model against empirical galaxy data.")
 
 # --- SIDEBAR ---
-st.sidebar.header("Global Theory Constants")
-L_f = st.sidebar.slider("Fractal Length (ℓ_f)", 0.0, 10.0, 1.2)
-G_M = 1.0 # Normalized Gravity-Mass constant
+st.sidebar.header("Model Parameters")
+L_f = st.sidebar.slider("Fractal Scale (ℓ_f)", 0.0, 20.0, 5.0)
+mass_scale = st.sidebar.slider("Baryonic Mass Scaling", 0.1, 2.0, 1.0)
 
-# --- ROBUST PARSER ---
-def universal_parser(uploaded_file):
+# --- SPARC PARSER ---
+def parse_sparc(uploaded_file):
     content = uploaded_file.getvalue().decode("utf-8")
-    # Clean common scientific headers like '#' or '!'
-    lines = [line for line in content.splitlines() if not line.strip().startswith(('#', '!', 'index'))]
+    # SPARC files usually have headers; we skip lines starting with #
+    df = pd.read_csv(io.StringIO(content), sep=r'\s+', comment='#', header=None)
     
-    # Try reading with any whitespace separator
-    df = pd.read_csv(io.StringIO("\n".join(lines)), sep=r'\s+', header=None)
-    
-    # AUTO-DETECT FORMAT
-    cols = len(df.columns)
-    
-    if cols >= 4: # Likely 3D Density: x, y, z, rho
-        st.info("Format Detected: 3D Density Map (x, y, z, ρ)")
-        df.columns = ['x', 'y', 'z', 'rho'] + list(df.columns[4:])
-        df['r'] = np.sqrt(df['x']**2 + df['y']**2 + df['z']**2)
-        df = df.sort_values('r')
-        df['mass_enclosed'] = df['rho'].cumsum()
-        return df['r'].values, df['mass_enclosed'].values, "density"
-    
-    elif cols >= 2: # Likely 2D Rotation Curve: radius, velocity
-        st.info("Format Detected: 2D Rotation Curve (r, v)")
-        df.columns = ['r', 'v_obs'] + list(df.columns[2:])
-        return df['r'].values, df['v_obs'].values, "curve"
-    
-    else:
-        raise ValueError("Unknown file structure. Ensure at least 2 columns exist.")
+    # Standard SPARC columns: 
+    # 1:Rad 2:Vobs 3:errV 4:Vgas 5:Vdisk 6:Vbulge
+    df.columns = ['rad', 'v_obs', 'v_err', 'v_gas', 'v_disk', 'v_bulge'] + list(df.columns[6:])
+    return df
 
-# --- UI TABS ---
-tab1, tab2 = st.tabs(["📊 Galaxy Data Analysis", "🕳️ Black Hole Core Theory"])
+# --- APP LOGIC ---
+uploaded_file = st.file_uploader("Upload a SPARC .dat or .txt file", type=["dat", "txt"])
 
-with tab1:
-    uploaded_file = st.file_uploader("Upload .DAT or .DENS file", type=["dat", "dens", "txt"])
-    
-    if uploaded_file:
-        try:
-            r_raw, val_raw, mode = universal_parser(uploaded_file)
-            
-            # MATH: FGD Velocity Prediction
-            if mode == "density":
-                # v = sqrt( (GM/r) + (3GM*Lf^2 / r^3) )
-                v_classic = np.sqrt(G_M * val_raw / r_raw)
-                v_fgd = np.sqrt((G_M * val_raw / r_raw) + (3 * G_M * val_raw * (L_f**2) / r_raw**3))
-                y_label = "Velocity (v)"
+if uploaded_file:
+    try:
+        df = parse_sparc(uploaded_file)
+        r = df['rad'].values
+        v_obs = df['v_obs'].values
+        v_err = df['v_err'].values
+        
+        # Calculate Baryonic Velocity (Sum of Gas, Disk, Bulge contributions)
+        # v_baryonic^2 = v_gas^2 + v_disk^2 + v_bulge^2
+        v_bary = np.sqrt(np.abs(df['v_gas']**2 + df['v_disk']**2 + df['v_bulge']**2)) * mass_scale
+        
+        # APPLY FGD CORRECTION: v_final^2 = v_bary^2 + (3 * G * M * Lf^2 / r^3)
+        # We estimate G*M using the baryonic velocity at each point
+        v_fgd = np.sqrt(v_bary**2 + (3 * (v_bary**2 * r) * (L_f**2) / r**3))
+        
+        # --- VISUALIZATION ---
+        fig, ax = plt.subplots(figsize=(10, 5))
+        ax.errorbar(r, v_obs, yerr=v_err, fmt='ko', label='Observed (SPARC)', alpha=0.6)
+        ax.plot(r, v_bary, 'g--', label='Baryonic Only (Newtonian)')
+        ax.plot(r, v_fgd, 'r-', linewidth=2, label='FGD Prediction')
+        ax.set_xlabel("Radius (kpc)")
+        ax.set_ylabel("Velocity (km/s)")
+        ax.legend()
+        st.pyplot(fig)
+        
+        # --- THE FALSIFIER METRIC ---
+        # Chi-squared: measures how far the red line is from the black dots
+        chi_sq = np.sum(((v_obs - v_fgd) / v_err)**2) / len(r)
+        
+        st.divider()
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.metric("Reduced Chi-Squared (χ²)", f"{chi_sq:.2f}")
+        
+        with col2:
+            if chi_sq < 1.5:
+                st.success("✅ THEORY SUPPORTED: Fits within observation error.")
+            elif chi_sq < 5.0:
+                st.warning("⚠️ WEAK FIT: Adjust ℓ_f or Mass Scaling.")
             else:
-                # Compare observed curve to theoretical prediction
-                v_classic = np.sqrt(G_M * 100 / r_raw) # 100 is dummy mass for curve test
-                v_fgd = np.sqrt((G_M * 100 / r_raw) + (3 * G_M * 100 * (L_f**2) / r_raw**3))
-                y_label = "Velocity (v)"
+                st.error("❌ THEORY FALSIFIED: Model contradicts galactic data.")
+                
+    except Exception as e:
+        st.error(f"Format Error: {e}. Ensure you are uploading a raw SPARC .dat file.")
 
-            fig, ax = plt.subplots(figsize=(10, 5))
-            if mode == "curve":
-                ax.scatter(r_raw, val_raw, color='gray', alpha=0.5, label="Observed Data (.DAT)")
-            
-            ax.plot(r_raw, v_classic, 'k--', label="Newtonian (Expected)")
-            ax.plot(r_raw, v_fgd, 'b-', linewidth=2, label="FGD Prediction")
-            ax.set_xlabel("Radius (r)")
-            ax.set_ylabel(y_label)
-            ax.legend()
-            st.pyplot(fig)
-            
-        except Exception as e:
-            st.error(f"Parser Error: {e}")
-
-with tab2:
-    st.write(f"**Current Balance Point ($r_{{core}}$):** {np.sqrt(3)*L_f:.2f}")
-    st.markdown("Check if $r_{core}$ overlaps with known EHT shadow data (~5.5 units).")
+st.info("**Instructions:** Go to [SPARC Database](https://astroweb.case.edu), pick a galaxy (e.g., NGC3198), and download the 'Rotcur' file.")
