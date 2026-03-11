@@ -66,16 +66,39 @@ with col2:
     2. If **Deviation is < 2%**, the theory is 'Observationally Consistent' with current resolution limits.
     """)
 
-# --- Temporal Scaling Section ---
+# --- NEW: Galaxy Data Uploader Section ---
 st.divider()
-st.subheader("Fractal Time Check (D_t ≈ 0.81)")
-st.write("Hope Jones predicts light fluctuations follow a fractal power-law.")
-# Simulated Light Curve
-t = np.linspace(0, 100, 1000)
-noise = np.random.normal(0, 1, 1000)
-fractal_signal = np.cumsum(noise * (t**-0.19)) # Rough D_t scaling simulation
+st.header("📊 Galaxy Rotation Curve Tester")
+st.markdown("Upload a CSV with `radius` and `velocity` columns to test the Dark Matter vs. FGD claim.")
 
-fig2, ax2 = plt.subplots(figsize=(10, 3))
-ax2.plot(t, fractal_signal, color='orange')
-ax2.set_title("Predicted Fractal Light Curve (QPO Signature)")
-st.pyplot(fig2)
+uploaded_file = st.file_uploader("Upload SPARC or custom CSV", type="csv")
+
+if uploaded_file is not None:
+    import pandas as pd
+    df = pd.read_csv(uploaded_file)
+    
+    # Required columns check
+    if 'radius' in df.columns and 'velocity' in df.columns:
+        # Physics Calculation for Galaxy Scale
+        # In FGD, the 'Extra' velocity comes from the r^-4 term integration
+        r_gal = df['radius'].values
+        v_obs = df['velocity'].values
+        
+        # Theoretical FGD Velocity (Baryonic + Fractal Correction)
+        # Using the L_f from the sidebar scaled to galactic kpc
+        v_fgd_gal = np.sqrt((G_M * M / r_gal) + (G_M * M * (L_f**2) / r_gal**3))
+        
+        fig3, ax3 = plt.subplots(figsize=(10, 5))
+        ax3.scatter(r_gal, v_obs, color='black', label='Observed Data (SPARC)', alpha=0.5)
+        ax3.plot(r_gal, v_fgd_gal, color='blue', label='FGD Prediction (No Dark Matter)')
+        
+        ax3.set_xlabel("Radius (kpc)")
+        ax3.set_ylabel("Velocity (km/s)")
+        ax3.legend()
+        st.pyplot(fig3)
+        
+        # Falsification Metric
+        rmse = np.sqrt(np.mean((v_obs - v_fgd_gal)**2))
+        st.metric("Model Fit Error (RMSE)", f"{rmse:.2f} km/s")
+    else:
+        st.error("CSV must contain 'radius' and 'velocity' columns.")
