@@ -1,9 +1,15 @@
-# Add this to your Streamlit logic to test the 89.89% Moon value
-target_cohesion = 89.89
-drift_rate = (97.9 - cohesion_score) / 100 # Higher gap = higher drift
+import streamlit as st
+import numpy as np
 
-st.metric("Lunar Cohesion", f"{cohesion_score:.2f}%", 
-          delta=f"{cohesion_score - 89.89:.2f}% from Observed Moon")
+st.title("🌊 The Cosmic Plasma: Fluid Stability")
+viscosity = st.sidebar.slider("Plasma Viscosity (Medium Grip)", 0.1, 2.0, 1.0)
 
-if cohesion_score < 90.0:
-    st.warning("🌙 LUNAR SLIPPAGE: The orbit is elliptical and slowly expanding.")
+# Logic: High Viscosity = Lower Drift
+# If Viscosity is high, the planet is 'held' by the water-like space.
+drift_risk = (1.0 / viscosity) * (97.9 - 89.89)
+
+st.metric("Drift Risk Level", f"{drift_risk:.2f}%")
+if drift_risk > 5.0:
+    st.error("🚨 VACUUM CHAOS: The system is too 'slippery.' Prepare for Collision.")
+else:
+    st.success("✅ FLUID STABILITY: The Plasma Medium is holding the orbits in place.")
