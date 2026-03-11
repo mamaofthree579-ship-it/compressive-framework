@@ -1,6 +1,7 @@
 import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
 
 # --- App Config ---
 st.set_page_config(page_title="FGD Theory Tester", layout="wide")
@@ -72,6 +73,9 @@ st.header("📊 Galaxy Rotation Curve Tester")
 st.markdown("Upload a CSV with `radius` and `velocity` columns to test the Dark Matter vs. FGD claim.")
 
 uploaded_file = st.file_uploader("Upload SPARC or custom CSV", type="csv")
+
+df = pd.read_csv("file.dat", sep="\t") # Change sep if not tab-delimited
+df.to_csv("file.csv", index=False)
 
 if uploaded_file is not None:
     import pandas as pd
