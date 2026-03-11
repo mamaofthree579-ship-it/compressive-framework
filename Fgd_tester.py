@@ -3,68 +3,71 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # --- CONFIG ---
-st.set_page_config(page_title="FGD Nested Theory", layout="wide")
-st.title("🛡️ The 'Nested' Structure Theory Tester")
+st.set_page_config(page_title="FGD 4D Multi-Metric", layout="wide")
+st.title("🌐 4-D Landscape & 3-D Material Resonance")
 st.markdown("""
-**Concept:** Regular Matter (Core) creates a 'Compiled' outer layer (Dark Matter) 
-and a 'Movement' boundary (Dark Energy). 
+**Theory:** 3D Matter is a 'folded' state within a 4D Informational Flux. 
+The 'Dark' fields are the 4D structures holding the 3D material in place.
 """)
 
-# --- SIDEBAR: The Coupling Constants ---
-st.sidebar.header("Fractal Coupling")
-zeta = st.sidebar.slider("Coupling Constant (ζ)", 0.0, 1.0, 0.15, 
-                        help="The ratio of Compiled Gravity (Dark Matter) to Regular Matter.")
-ell_f = st.sidebar.slider("Fractal Scale (ℓ_f)", 0.0, 10.0, 2.5)
-H_f = st.sidebar.slider("Expansion Movement (Dark Energy)", 0.0, 100.0, 67.0)
+# --- SIDEBAR: Multi-Metric Inputs ---
+st.sidebar.header("Field Metrics")
+dim_flux = st.sidebar.slider("4D Flux Density (Ψ)", 0.5, 2.0, 1.2, 
+                            help="The strength of the 4th dimensional background field.")
+res_freq = st.sidebar.slider("Resonance Frequency", 0.1, 5.0, 1.0, 
+                            help="The 'Micro-burst' frequency creating coherence.")
+stability_zone = st.sidebar.slider("Goldilocks Zone (kpc)", 10, 100, (30, 70))
 
-# --- PHYSICS LOGIC ---
-r = np.linspace(1, 50, 500)
-M_core = 100.0 # Our 'Regular' visible matter
+# --- PHYSICS: Multi-Field Integration ---
+r = np.linspace(1, 120, 1000)
+M_3d = 100.0 # Visible 3D Material
 
-# 1. Regular Gravity (Newtonian Core)
-v_regular = np.sqrt(M_core / r)
+# 1. 3D Gravitational Pull (Classical)
+v_3d = np.sqrt(M_3d / r)
 
-# 2. 'Compiled' Outer Structure (Dark Matter Layer)
-# This is derived from the core mass but 'compiled' via fractal interference
-v_compiled = np.sqrt(zeta * (M_core / r) + (3 * M_core * ell_f**2 / r**3))
+# 2. 4D Flux 'Anchor' (The Multi-Metric Correction)
+# This represents the 'Compiled' Dark Matter structure as a 4D pressure
+v_4d_anchor = np.sqrt((dim_flux * M_3d / r) + (res_freq * np.sin(r/10) * 10))
 
-# 3. Total Gravitational Grip (Core + Compiled Layer)
-v_total = np.sqrt(v_regular**2 + v_compiled**2)
-
-# 4. 'Movement' Energy (Dark Energy Boundary)
-# Represents the expansion pushing outward against the inward grip
-v_expansion = (H_f / 1000) * r 
+# 3. Combined 'Stuck' Material Velocity
+v_combined = np.sqrt(v_3d**2 + np.abs(v_4d_anchor**2))
 
 # --- VISUALIZATION ---
-st.subheader("The Nested Galactic Profile")
-fig, ax = plt.subplots(figsize=(12, 6))
+st.subheader("3D Material Stability in a 4D Landscape")
+fig, ax = plt.subplots(figsize=(12, 6), facecolor='#0e1117')
+ax.set_facecolor('#1e1e1e')
 
-ax.plot(r, v_regular, 'g--', label="Regular Matter (Visible Core)")
-ax.fill_between(r, v_regular, v_total, color='blue', alpha=0.2, label="Compiled Structure (Dark Matter)")
-ax.plot(r, v_total, 'b-', linewidth=2, label="Total Gravitational Grip")
-ax.plot(r, v_expansion, 'r:', label="Expansion Movement (Dark Energy)")
+# The 4D Field (Background)
+ax.fill_between(r, 0, v_combined, color='cyan', alpha=0.1, label="4D Informational Flux")
 
-ax.set_xlabel("Radius from Center (kpc)")
-ax.set_ylabel("Velocity / Energy Flux (km/s)")
-ax.set_title("Interaction of Visible Core and Fractal 'Dark' Boundaries")
-ax.legend()
+# The Goldilocks Resonance Zone
+ax.axvspan(stability_zone[0], stability_zone[1], color='gold', alpha=0.2, label="Goldilocks Resonance Zone")
+
+# Plotting the Forces
+ax.plot(r, v_3d, 'w--', alpha=0.5, label="3D Matter Only (Unstable)")
+ax.plot(r, v_combined, color='cyan', linewidth=2, label="Resonant 3D Material (Stable)")
+
+# Formatting
+ax.tick_params(colors='white')
+ax.xaxis.label.set_color('white')
+ax.yaxis.label.set_color('white')
+ax.legend(facecolor='#1e1e1e', labelcolor='white')
 st.pyplot(fig)
 
-# --- THE FALSIFICATION CHECK ---
+# --- THE RESONANCE ANALYSIS ---
 st.divider()
 col1, col2 = st.columns(2)
 
 with col1:
-    # Check if the Expansion Energy overcomes Gravity (The Big Rip check)
-    rip_point = r[np.where(v_expansion > v_total)[0][0]] if any(v_expansion > v_total) else None
-    if rip_point:
-        st.warning(f"⚠️ Boundary Breach: Expansion overcomes Gravity at {rip_point:.1f} kpc.")
-    else:
-        st.success("✅ Stable Structure: The Nested Gravity holds the system together.")
+    st.write("### 💎 Multi-Field Analysis")
+    st.info(f"""
+    - **Coherence:** At current Psi ({dim_flux}), the 3D material is 'anchored' effectively.
+    - **Micro-bursts:** The sine-wave fluctuations simulate the 'heartbeat' maintaining the system.
+    """)
 
 with col2:
-    st.info(f"""
-    **Current Analysis:**
-    - The Blue Zone represents the 'Extra Grip' provided by her **Compiled Quantum Gravity**.
-    - If **ζ (Zeta)** is constant for all galaxies, Dark Matter is proven to be a geometric shadow of regular matter.
-    """)
+    st.write("### 🚨 Collision Alert")
+    if stability_zone[0] < 20:
+        st.error("❌ CRASH RISK: Galaxies too close. Resonance becomes turbulent.")
+    else:
+        st.success("✅ HARMONIC STATE: Galaxies maintained by mutual 4D flux.")
