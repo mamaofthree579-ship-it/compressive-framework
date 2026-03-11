@@ -74,13 +74,12 @@ st.markdown("Upload a CSV with `radius` and `velocity` columns to test the Dark 
 
 uploaded_file = st.file_uploader("Upload SPARC or custom CSV", type="csv")
 
-df = pd.read_csv("file.dat", sep="\t") # Change sep if not tab-delimited
-df.to_csv("file.csv", index=False)
-
 if uploaded_file is not None:
     import pandas as pd
     df = pd.read_csv(uploaded_file)
-    
+    df = pd.read_csv("file.dat", sep="\t") # Change sep if not tab-delimited
+    df.to_csv("file.csv", index=False)
+
     # Required columns check
     if 'radius' in df.columns and 'velocity' in df.columns:
         # Physics Calculation for Galaxy Scale
