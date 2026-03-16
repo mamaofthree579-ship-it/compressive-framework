@@ -11,11 +11,11 @@ st.set_page_config(
 
 # --- App Header ---
 st.title("🔺 The Giza Resonance Simulator")
-st.markdown(""
-This tool provides a conceptual simulation of the 'Pyramid Power Plant' theory.
-It models how the Great Pyramid could act as a machine to convert ambient vibrations
-into stored electrical energy, focusing on four key stages.
-""")
+st.markdown(
+    "This tool provides a conceptual simulation of the 'Pyramid Power Plant' theory. "
+    "It models how the Great Pyramid could act as a machine to convert ambient vibrations "
+    "into stored electrical energy, focusing on four key stages."
+)
 
 # --- Simulation Parameters (User Controls) ---
 st.sidebar.header("Simulation Parameters")
@@ -93,12 +93,17 @@ chart_data = pd.DataFrame({
 
 st.line_chart(chart_data.rename(columns={'Resonant Amplification Factor':'index'}).set_index('index'))
 
-st.markdown("""
-This chart shows the most important concept: the relationship between the pyramid's shape (amplification) and the energy it can store is **exponential**. A poorly shaped pyramid stores nothing. A perfectly tuned resonant structure stores immense power. Play with the **Resonant Amplification Factor** slider to see this effect.
-""")
+# CORRECTED CODE: Using a standard string block to prevent parsing errors.
+st.markdown(
+    "This chart shows the most important concept: the relationship between the pyramid's shape (amplification) "
+    "and the energy it can store is **exponential**. A poorly shaped pyramid stores nothing. A perfectly "
+    "tuned resonant structure stores immense power. Play with the **Resonant Amplification Factor** slider to see this effect."
+)
 
 # --- How to Install and Run ---
 with st.expander("How to Run This Simulation Yourself"):
-    st.markdown("""
+    # CORRECTED CODE: Using a multi-line string with clean indentation within a code block.
+    # This is a more robust way to handle large blocks of text with formatting.
+    install_instructions = """
     1.  **Install Python:** If you don't have it, download and install Python from [python.org](https://www.python.org/downloads/).
-    2.  **Install Streamlit:** Open your computer's terminal or command prompt and type:
+    2.  **Install
