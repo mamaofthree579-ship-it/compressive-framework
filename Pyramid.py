@@ -11,7 +11,7 @@ st.set_page_config(
 
 # --- App Header ---
 st.title("🔺 The Giza Resonance Simulator")
-st.markdown("""
+st.markdown(""
 This tool provides a conceptual simulation of the 'Pyramid Power Plant' theory.
 It models how the Great Pyramid could act as a machine to convert ambient vibrations
 into stored electrical energy, focusing on four key stages.
