@@ -77,7 +77,6 @@ with col3:
 # --- Visualization ---
 st.markdown("### Energy Stored vs. Resonant Amplification")
 
-# Create a dataframe for the chart
 amp_range = np.linspace(1, 10000, 200)
 energy_data = []
 for amp in amp_range:
@@ -93,17 +92,18 @@ chart_data = pd.DataFrame({
 
 st.line_chart(chart_data.rename(columns={'Resonant Amplification Factor':'index'}).set_index('index'))
 
-# CORRECTED CODE: Using a standard string block to prevent parsing errors.
 st.markdown(
     "This chart shows the most important concept: the relationship between the pyramid's shape (amplification) "
     "and the energy it can store is **exponential**. A poorly shaped pyramid stores nothing. A perfectly "
     "tuned resonant structure stores immense power. Play with the **Resonant Amplification Factor** slider to see this effect."
 )
 
-# --- How to Install and Run ---
+# --- How to Install and Run (Corrected and Simplified) ---
 with st.expander("How to Run This Simulation Yourself"):
-    # CORRECTED CODE: Using a multi-line string with clean indentation within a code block.
-    # This is a more robust way to handle large blocks of text with formatting.
-    install_instructions = """
-    1.  **Install Python:** If you don't have it, download and install Python from [python.org](https://www.python.org/downloads/).
-    2.  **Install
+    st.markdown("1. **Install Python:** If you don't have it, download and install Python from [python.org](https://www.python.org/downloads/).")
+    st.markdown("2. **Install Streamlit & Pandas:** Open your computer's terminal or command prompt and type:")
+    st.code("pip install streamlit pandas", language="bash")
+    st.markdown("3. **Save the Code:** Copy all the code from this page and save it in a file named `pyramid_sim.py`.")
+    st.markdown("4. **Run the App:** In your terminal, navigate to the folder where you saved the file and type:")
+    st.code("streamlit run pyramid_sim.py", language="bash")
+    st.markdown("Your web browser will open with your new simulation running.")
