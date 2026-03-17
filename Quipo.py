@@ -1,82 +1,58 @@
 import streamlit as st
 
 def get_bit(s):
-    """
-    Extracts the '0' or '1' from strings like 'Cotton (0)' or 'Wool (1)'.
-    This is the core 'Metadata Tag' extractor.
-    """
     try:
-        # Splits the string at '(' and takes the character right after it
-        return s.split('(')[1][0]
-    except (IndexError, TypeError):
+        return s.split('(')[1].split(')')[0]
+    except:
         return '0'
 
-# --- PAGE SETUP ---
-st.set_page_config(page_title="Khipu Node Decoder", layout="wide")
+st.set_page_config(page_title="Khipu Hash Processor", layout="wide")
 
-st.title("🧶 Khipu Node: Maritime Guild Database")
-st.write("A 'String Theory' interface for interpreting the Southern Maritime Guild's 7-bit binary array.")
+st.title("🧶 Khipu Node v2: The Checksum Processor")
+st.write("Simulate 'Top Cord' verification and multi-layered data hashing.")
 
-# --- SIDEBAR: THE 7-BIT PARAMETERS ---
-st.sidebar.header("Knot Parameters (The 7 Bits)")
-st.sidebar.info("Select parameters to generate a unique Node ID.")
+# --- SIDEBAR: DATA INPUT ---
+st.sidebar.header("Pendant Cluster (Data Input)")
+nodes_count = st.sidebar.slider("Number of Pendants in Cluster", 1, 10, 5)
 
-opt_material = st.sidebar.selectbox("Material (Bit 1)", ["Cotton (0)", "Wool (1)"])
-opt_color = st.sidebar.selectbox("Color Group (Bit 2)", ["Natural (0)", "Dye-Guild / Meta-Tag (1)"])
-opt_spin = st.sidebar.selectbox("Spin Direction (Bit 3)", ["S-Twist (0)", "Z-Twist (1)"])
-opt_ply = st.sidebar.selectbox("Ply Direction (Bit 4)", ["S-Ply (0)", "Z-Ply (1)"])
-opt_attach = st.sidebar.selectbox("Attachment (Bit 5)", ["Recto (0)", "Verso (1)"])
-opt_style = st.sidebar.selectbox("Knot Style (Bit 6)", ["Single (0)", "Long/Narrative (1)"])
-opt_slant = st.sidebar.selectbox("Knot Slant (Bit 7)", ["S-Slant (0)", "Z-Slant (1)"])
+# --- GENERATE MOCK DATA NODES ---
+cluster_data = []
+for i in range(nodes_count):
+    val = st.sidebar.number_input(f"Pendant {i+1} Value", value=10 * (i+1))
+    cluster_data.append(val)
 
-# --- PROCESSING THE BINARY ARRAY ---
-binary_string = "".join([
-    get_bit(opt_material),
-    get_bit(opt_color),
-    get_bit(opt_spin),
-    get_bit(opt_ply),
-    get_bit(opt_attach),
-    get_bit(opt_style),
-    get_bit(opt_slant)
-])
+calculated_sum = sum(cluster_data)
 
-# Convert the 7-bit binary string into a Decimal Node index
-decimal_val = int(binary_string, 2)
-
-# --- MAIN DISPLAY ---
+# --- MAIN INTERFACE ---
 col1, col2 = st.columns(2)
 
 with col1:
-    st.subheader("📊 Physical Node Data")
-    st.metric("Binary ID", binary_string)
-    st.metric("Decimal Node Index", decimal_val)
-    # Visualizing the position in the 128-character set
-    st.progress(decimal_val / 127)
-
+    st.subheader("🧵 Pendant Data (The Nodes)")
+    st.write("Granular records being processed from the regional hub.")
+    st.json({"Node_Values": cluster_data})
+    
 with col2:
-    st.subheader("📜 Metadata Interpretation")
+    st.subheader("🔼 Top Cord (The Checksum)")
+    # Manual entry for the "Top Cord" value to test verification
+    top_cord_val = st.number_input("Enter Top Cord Hash Value", value=calculated_sum)
     
-    # Logic for your specific Node Discoveries
-    if decimal_val == 113:
-        st.success("🚨 SIGNATURE: Elite Maritime Trade (Node 113)")
-        st.write("**Analysis:** High-value exchange. Matches parameters for the Southern Maritime Guild specialists.")
-    
-    elif decimal_val == 84:
-        st.error("🌶️ DATA TAG: Chili Pepper Tax Record (Node 84)")
-        st.write("**Analysis:** Specific Inkawasi Cache barcode. Identifies taxed chili pepper stock.")
-    
-    elif decimal_val == 26:
-        st.warning("🥜 DATA TAG: Peanut Storage (Node 26)")
-        st.write("**Analysis:** Logistical marker for regional peanut storage bins.")
-    
-    elif binary_string.startswith("11"):
-        st.info("💎 SIGNATURE: General Elite / Purple Dye Guild Pattern")
-        st.write("**Analysis:** Uses 'Meta-Tag' materials reserved for the Fish-Man lineage.")
-        
+    if top_cord_val == calculated_sum:
+        st.success(f"✅ HASH MATCH: Data Integrity Verified (Sum: {calculated_sum})")
     else:
-        st.write("📊 **Standard Accounting Node:** General commodity or labor data.")
+        st.error(f"🚨 HASH COLLISION: Data Corruption Detected (Expected {calculated_sum}, found {top_cord_val})")
 
 st.divider()
-st.subheader("🧬 String Theory Correlation")
-st.write(f"This knot represents **Node {decimal_val}** in a multi-dimensional topological database.")
-st.write("According to your theory, this isn't just a number—it's a vibrational coordinate in a 'string' of maritime data.")
+st.subheader("🧬 Metadata Tagging")
+st.write("Apply your 7-bit 'Fish-Man' logic to the Top Cord header.")
+
+# 7-Bit Selection for the Header
+mat = st.selectbox("Header Material", ["Cotton (0)", "Wool (1)"])
+col = st.selectbox("Header Color", ["Natural (0)", "Dye-Guild Purple (1)"])
+# ... other bits ...
+
+header_id = get_bit(mat) + get_bit(col) + "00000" # Simplified for demo
+
+if header_id.startswith("11"):
+    st.info("🚨 HEADER TAG: Imperial Verified Hash (Population Y Protocol)")
+else:
+    st.info("📊 HEADER TAG: Local/Regional Accounting")
