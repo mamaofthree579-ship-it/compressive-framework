@@ -1,40 +1,40 @@
 import streamlit as st
 
-st.set_page_config(page_title="Khipu Brainwave Interface", layout="wide")
+st.set_page_config(page_title="Khipu Bio-Acoustic Interface", layout="wide")
 
-st.title("🧶 Khipu Node v7: The Gamma Interface")
-st.write("Simulating Brainwave Entrainment at the 'Oracle' Resonance.")
+st.title("🧶 Khipu Node v8: The Bio-Acoustic Interface")
+st.write("Simulating the synergy between Alkaloid chemistry and Gallery acoustics.")
 
-# --- SIDEBAR: RESONANCE CONTROLS ---
-st.sidebar.header("🎚️ Gallery Tuning")
-res_freq = st.sidebar.number_input("Structural Resonance (Hz)", value=110)
-instrument_freq = st.sidebar.number_input("Instrument Frequency (Hz)", value=150)
+# --- SIDEBAR: BIO-CHEMICAL INPUT ---
+st.sidebar.header("🧪 Bio-Chemical State")
+alkaloid = st.sidebar.selectbox("Active Substance", ["None", "San Pedro (Mescaline)", "Anadenanthera (DMT)"])
+gallery_res = st.sidebar.number_input("Gallery Resonance (Hz)", value=110)
 
-# --- ENTRAINMENT LOGIC ---
-difference_tone = abs(instrument_freq - res_freq)
+# --- SYNERGY LOGIC ---
+# If DMT/Mescaline is present, the 'threshold' for entrainment is significantly lower
+sensitivity = 2.0 if alkaloid != "None" else 1.0
+gamma_potential = (40 * sensitivity) / 2
 
 # --- INTERFACE ---
 col1, col2 = st.columns(2)
 
 with col1:
-    st.subheader("🧠 Neural State Analysis")
-    st.metric("Resonant Base", f"{res_freq} Hz")
-    st.metric("Resulting Difference Tone", f"{difference_tone} Hz")
-    
-    if difference_tone == 40:
-        st.success("🚨 INTERFACE ACTIVE: Gamma Entrainment (40 Hz) Achieved.")
-    elif difference_tone == 10:
-        st.info("🧘 STATE: Alpha Relaxation (10 Hz) Detected.")
+    st.subheader("🧪 Chemical Status")
+    st.write(f"**Alkaloid:** {alkaloid}")
+    if alkaloid != "None":
+        st.success(f"🚨 DMN SUPPRESSED: Brain entropy increased. Sensitivity at {sensitivity}x.")
     else:
-        st.warning("⚠️ STATE: Asynchronous / Non-Resonant.")
+        st.warning("⚠️ DMN ACTIVE: Logical 'Firewall' is resisting entrainment.")
 
 with col2:
-    st.subheader("🏛️ Acoustic Engineering")
-    if res_freq == 110:
-        st.write("**Gallery Status:** Right-Hemisphere Shift (Emotional/Pattern Mode).")
-    st.write(f"The 'String' is now tuned to a **{difference_tone} Hz** beat frequency.")
+    st.subheader("🌀 Resonance Coupling")
+    st.metric("Gamma Potential", f"{gamma_potential} %")
+    if gamma_potential >= 40 and alkaloid != "None":
+        st.success("✅ INTERFACE UNLOCKED: Full 'String' Database Access.")
+    else:
+        st.info("🧘 STATE: Preparatory / Ritual Observation.")
 
 st.divider()
-st.subheader("🧬 Result: Database Access Granted")
-st.write("In String Theory terms, the listener has 'synced' their internal vibration to the external 'Brane' of the maritime database.")
-st.write("Accessing Node Cluster... **[Population Y Signature Detected]**")
+st.subheader("🧬 Result: The 'Living' Database")
+st.write(f"With **{alkaloid}** in the system, the architecture is no longer 'stone'; it is an extension of the nervous system.")
+st.write("In String Theory terms, the 'Observer' and the 'String' have become a single vibrating system.")
