@@ -7,23 +7,31 @@ st.write("Interpret the 'String Theory' of the Southern Maritime Guild.")
 
 # Sidebar for Knot Parameters (The 7-Bit Array)
 st.sidebar.header("Knot Bit-Mapping")
-material = st.sidebar.selectbox("Material (Bit 1)", ["Cotton (0)", "Wool (1)"])
-color_class = st.sidebar.selectbox("Color Group (Bit 2)", ["Primary/Natural (0)", "Dye-Guild Purple/Red (1)"])
-spin = st.sidebar.selectbox("Spin Direction (Bit 3)", ["S-Twist (0)", "Z-Twist (1)"])
-ply = st.sidebar.selectbox("Ply Direction (Bit 4)", ["S-Ply (0)", "Z-Ply (1)"])
-attachment = st.sidebar.selectbox("Attachment (Bit 5)", ["Recto/Front (0)", "Verso/Back (1)"])
-knot_type = st.sidebar.selectbox("Knot Style (Bit 6)", ["Single/Decimal (0)", "Long/Narrative (1)"])
-knot_direction = st.sidebar.selectbox("Knot Slant (Bit 7)", ["S-Slant (0)", "Z-Slant (1)"])
 
-# Convert selections to bits
-bits = [
-    material[8], color_class[16] if "Dye" in color_class else color_class[16], 
-    spin[8], ply[8], attachment[6] if "Recto" in attachment else attachment[6],
-    knot_type[7] if "Single" in knot_type else knot_type[5],
-    knot_direction[8]
-]
+# Defining options with (0) or (1) clearly for extraction
+opt_material = st.sidebar.selectbox("Material", ["Cotton (0)", "Wool (1)"])
+opt_color = st.sidebar.selectbox("Color Group", ["Natural (0)", "Dye-Guild Purple (1)"])
+opt_spin = st.sidebar.selectbox("Spin Direction", ["S-Twist (0)", "Z-Twist (1)"])
+opt_ply = st.sidebar.selectbox("Ply Direction", ["S-Ply (0)", "Z-Ply (1)"])
+opt_attach = st.sidebar.selectbox("Attachment", ["Recto (0)", "Verso (1)"])
+opt_style = st.sidebar.selectbox("Knot Style", ["Single (0)", "Long/Narrative (1)"])
+opt_slant = st.sidebar.selectbox("Knot Slant", ["S-Slant (0)", "Z-Slant (1)"])
 
-binary_string = "".join([b for b in bits if b.isdigit()])
+# Robust Bit Extraction: Split by '(' and take the char before ')'
+def get_bit(s):
+    return s.split('(')[1].split(')')[0]
+
+# Generate the 7-bit string
+binary_string = "".join([
+    get_bit(opt_material),
+    get_bit(opt_color),
+    get_bit(opt_spin),
+    get_bit(opt_ply),
+    get_bit(opt_attach),
+    get_bit(opt_style),
+    get_bit(opt_slant)
+])
+
 decimal_val = int(binary_string, 2)
 
 # Display the Analysis
@@ -36,17 +44,15 @@ with col1:
     
 with col2:
     st.subheader("Guild Interpretation")
+    # Using your "Population Y" parameters for triggers
     if binary_string.startswith("11"):
-        st.success("🚨 SIGNATURE DETECTED: Southern Maritime Elite (Purple Dye/Wool)")
-    elif "1" in binary_string[2:4]:
-        st.info("🛠️ SIGNATURE DETECTED: Technical/Engineering Guild (S/Z Plying)")
+        st.success("🚨 SIGNATURE: Southern Maritime Elite (Purple Dye/Wool)")
+    elif binary_string[2] == "1" or binary_string[3] == "1":
+        st.info("🛠️ SIGNATURE: Technical/Engineering Guild (Z-Spin/Ply)")
     else:
-        st.warning("📊 SIGNATURE DETECTED: Agricultural/Accounting Data")
+        st.warning("📊 SIGNATURE: Agricultural/Accounting Data")
 
 st.divider()
 st.subheader("String Theory Visualization")
-st.write(f"This knot represents **Node {decimal_val}** in a multi-dimensional database.")
+st.write(f"This knot represents **Node {decimal_val}** in the multi-dimensional database.")
 st.progress(decimal_val / 127)
-
-# Theoretical Syllabic Match (Sabine Hyland's Theory)
-st.info(f"**Potential Phonetic Tag:** Based on Sabine Hyland's research, this specific bit-cluster could represent a clan identifier or a 'Fish-Man' maritime rank.")
