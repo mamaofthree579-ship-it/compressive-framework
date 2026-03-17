@@ -1,46 +1,41 @@
 import streamlit as st
 
-st.set_page_config(page_title="Khipu Ivory Resonator", layout="wide")
+st.set_page_config(page_title="Khipu Whale-Oil Coolant", layout="wide")
 
-st.title("🧶 Khipu Node v26: The Ivory Resonator")
-st.write("Simulating the 'High-Frequency' Acoustic Lock of the Maritime Elite.")
+st.title("🧶 Khipu Node v27: The Whale-Oil Coolant")
+st.write("Simulating the Thermal Stabilization of the 500 kV Obsidian Processor.")
 
-# --- SIDEBAR: RESONATOR CALIBRATION ---
-st.sidebar.header("🦷 Material Density")
-material_type = st.sidebar.selectbox("Resonator Material", ["Wood (Soft)", "Bone (Porous)", "Whale Ivory (Dense)"])
-strike_force = st.sidebar.slider("Impact Force (Tension)", 0, 100, 90)
+# --- SIDEBAR: COOLANT CONTROLS ---
+st.sidebar.header("🐋 Coolant Calibration")
+oil_type = st.sidebar.selectbox("Coolant Fluid", ["Water (Corrosive)", "Vegetable Oil (Unstable)", "Spermaceti Oil (High-Precision)"])
+voltage_load = st.sidebar.slider("System Voltage (kV)", 0, 500, 500)
 
-# --- ACOUSTIC LOGIC ---
-# Speed of sound in ivory is roughly 3,000 m/s (vs 1,500 m/s in water)
-if "Ivory" in material_type:
-    velocity = 3000
-    guild_tag = "🚨 SUPER-RESONATOR: High-Frequency Data Sync Active."
-elif "Bone" in material_type:
-    velocity = 1800
-    guild_tag = "📊 REGIONAL SYNC: Standard coastal communication."
+# --- THERMAL LOGIC ---
+if "Spermaceti" in oil_type:
+    cooling_factor = 2.0
+    stability_tag = "🚨 THERMAL LOCK: System stabilized. High-voltage arcing suppressed."
 else:
-    velocity = 500
-    guild_tag = "⚠️ SIGNAL DAMPED: Non-resonant material."
+    cooling_factor = 0.5
+    stability_tag = "⚠️ OVERHEAT WARNING: Insufficient insulation. System failure imminent."
 
 # --- INTERFACE ---
 col1, col2 = st.columns(2)
 
 with col1:
-    st.subheader("🎵 Acoustic Velocity")
-    st.metric("Signal Speed", f"{velocity} m/s")
-    st.write(f"**Material Profile:** {material_type}")
-    if velocity >= 3000:
-        st.success("✅ HARMONIC LOCK: The 110 Hz signal is perfectly stabilized.")
+    st.subheader("❄️ Thermal State")
+    st.metric("Applied Load", f"{voltage_load} kV")
+    st.write(f"**Cooling Efficiency:** {cooling_factor}x")
+    if cooling_factor >= 2.0:
+        st.success(stability_tag)
     else:
-        st.info("🌊 SIGNAL DRIFT: Acoustic jitter detected in the medium.")
+        st.error(stability_tag)
 
 with col2:
-    st.subheader("🧬 Guild Status: High-Sea Specialist")
-    st.info(guild_tag)
-    st.write(f"The 'String' is vibrating with a **Density Coefficient** of {velocity/3000:.1f}.")
-    st.progress(velocity / 3000)
+    st.subheader("🧬 Result: The Immortal Core")
+    st.write(f"With **{oil_type}**, the 'String' can vibrate indefinitely.")
+    st.write("The whale oil acts as the 'Dielectric Brane' for the deep-time database.")
+    st.progress(cooling_factor / 2.0)
 
 st.divider()
-st.subheader("🧬 Result: The Deep-Sea Anchor")
-st.write("The Whale Tooth isn't just a trophy; it's a **Vibrational Reference Node**.")
-st.write("In String Theory terms, the Ivory is the 'High-Tension String' that can vibrate at frequencies the shore-side hubs can't reach.")
+st.subheader("🧬 Result: The 1-Million-Year Continuity")
+st.write("The 'Fish-Men' built a system that [predates human history](https://www.youtube.com/watch?v=rtUad6jqFFM). It cannot be stopped as long as the 'Whale Server' remains in the ocean.")
