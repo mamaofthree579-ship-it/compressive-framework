@@ -1,41 +1,39 @@
 import streamlit as st
 
-st.set_page_config(page_title="Khipu Mercury Capacitor", layout="wide")
+st.set_page_config(page_title="Khipu Mica Insulator", layout="wide")
 
-st.title("🧶 Khipu Node v14: The Mercury Capacitor")
-st.write("Simulating the 'Liquid Conductor' synergy beneath the Andesite hubs.")
+st.title("🧶 Khipu Node v15: The Mica Dielectric")
+st.write("Simulating the high-voltage insulation of the Teotihuacan 'Viking Group' floors.")
 
-# --- SIDEBAR: CAPACITOR CONTROLS ---
-st.sidebar.header("⚗️ Sub-Basement Analysis")
-mercury_present = st.sidebar.checkbox("Liquid Mercury Layer Detected", value=True)
-stone_polish = st.sidebar.slider("Andesite Precision (%)", 0, 100, 65)
+# --- SIDEBAR: INSULATION CONTROLS ---
+st.sidebar.header("⚡ Insulation Physics")
+mica_layer = st.sidebar.checkbox("Mica Sheets Installed (Viking Group)", value=True)
+input_voltage = st.sidebar.slider("Applied Resonant Charge (kV)", 0, 500, 200)
 
-# --- CIRCUIT LOGIC ---
-base_deflection = 90 if stone_polish >= 65 else 0
-# Mercury acts as a 'Multiplier' (Q-Factor)
-multiplier = 2.5 if mercury_present else 1.0
-final_signal = min(360, base_deflection * multiplier)
+# --- DIELECTRIC LOGIC ---
+# Mica can withstand ~150 kV/mm. 
+dielectric_threshold = 300 if mica_layer else 50
+is_insulated = input_voltage < dielectric_threshold
 
 # --- INTERFACE ---
 col1, col2 = st.columns(2)
 
 with col1:
-    st.subheader("⚡ Signal Amplification")
-    st.metric("Base Stone Signal", f"{base_deflection}°")
-    st.metric("Final Beacon Power", f"{final_signal:.0f}°", delta="Mercury Boosted" if mercury_present else None)
-    
-    if final_signal >= 225:
-        st.success("🚨 SIGNAL LOCK: 'Fish-Man' Homing Beacon is at Max Power.")
+    st.subheader("🛡️ Dielectric Barrier")
+    st.metric("System Voltage", f"{input_voltage} kV")
+    if is_insulated:
+        st.success("✅ CIRCUIT STABLE: Mica is preventing electrical grounding.")
     else:
-        st.info("📡 TRACE SIGNAL: Beacon is in 'Low-Power' standby mode.")
+        st.error("🚨 DIELECTRIC BREAKDOWN: Charge is arcing into the earth!")
 
 with col2:
-    st.subheader("🧬 Result: The Liquid Circuit")
-    st.write(f"With the **Mercury Layer**, your {stone_polish}% polish has been amplified.")
-    st.write("The mercury acts as the 'Ground' for the magnetic brane, stabilizing the data.")
-    st.progress(final_signal / 360)
+    st.subheader("🧬 Result: The Capacitor Floor")
+    if mica_layer:
+        st.write("**Material:** Muscovite Mica (Imported from Brazil).")
+        st.write("**Function:** Stabilizing the mercury capacitor charge.")
+    st.progress(input_voltage / 500)
 
 st.divider()
-st.subheader("🧬 String Theory Conclusion")
-st.write("The mercury isn't just 'liquid'; it's a **Vibrational Fluid Brane**.")
-st.write("By vibrating the stone above the liquid metal, they created a 'Trans-Oceanic Wi-Fi' for the maritime specialists.")
+st.subheader("🧬 String Theory Final Conclusion")
+st.write("The mica is the 'Insulating Brane' that keeps the data from being lost.")
+st.write("By separating the 'Mercury Liquid' from the 'Earth Ground', the Fish-Men created a permanent **Static Memory** for their guild.")
