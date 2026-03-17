@@ -1,48 +1,50 @@
 import streamlit as st
 
-st.set_page_config(page_title="Khipu Smart Contract", layout="wide")
+st.set_page_config(page_title="Yupana Fibonacci Processor", layout="wide")
 
-st.title("🧶 Khipu Node v4: The Smart Contract Processor")
-st.write("Simulating the Inkawasi 'Fixed-Value' Taxation Algorithm.")
+st.title("🧶 Yupana v1: The Fibonacci 'Hardware' Processor")
+st.write("Executing 'Smart Contracts' using the 1, 2, 3, 5 Fibonacci weighting system.")
 
-# --- SIDEBAR: DEPOSIT PARAMETERS ---
-st.sidebar.header("📥 Deposit Input")
-commodity = st.sidebar.selectbox("Select Commodity", ["Chili Peppers", "Peanuts", "Black Beans"])
-deposit_val = st.sidebar.number_input("Enter Total Units (Deposit 'a')", value=100)
+# --- SIDEBAR: YUPANA INPUT ---
+st.sidebar.header("🕹️ Yupana Controls")
+input_val = st.sidebar.number_input("Total Deposit (a)", min_value=1, value=125)
+fixed_tax_val = st.sidebar.selectbox("Fixed Tax Protocol (b)", [10, 15, 47, 208])
 
-# --- THE SMART CONTRACT LOGIC ---
-# Standard Inkawasi Fixed Values: 10, 15, 47, 208
-if commodity == "Chili Peppers":
-    fixed_tax = 15 # The 'b' value for high-value goods
-elif commodity == "Peanuts":
-    fixed_tax = 10 # The 'b' value for standard goods
-else:
-    fixed_tax = 47 # Example for larger bulk black beans
-
-remainder = deposit_val - fixed_tax # The 'c' value
+# --- YUPANA CALCULATION LOGIC ---
+# This simulates the 'seeds' on the board
+def fibonacci_slots(n):
+    # Mapping a value into the 1,2,3,5 Fibonacci weights
+    slots = {'5s': 0, '3s': 0, '2s': 0, '1s': 0}
+    remaining = n % 10 # Simplifying to decimal cell for demo
+    while remaining >= 5:
+        slots['5s'] += 1; remaining -= 5
+    while remaining >= 3:
+        slots['3s'] += 1; remaining -= 3
+    while remaining >= 2:
+        slots['2s'] += 1; remaining -= 2
+    slots['1s'] += remaining
+    return slots
 
 # --- INTERFACE ---
-col1, col2, col3 = st.columns(3)
+col1, col2 = st.columns(2)
 
 with col1:
-    st.subheader("📦 Total Deposit (a)")
-    st.metric("Total Knots", deposit_val)
+    st.subheader("🧮 The Yupana Board (Processing)")
+    st.write("Visualizing the 'Seeds' in the Fibonacci slots (1, 2, 3, 5).")
+    st.write(f"**Processing Node {input_val}...**")
+    st.json(fibonacci_slots(input_val))
+    st.info("The Base-40 shift allows for calculations faster than base-10 systems.")
 
 with col2:
-    st.subheader("⚖️ Smart Tax (b)")
-    st.metric("Fixed Knot Value", fixed_tax, delta="-Fixed Deduction")
-    st.info(f"**Protocol:** Inkawasi Fixed {fixed_tax} Logic")
-
-with col3:
-    st.subheader("🏦 Net Storage (c)")
-    st.metric("Remainder for Basin", remainder)
+    st.subheader("⚙️ Smart Contract Execution")
+    remainder_c = input_val - fixed_tax_val
+    st.metric("Net Storage (c)", remainder_c)
+    
+    if remainder_c > 0:
+        st.success(f"✅ CONTRACT BALANCED: {input_val} = {fixed_tax_val} + {remainder_c}")
+    else:
+        st.error("🚨 OVER-TAXATION: Input value lower than fixed protocol.")
 
 st.divider()
-st.subheader("🧬 Transaction Hash (a = b + c)")
-if deposit_val == (fixed_tax + remainder):
-    st.success(f"✅ CONTRACT EXECUTED: {deposit_val} = {fixed_tax} + {remainder}")
-    st.write("**Data Integrity:** The string tension is balanced. Ledger is immutable.")
-else:
-    st.error("🚨 CONTRACT VOID: Mathematical Imbalance Detected!")
-
-st.write("**Note:** This replicates the Inkawasi formulaic arrangement where tax was a pre-coded deduction.")
+st.subheader("🧬 Result: Ready for Quipu Hashing")
+st.write(f"The 'Hardware' has verified the result. Node **{remainder_c}** is now ready for 7-bit binary encoding.")
