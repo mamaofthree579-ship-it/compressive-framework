@@ -1,60 +1,48 @@
 import streamlit as st
 
-def get_bit(s):
-    try:
-        return s.split('(')[1].split(')')[0]
-    except:
-        return '0'
+st.set_page_config(page_title="Khipu Smart Contract", layout="wide")
 
-st.set_page_config(page_title="Khipu Blockchain Simulator", layout="wide")
+st.title("🧶 Khipu Node v4: The Smart Contract Processor")
+st.write("Simulating the Inkawasi 'Fixed-Value' Taxation Algorithm.")
 
-st.title("🧶 Khipu Node v3: The Blockchain Ledger")
-st.write("Verifying data integrity across 'Banded Clusters' (Blocks).")
+# --- SIDEBAR: DEPOSIT PARAMETERS ---
+st.sidebar.header("📥 Deposit Input")
+commodity = st.sidebar.selectbox("Select Commodity", ["Chili Peppers", "Peanuts", "Black Beans"])
+deposit_val = st.sidebar.number_input("Enter Total Units (Deposit 'a')", value=100)
 
-# --- SIDEBAR: BLOCK CONFIG ---
-st.sidebar.header("Block Configuration")
-block_id = st.sidebar.text_input("Block ID (e.g., Cusco-Delta-01)", "Inkawasi-01")
-n_transactions = st.sidebar.slider("Transactions in Block", 1, 10, 3)
+# --- THE SMART CONTRACT LOGIC ---
+# Standard Inkawasi Fixed Values: 10, 15, 47, 208
+if commodity == "Chili Peppers":
+    fixed_tax = 15 # The 'b' value for high-value goods
+elif commodity == "Peanuts":
+    fixed_tax = 10 # The 'b' value for standard goods
+else:
+    fixed_tax = 47 # Example for larger bulk black beans
 
-# --- TRANSACTION DATA (THE STRINGS) ---
-tx_data = []
-st.subheader(f"📦 Current Block: {block_id}")
-cols = st.columns(n_transactions)
+remainder = deposit_val - fixed_tax # The 'c' value
 
-for i in range(n_transactions):
-    with cols[i]:
-        val = st.number_input(f"String {i+1} (Units)", value=50, key=f"tx_{i}")
-        tx_data.append(val)
+# --- INTERFACE ---
+col1, col2, col3 = st.columns(3)
 
-# THE HASH CALCULATION
-current_hash = sum(tx_data)
+with col1:
+    st.subheader("📦 Total Deposit (a)")
+    st.metric("Total Knots", deposit_val)
 
-# --- VERIFICATION INTERFACE ---
-st.divider()
-col_left, col_right = st.columns(2)
+with col2:
+    st.subheader("⚖️ Smart Tax (b)")
+    st.metric("Fixed Knot Value", fixed_tax, delta="-Fixed Deduction")
+    st.info(f"**Protocol:** Inkawasi Fixed {fixed_tax} Logic")
 
-with col_left:
-    st.subheader("🔼 Top Cord (Block Hash)")
-    # This simulates the "Imperial Header" we discussed
-    imperial_hash = st.number_input("Imperial Hash Value", value=current_hash)
-    
-    if imperial_hash == current_hash:
-        st.success(f"✅ BLOCK VALIDATED: {block_id} is immutable.")
-    else:
-        st.error(f"🚨 FRAUD DETECTED: Block {block_id} has been tampered with!")
-
-with col_right:
-    st.subheader("🧬 Guild Protocol")
-    # 7-Bit Tagging for the Block Header
-    mat = st.selectbox("Header Material", ["Cotton (0)", "Wool (1)"])
-    col = st.selectbox("Header Dye", ["Natural (0)", "Purple Snail Dye (1)"])
-    
-    header_bits = get_bit(mat) + get_bit(col) + "00000"
-    
-    if header_bits.startswith("11"):
-        st.info("💎 PROTOCOL: Southern Maritime Elite (Population Y)")
-    else:
-        st.info("🌾 PROTOCOL: Standard Agricultural Registry")
+with col3:
+    st.subheader("🏦 Net Storage (c)")
+    st.metric("Remainder for Basin", remainder)
 
 st.divider()
-st.write("**Data Insight:** In String Theory terms, this block is a stabilized 'brane' of information. Any change in 'tension' (the numbers) breaks the mathematical harmony of the cluster.")
+st.subheader("🧬 Transaction Hash (a = b + c)")
+if deposit_val == (fixed_tax + remainder):
+    st.success(f"✅ CONTRACT EXECUTED: {deposit_val} = {fixed_tax} + {remainder}")
+    st.write("**Data Integrity:** The string tension is balanced. Ledger is immutable.")
+else:
+    st.error("🚨 CONTRACT VOID: Mathematical Imbalance Detected!")
+
+st.write("**Note:** This replicates the Inkawasi formulaic arrangement where tax was a pre-coded deduction.")
