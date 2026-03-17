@@ -1,43 +1,46 @@
 import streamlit as st
 
-st.set_page_config(page_title="Khipu Aero-Feather Processor", layout="wide")
+st.set_page_config(page_title="Khipu Optical Transponder", layout="wide")
 
-st.title("🧶 Khipu Node v23: The Aero-Feather Grid")
-st.write("Simulating the 'Vortex Control' of Feathered Serpent sail technology.")
+st.title("🧶 Khipu Node v24: The Optical Transponder")
+st.write("Decoding the 'Red & White' Binary Barcodes of the Maritime Guilds.")
 
-# --- SIDEBAR: SAIL PHYSICS ---
-st.sidebar.header("🪶 Sail Calibration")
-pattern_symmetry = st.sidebar.selectbox("Feather Pattern", ["Random (0)", "Symmetrical Grid (1)"])
-rig_style = st.sidebar.selectbox("Rigging Style", ["Square (0)", "Crescent/Oceanic (1)"])
+# --- SIDEBAR: SIGNALING INPUT ---
+st.sidebar.header("📡 Optical Header")
+stripe_pattern = st.sidebar.text_input("Stripe Sequence (e.g., 10101)", "11010")
 
-# --- AERODYNAMIC LOGIC ---
-# Symmetrical grid + Crescent rig = Peak Lift and Drag Reduction
-is_symmetrical = "Symmetrical" in pattern_symmetry
-is_crescent = "Crescent" in rig_style
+# --- SIGNALING LOGIC ---
+# Each sequence maps to a specific Specialist Guild
+guild_map = {
+    "11010": "💎 Southern Maritime Elite (Population Y)",
+    "10101": "🌶️ Chili/Agricultural Trade Hub",
+    "11111": "🚨 Imperial High-Speed Courier",
+    "00001": "🛠️ Engineering/Mica-Transport Fleet"
+}
 
-lift_coefficient = 2.8 if (is_symmetrical and is_crescent) else 1.2
-drag_penalty = 0.1 if is_symmetrical else 0.5
+current_id = guild_map.get(stripe_pattern, "❓ Unknown Merchant / Independent")
 
 # --- INTERFACE ---
 col1, col2 = st.columns(2)
 
 with col1:
-    st.subheader("🪁 Aerodynamic Profile")
-    st.metric("Lift Coefficient", f"{lift_coefficient} Cl")
-    st.metric("Drag Reduction", f"{(1 - drag_penalty) * 100:.0f}%")
+    st.subheader("🏁 Visual Barcode")
+    # Displaying the 'Stripes'
+    cols = st.columns(len(stripe_pattern))
+    for i, bit in enumerate(stripe_pattern):
+        color = "red" if bit == "1" else "white"
+        cols[i].markdown(f"<div style='background-color:{color}; height:100px; border:1px solid black;'></div>", unsafe_allow_html=True)
     
-    if lift_coefficient > 2.0:
-        st.success("✅ MARITIME LOCK: Sail is in 'Quetzal' mode. High-speed tacking active.")
-    else:
-        st.info("⚓ DRIFT MODE: Low-efficiency square sail configuration.")
+    st.metric("Binary Header", stripe_pattern)
 
 with col2:
-    st.subheader("🧬 Result: The Winged Ship")
-    st.write(f"The 'String' is vibrating at **{lift_coefficient} Cl**. The sail has become a 'Wing'.")
-    st.write("This technology allows the maritime elite to sail 'since time immemorial'.")
-    st.progress(lift_coefficient / 3.0)
+    st.subheader("🆔 Guild Identification")
+    if "Elite" in current_id:
+        st.success(f"ACCESS GRANTED: {current_id}")
+    else:
+        st.info(f"REGISTRY: {current_id}")
 
 st.divider()
-st.subheader("🧬 String Theory Final Maritime Conclusion")
-st.write("The Feathered Serpent is the **Aerodynamic Brane** of the Southern Maritime Guild.")
-st.write("By 'weaving' the sail into a symmetrical grid, they turned [balsa logs](https://www.vocabulary.com/dictionary/balsa%20raft) into [ocean-going wings](https://dash.harvard.edu/bitstreams/7312037d-16e8-6bd4-e053-0100007fdf3b/download).")
+st.subheader("🧬 String Theory Result")
+st.write(f"The 'String' is vibrating with an **Optical Frequency** of {stripe_pattern}.")
+st.write("This is the 'Digital Signature' that links the floating sail to the stone database.")
