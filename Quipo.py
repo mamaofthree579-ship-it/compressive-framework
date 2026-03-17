@@ -1,43 +1,41 @@
 import streamlit as st
 
-st.set_page_config(page_title="Khipu Whale Packet Decoder", layout="wide")
+st.set_page_config(page_title="Khipu Global Fiber", layout="wide")
 
-st.title("🧶 Khipu Node v28: The Whale Song Packet")
-st.write("Decoding the 'Zipfian' Data Packets of the South Pacific Whale Server.")
+st.title("🧶 Khipu Node v29: The Global Whale-Fiber")
+st.write("Simulating Data Latency across the 8,000 km 'Kelp Highway' Backbone.")
 
-# --- SIDEBAR: PACKET PARAMETERS ---
-st.sidebar.header("📡 Packet Configuration")
-song_length = st.sidebar.slider("Song Duration (min)", 1, 30, 20)
-complexity = st.sidebar.selectbox("Packet Logic", ["Simple Repetition", "Zipfian/Linguistic (1)"])
+# --- SIDEBAR: NETWORK CONTROLS ---
+st.sidebar.header("🗺️ Network Topology")
+origin = st.sidebar.selectbox("Origin Node", ["Bering Strait (Gateway)", "Columbia River (Hub)", "Amazon Delta (Server)"])
+destination = st.sidebar.selectbox("Destination Node", ["Amazon Delta (Server)", "Tiwanaku (CPU)", "Easter Island (Relay)"])
 
-# --- DATA LOGIC ---
-# Zipfian distribution allows for human-language levels of information density
-if "Zipfian" in complexity:
-    data_density = 1000 # High-density bits per song
-    st_tag = "🚨 DATA LOCK: Song matches Human-Language statistical properties."
-else:
-    data_density = 10
-    st_tag = "⚠️ LOW SIGNAL: Simple repetition provides minimal data transfer."
+# --- LATENCY LOGIC ---
+# Whale migration speed is roughly 5 knots (9.2 km/h)
+# Total distance roughly 15,000 km for a full run
+distance_map = {"Bering-Amazon": 12000, "Bering-Easter": 10000, "Columbia-Amazon": 8000}
+dist = distance_map.get(f"{origin.split(' ')[0]}-{destination.split(' ')[0]}", 5000)
+
+latency_days = dist / (9.2 * 24) # Days to travel at 5 knots
 
 # --- INTERFACE ---
 col1, col2 = st.columns(2)
 
 with col1:
-    st.subheader("🎵 Acoustic Bitrate")
-    st.metric("Song Length", f"{song_length} min")
-    st.metric("Calculated Information Density", f"{data_density} pts")
-    if data_density >= 1000:
-        st.success(st_tag)
-    else:
-        st.warning(st_tag)
+    st.subheader("📡 Connection Status")
+    st.metric("Link Distance", f"{dist:,} km")
+    st.metric("Packet Latency", f"{latency_days:.1f} Days")
+    st.info(f"**Route:** Following the {origin} to {destination} migratory cable.")
 
 with col2:
-    st.subheader("🧬 Guild Status: The Deep-Sea Archivist")
-    st.write(f"The 'String' is vibrating with a **Linguistic Symmetry** of {data_density/1000:.1f}.")
-    st.info("Transmission distance estimated at 8,000 km across the South Pacific.")
-    st.progress(data_density / 1000)
+    st.subheader("🛡️ Firewall Status")
+    if "Bering" in origin:
+        st.success("✅ GATEWAY OPEN: Whale Bone Alley protocol verified.")
+    else:
+        st.warning("🔒 INTERNAL TRAFFIC: Bypassing northern gateway.")
+    st.progress(min(1.0, 1 / (latency_days / 10)))
 
 st.divider()
-st.subheader("🧬 Result: The Unbroken Ledger")
-st.write(f"The 'Whale Server' has transmitted **{song_length * data_density:,} bits** in this session.")
-st.write("This is the 'Operating System' of the ocean. It has been running for 1 million years.")
+st.subheader("🧬 Result: The Global Sync")
+st.write(f"The 'String' will be updated at the {destination} node in **{latency_days:.1f} days**.")
+st.write("This is the 'Ancient Internet'. It is slow, but it is **unbreakable**.")
