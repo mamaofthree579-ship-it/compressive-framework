@@ -1,41 +1,43 @@
 import streamlit as st
 
-st.set_page_config(page_title="Khipu Whale-Oil Coolant", layout="wide")
+st.set_page_config(page_title="Khipu Whale Packet Decoder", layout="wide")
 
-st.title("🧶 Khipu Node v27: The Whale-Oil Coolant")
-st.write("Simulating the Thermal Stabilization of the 500 kV Obsidian Processor.")
+st.title("🧶 Khipu Node v28: The Whale Song Packet")
+st.write("Decoding the 'Zipfian' Data Packets of the South Pacific Whale Server.")
 
-# --- SIDEBAR: COOLANT CONTROLS ---
-st.sidebar.header("🐋 Coolant Calibration")
-oil_type = st.sidebar.selectbox("Coolant Fluid", ["Water (Corrosive)", "Vegetable Oil (Unstable)", "Spermaceti Oil (High-Precision)"])
-voltage_load = st.sidebar.slider("System Voltage (kV)", 0, 500, 500)
+# --- SIDEBAR: PACKET PARAMETERS ---
+st.sidebar.header("📡 Packet Configuration")
+song_length = st.sidebar.slider("Song Duration (min)", 1, 30, 20)
+complexity = st.sidebar.selectbox("Packet Logic", ["Simple Repetition", "Zipfian/Linguistic (1)"])
 
-# --- THERMAL LOGIC ---
-if "Spermaceti" in oil_type:
-    cooling_factor = 2.0
-    stability_tag = "🚨 THERMAL LOCK: System stabilized. High-voltage arcing suppressed."
+# --- DATA LOGIC ---
+# Zipfian distribution allows for human-language levels of information density
+if "Zipfian" in complexity:
+    data_density = 1000 # High-density bits per song
+    st_tag = "🚨 DATA LOCK: Song matches Human-Language statistical properties."
 else:
-    cooling_factor = 0.5
-    stability_tag = "⚠️ OVERHEAT WARNING: Insufficient insulation. System failure imminent."
+    data_density = 10
+    st_tag = "⚠️ LOW SIGNAL: Simple repetition provides minimal data transfer."
 
 # --- INTERFACE ---
 col1, col2 = st.columns(2)
 
 with col1:
-    st.subheader("❄️ Thermal State")
-    st.metric("Applied Load", f"{voltage_load} kV")
-    st.write(f"**Cooling Efficiency:** {cooling_factor}x")
-    if cooling_factor >= 2.0:
-        st.success(stability_tag)
+    st.subheader("🎵 Acoustic Bitrate")
+    st.metric("Song Length", f"{song_length} min")
+    st.metric("Calculated Information Density", f"{data_density} pts")
+    if data_density >= 1000:
+        st.success(st_tag)
     else:
-        st.error(stability_tag)
+        st.warning(st_tag)
 
 with col2:
-    st.subheader("🧬 Result: The Immortal Core")
-    st.write(f"With **{oil_type}**, the 'String' can vibrate indefinitely.")
-    st.write("The whale oil acts as the 'Dielectric Brane' for the deep-time database.")
-    st.progress(cooling_factor / 2.0)
+    st.subheader("🧬 Guild Status: The Deep-Sea Archivist")
+    st.write(f"The 'String' is vibrating with a **Linguistic Symmetry** of {data_density/1000:.1f}.")
+    st.info("Transmission distance estimated at 8,000 km across the South Pacific.")
+    st.progress(data_density / 1000)
 
 st.divider()
-st.subheader("🧬 Result: The 1-Million-Year Continuity")
-st.write("The 'Fish-Men' built a system that [predates human history](https://www.youtube.com/watch?v=rtUad6jqFFM). It cannot be stopped as long as the 'Whale Server' remains in the ocean.")
+st.subheader("🧬 Result: The Unbroken Ledger")
+st.write(f"The 'Whale Server' has transmitted **{song_length * data_density:,} bits** in this session.")
+st.write("This is the 'Operating System' of the ocean. It has been running for 1 million years.")
