@@ -51,6 +51,12 @@ with col2:
         st.info("🛠️ SIGNATURE: Technical/Engineering Guild (Z-Spin/Ply)")
     else:
         st.warning("📊 SIGNATURE: Agricultural/Accounting Data")
+    if binary_string == "0101001":
+    st.error("🌶️ DATA TAG: Chili Pepper Inventory (Taxed Stock)")
+elif binary_string == "0011010":
+    st.warning("🥜 DATA TAG: Peanut Inventory (Storage Bin)")
+elif binary_string.startswith("11"):
+    st.success("🚨 SIGNATURE: State Maritime Elite / High-Value Trade")
 
 st.divider()
 st.subheader("String Theory Visualization")
