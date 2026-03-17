@@ -1,43 +1,42 @@
 import streamlit as st
 
-st.set_page_config(page_title="Khipu Equinox Synchronizer", layout="wide")
+st.set_page_config(page_title="Khipu Magnetic Beacon", layout="wide")
 
-st.title("🧶 Khipu Node v12: The Equinox Aperture")
-st.write("Simulating the Peak Electromagnetic Season at the Chankillo Towers.")
+st.title("🧶 Khipu Node v13: The Magnetic Beacon")
+st.write("Simulating the magnetic anomalies of Tiwanaku's 'H-Blocks'.")
 
-# --- SIDEBAR: SEASONAL CONTROLS ---
-st.sidebar.header("🗓️ Solar Alignment")
-is_equinox = st.sidebar.checkbox("Equinox Alignment (Towers 6 & 7)", value=True)
-solar_intensity = st.sidebar.slider("Solar Energy Balance (%)", 0, 100, 100 if is_equinox else 50)
+# --- SIDEBAR: MAGNETIC CALIBRATION ---
+st.sidebar.header("🧭 Navigation Probe")
+stone_type = st.sidebar.selectbox("Material to Scan", ["Red Sandstone", "Grey Andesite"])
+surface_finish = st.sidebar.slider("Surface Precision (Polish %)", 0, 100, 100)
 
-schumann_base = 7.83 # The Earth's Heartbeat
-
-# --- RESONANCE LOGIC ---
-# During equinox, the 'Q Factor' (amplification) increases due to solar balance
-amplification = 2.5 if is_equinox else 1.0
-effective_pulse = schumann_base * (solar_intensity / 100) * amplification
+# --- ANOMALY LOGIC ---
+if stone_type == "Grey Andesite" and surface_finish > 80:
+    anomaly_strength = 270 # Degrees of compass shift
+    guild_tag = "🚨 BEACON ACTIVE: Magnetic 'Homing' Signature Detected."
+elif stone_type == "Grey Andesite":
+    anomaly_strength = 90
+    guild_tag = "🌀 TRACE MAGNETIC: Unfinished stone signature."
+else:
+    anomaly_strength = 0
+    guild_tag = "⚪ INERT: Standard geological baseline."
 
 # --- INTERFACE ---
 col1, col2 = st.columns(2)
 
 with col1:
-    st.subheader("☀️ Solar-Acoustic Gate")
-    st.metric("Tower Alignment", "Active (6/7)" if is_equinox else "Passive")
-    st.metric("Effective Pulse Strength", f"{effective_pulse:.2f} Hz")
-    
-    if is_equinox and effective_pulse > 15:
-        st.success("🔥 APERTURE OPEN: Maximum Electromagnetic Coupling achieved.")
-    else:
-        st.info("🌑 SEEDING MODE: Accumulating energy for the next seasonal shift.")
+    st.subheader("🧭 Compass Reaction")
+    st.metric("Magnetic Deflection", f"{anomaly_strength}°")
+    # A gauge showing the wildness of the needle
+    st.progress(anomaly_strength / 360)
 
 with col2:
-    st.subheader("🏔️ Akapana Hydraulic Sync")
-    if is_equinox:
-        st.write("**Drainage Status:** Water thundering through the pyramid tiers.")
-    st.progress(min(1.0, effective_pulse / 20))
-    st.write("The stone foundation is 'riding' the planetary wave.")
+    st.subheader("🧬 Population Y Protocol")
+    st.info(guild_tag)
+    st.write(f"The 'String' is experiencing a **magnetic pull** of {anomaly_strength} degrees.")
+    st.write("This signature acts as a 'Homing Beacon' for maritime navigation.")
 
 st.divider()
-st.subheader("🧬 Result: The Global Node")
-st.write(f"The 'String' is vibrating at its peak semiannual amplitude.")
-st.write("In String Theory terms, the Equinox is the moment when the 'Beringian' and 'Amazonian' Branes reach a point of perfect interference.")
+st.subheader("🧬 Result: The Magnetic Anchor")
+st.write("The andesite isn't just stone; it's a 'Magnetic Battery' that stores the orientation of the guild.")
+st.write("In String Theory terms, these stones are 'Magnetic Branes' that anchor the maritime database to the Earth's core.")
