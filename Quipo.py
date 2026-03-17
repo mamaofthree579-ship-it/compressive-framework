@@ -1,41 +1,42 @@
 import streamlit as st
 
-st.set_page_config(page_title="Mayan Deep-Time Ledger", layout="wide")
+st.set_page_config(page_title="Teotihuacán Dual-Core Processor", layout="wide")
 
-st.title("🧶 Khipu Node v20: The Alautun Deep-Time Ledger")
-st.write("Simulating the 63-million-year tracking capacity of the Mayan 'Master Clock'.")
+st.title("🧶 Khipu Node v21: The Dual-Core Sync")
+st.write("Simulating the Dialectic between Quetzalcoatl (Order) and Tezcatlipoca (Entropy).")
 
-# --- SIDEBAR: DEEP-TIME CYCLES ---
-st.sidebar.header("⏳ Geological Scaling")
-time_span = st.sidebar.selectbox("Select Tracking Scale", ["Baktun (394 yrs)", "Calabtun (158k yrs)", "Alautun (63m yrs)"])
+# --- SIDEBAR: CORE CALIBRATION ---
+st.sidebar.header("⚖️ System Calibration")
+order_level = st.sidebar.slider("Quetzalcoatl (Order) Output", 0, 100, 50)
+entropy_level = st.sidebar.slider("Tezcatlipoca (Entropy) Output", 0, 100, 50)
 
-# --- RUNTIME LOGIC ---
-if "Baktun" in time_span:
-    days = 144000
-elif "Calabtun" in time_span:
-    days = 57600000
-else:
-    days = 23040000000 # The Alautun
-
-years = days / 365.25
+# --- BALANCE LOGIC ---
+# The system is stable when Order and Entropy are balanced.
+variance = abs(order_level - entropy_level)
+system_stability = 100 - (variance * 2)
 
 # --- INTERFACE ---
 col1, col2 = st.columns(2)
 
 with col1:
-    st.subheader("🕰️ Deep-Time Clock")
-    st.metric("Total Cycle Days", f"{days:,}")
-    st.metric("Equivalent Earth Years", f"{years:,.0f}")
-    st.info(f"**Status:** Tracking data at the {time_span} resolution.")
+    st.subheader("⚪ White Mirror (Logic)")
+    st.metric("Creative Core", f"{order_level}%")
+    st.progress(order_level / 100)
+    st.write("**Material:** Permanent Jade (Immortal Protocol)")
 
 with col2:
-    st.subheader("🖥️ Obsidian Terminal Status")
-    st.write("**Interface:** Smoking Mirror (Tezcatlipoca Protocol)")
-    st.write("**Sensor State:** Active - Recording Thermal and Seismic Data.")
-    # Visualizing the scale compared to a 100-million year brane
-    st.progress(min(1.0, years / 100000000))
+    st.subheader("🕶️ Smoking Mirror (Entropy)")
+    st.metric("Error-Correction Core", f"{entropy_level}%")
+    st.progress(entropy_level / 100)
+    st.write("**Material:** Volcanic Obsidian (Portal Protocol)")
 
 st.divider()
-st.subheader("🧬 Result: The Unstoppable Data Stream")
-st.write(f"The 'String' has been vibrating for **{years:,.0f} years**. It cannot be stopped.")
-st.write("In String Theory terms, the Alautun is the 'Macro-Vibration' that governs the evolution of the entire planetary Brane.")
+st.subheader("🧬 Result: Cosmic Equilibrium")
+if system_stability >= 90:
+    st.success(f"✅ SYSTEM SYNC: Dialectic is balanced at {system_stability}%. World Fifth Sun is stable.")
+elif system_stability >= 60:
+    st.warning(f"⚠️ FLUCTUATION: Discord detected. Transitioning between ages...")
+else:
+    st.error(f"🚨 SYSTEM CORRUPTION: Destruction Phase Initialized. Jaguar-Man Transformation imminent.")
+
+st.write("**Data Insight:** The 'String' is held in perfect tension only when both cores are firing in phase.")
