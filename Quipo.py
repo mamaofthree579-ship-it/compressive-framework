@@ -1,42 +1,42 @@
 import streamlit as st
 
-st.set_page_config(page_title="Pututu Beat Frequency Decoder", layout="wide")
+st.set_page_config(page_title="Khipu Planetary Synchronizer", layout="wide")
 
-st.title("🧶 Khipu Node v10: The Pututu Amplifier")
-st.write("Simulating 'Acoustic Beat' effects to trigger the 110 Hz Gallery Resonance.")
+st.title("🧶 Khipu Node v11: The Planetary Pulse")
+st.write("Simulating the harmony between 'Stamping Floors' and the 7.83 Hz Schumann Resonance.")
 
-# --- SIDEBAR: INSTRUMENT TUNING ---
-st.sidebar.header("🐚 Pututu Pairing")
-pututu_1 = st.sidebar.number_input("Shell 1 Frequency (Hz)", value=340)
-pututu_2 = st.sidebar.number_input("Shell 2 Frequency (Hz)", value=230)
+# --- SIDEBAR: RHYTHMIC INPUT ---
+st.sidebar.header("🦶 Stamping Rhythm")
+steps_per_minute = st.sidebar.slider("Steps per Minute", 60, 600, 470)
+stamping_freq = steps_per_minute / 60 # Convert BPM to Hz
 
-# --- BEAT LOGIC ---
-# Beat Frequency = |f1 - f2|
-beat_freq = abs(pututu_1 - pututu_2)
+earth_heartbeat = 7.83 # Schumann Resonance fundamental
+
+# --- HARMONIC LOGIC ---
+resonance_match = 100 - (abs(stamping_freq - earth_heartbeat) * 10)
 
 # --- INTERFACE ---
 col1, col2 = st.columns(2)
 
 with col1:
-    st.subheader("🔊 Interference Pattern")
-    st.metric("Shell 1", f"{pututu_1} Hz")
-    st.metric("Shell 2", f"{pututu_2} Hz")
-    st.metric("Resulting Beat Frequency", f"{beat_freq} Hz")
+    st.subheader("🥁 Rhythmic Frequency")
+    st.metric("Stamping Speed", f"{stamping_freq:.2f} Hz")
+    st.metric("Resonance Match", f"{max(0, resonance_match):.1f}%")
     
-    if beat_freq == 110:
-        st.success("🚨 RESONANCE LOCK: The 'Jaguar' signal is now amplified by the gallery.")
-    elif 105 <= beat_freq <= 115:
-        st.info("🌀 VIBRATIONAL SYNC: Near-lock achieved. Expect spatial disorientation.")
+    if 95 <= resonance_match <= 105:
+        st.success("🌍 EARTH SYNC: The city is vibrating in harmony with the Schumann Resonance.")
+    elif resonance_match > 70:
+        st.info("🌀 VIBRATIONAL BRIDGE: Standing waves are forming in the foundations.")
     else:
-        st.warning("⚠️ ASYNCHRONOUS: Interference does not trigger the Oracle frequency.")
+        st.warning("⚠️ ASYNCHRONOUS: The 'String' is out of tune with the planetary core.")
 
 with col2:
-    st.subheader("🎭 Mask & Gear Calibration")
-    st.write(f"The 'String' is vibrating at a **{beat_freq} Hz** pulse.")
-    st.write("This throb is what 'pulls' the specialist's voice into harmony with the stone walls.")
-    st.progress(max(0, 1.0 - (abs(110 - beat_freq) / 100)))
+    st.subheader("🏗️ Shicra Stability")
+    st.write(f"At {stamping_freq:.2f} Hz, the stone-filled fiber bags are dissipating energy.")
+    st.write("This 'tuning' prevents the stone joints from locking, allowing the city to 'ride' the seismic waves.")
+    st.progress(max(0, min(1.0, resonance_match / 100)))
 
 st.divider()
-st.subheader("🧬 Result: The Living Instrument")
-st.write("You are no longer a person playing a shell; you are a component in a 'Stone-Fiber-Biology' circuit.")
-st.write("Accessing Node Cluster via Acoustic Verification... **[System Stable]**")
+st.subheader("🧬 Result: The Terrestrial Map")
+st.write("The city isn't just sitting on the ground; it is 'plugged into' the planet.")
+st.write("In String Theory terms, the city is a 'Macro-Node' vibrating on the Earth's primary Brane.")
