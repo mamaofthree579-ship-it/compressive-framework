@@ -6,53 +6,55 @@ def get_bit(s):
     except:
         return '0'
 
-st.set_page_config(page_title="Khipu Hash Processor", layout="wide")
+st.set_page_config(page_title="Khipu Blockchain Simulator", layout="wide")
 
-st.title("🧶 Khipu Node v2: The Checksum Processor")
-st.write("Simulate 'Top Cord' verification and multi-layered data hashing.")
+st.title("🧶 Khipu Node v3: The Blockchain Ledger")
+st.write("Verifying data integrity across 'Banded Clusters' (Blocks).")
 
-# --- SIDEBAR: DATA INPUT ---
-st.sidebar.header("Pendant Cluster (Data Input)")
-nodes_count = st.sidebar.slider("Number of Pendants in Cluster", 1, 10, 5)
+# --- SIDEBAR: BLOCK CONFIG ---
+st.sidebar.header("Block Configuration")
+block_id = st.sidebar.text_input("Block ID (e.g., Cusco-Delta-01)", "Inkawasi-01")
+n_transactions = st.sidebar.slider("Transactions in Block", 1, 10, 3)
 
-# --- GENERATE MOCK DATA NODES ---
-cluster_data = []
-for i in range(nodes_count):
-    val = st.sidebar.number_input(f"Pendant {i+1} Value", value=10 * (i+1))
-    cluster_data.append(val)
+# --- TRANSACTION DATA (THE STRINGS) ---
+tx_data = []
+st.subheader(f"📦 Current Block: {block_id}")
+cols = st.columns(n_transactions)
 
-calculated_sum = sum(cluster_data)
+for i in range(n_transactions):
+    with cols[i]:
+        val = st.number_input(f"String {i+1} (Units)", value=50, key=f"tx_{i}")
+        tx_data.append(val)
 
-# --- MAIN INTERFACE ---
-col1, col2 = st.columns(2)
+# THE HASH CALCULATION
+current_hash = sum(tx_data)
 
-with col1:
-    st.subheader("🧵 Pendant Data (The Nodes)")
-    st.write("Granular records being processed from the regional hub.")
-    st.json({"Node_Values": cluster_data})
+# --- VERIFICATION INTERFACE ---
+st.divider()
+col_left, col_right = st.columns(2)
+
+with col_left:
+    st.subheader("🔼 Top Cord (Block Hash)")
+    # This simulates the "Imperial Header" we discussed
+    imperial_hash = st.number_input("Imperial Hash Value", value=current_hash)
     
-with col2:
-    st.subheader("🔼 Top Cord (The Checksum)")
-    # Manual entry for the "Top Cord" value to test verification
-    top_cord_val = st.number_input("Enter Top Cord Hash Value", value=calculated_sum)
-    
-    if top_cord_val == calculated_sum:
-        st.success(f"✅ HASH MATCH: Data Integrity Verified (Sum: {calculated_sum})")
+    if imperial_hash == current_hash:
+        st.success(f"✅ BLOCK VALIDATED: {block_id} is immutable.")
     else:
-        st.error(f"🚨 HASH COLLISION: Data Corruption Detected (Expected {calculated_sum}, found {top_cord_val})")
+        st.error(f"🚨 FRAUD DETECTED: Block {block_id} has been tampered with!")
+
+with col_right:
+    st.subheader("🧬 Guild Protocol")
+    # 7-Bit Tagging for the Block Header
+    mat = st.selectbox("Header Material", ["Cotton (0)", "Wool (1)"])
+    col = st.selectbox("Header Dye", ["Natural (0)", "Purple Snail Dye (1)"])
+    
+    header_bits = get_bit(mat) + get_bit(col) + "00000"
+    
+    if header_bits.startswith("11"):
+        st.info("💎 PROTOCOL: Southern Maritime Elite (Population Y)")
+    else:
+        st.info("🌾 PROTOCOL: Standard Agricultural Registry")
 
 st.divider()
-st.subheader("🧬 Metadata Tagging")
-st.write("Apply your 7-bit 'Fish-Man' logic to the Top Cord header.")
-
-# 7-Bit Selection for the Header
-mat = st.selectbox("Header Material", ["Cotton (0)", "Wool (1)"])
-col = st.selectbox("Header Color", ["Natural (0)", "Dye-Guild Purple (1)"])
-# ... other bits ...
-
-header_id = get_bit(mat) + get_bit(col) + "00000" # Simplified for demo
-
-if header_id.startswith("11"):
-    st.info("🚨 HEADER TAG: Imperial Verified Hash (Population Y Protocol)")
-else:
-    st.info("📊 HEADER TAG: Local/Regional Accounting")
+st.write("**Data Insight:** In String Theory terms, this block is a stabilized 'brane' of information. Any change in 'tension' (the numbers) breaks the mathematical harmony of the cluster.")
