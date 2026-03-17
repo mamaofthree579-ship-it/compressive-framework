@@ -1,42 +1,43 @@
 import streamlit as st
 
-st.set_page_config(page_title="Khipu Planetary Synchronizer", layout="wide")
+st.set_page_config(page_title="Khipu Equinox Synchronizer", layout="wide")
 
-st.title("🧶 Khipu Node v11: The Planetary Pulse")
-st.write("Simulating the harmony between 'Stamping Floors' and the 7.83 Hz Schumann Resonance.")
+st.title("🧶 Khipu Node v12: The Equinox Aperture")
+st.write("Simulating the Peak Electromagnetic Season at the Chankillo Towers.")
 
-# --- SIDEBAR: RHYTHMIC INPUT ---
-st.sidebar.header("🦶 Stamping Rhythm")
-steps_per_minute = st.sidebar.slider("Steps per Minute", 60, 600, 470)
-stamping_freq = steps_per_minute / 60 # Convert BPM to Hz
+# --- SIDEBAR: SEASONAL CONTROLS ---
+st.sidebar.header("🗓️ Solar Alignment")
+is_equinox = st.sidebar.checkbox("Equinox Alignment (Towers 6 & 7)", value=True)
+solar_intensity = st.sidebar.slider("Solar Energy Balance (%)", 0, 100, 100 if is_equinox else 50)
 
-earth_heartbeat = 7.83 # Schumann Resonance fundamental
+schumann_base = 7.83 # The Earth's Heartbeat
 
-# --- HARMONIC LOGIC ---
-resonance_match = 100 - (abs(stamping_freq - earth_heartbeat) * 10)
+# --- RESONANCE LOGIC ---
+# During equinox, the 'Q Factor' (amplification) increases due to solar balance
+amplification = 2.5 if is_equinox else 1.0
+effective_pulse = schumann_base * (solar_intensity / 100) * amplification
 
 # --- INTERFACE ---
 col1, col2 = st.columns(2)
 
 with col1:
-    st.subheader("🥁 Rhythmic Frequency")
-    st.metric("Stamping Speed", f"{stamping_freq:.2f} Hz")
-    st.metric("Resonance Match", f"{max(0, resonance_match):.1f}%")
+    st.subheader("☀️ Solar-Acoustic Gate")
+    st.metric("Tower Alignment", "Active (6/7)" if is_equinox else "Passive")
+    st.metric("Effective Pulse Strength", f"{effective_pulse:.2f} Hz")
     
-    if 95 <= resonance_match <= 105:
-        st.success("🌍 EARTH SYNC: The city is vibrating in harmony with the Schumann Resonance.")
-    elif resonance_match > 70:
-        st.info("🌀 VIBRATIONAL BRIDGE: Standing waves are forming in the foundations.")
+    if is_equinox and effective_pulse > 15:
+        st.success("🔥 APERTURE OPEN: Maximum Electromagnetic Coupling achieved.")
     else:
-        st.warning("⚠️ ASYNCHRONOUS: The 'String' is out of tune with the planetary core.")
+        st.info("🌑 SEEDING MODE: Accumulating energy for the next seasonal shift.")
 
 with col2:
-    st.subheader("🏗️ Shicra Stability")
-    st.write(f"At {stamping_freq:.2f} Hz, the stone-filled fiber bags are dissipating energy.")
-    st.write("This 'tuning' prevents the stone joints from locking, allowing the city to 'ride' the seismic waves.")
-    st.progress(max(0, min(1.0, resonance_match / 100)))
+    st.subheader("🏔️ Akapana Hydraulic Sync")
+    if is_equinox:
+        st.write("**Drainage Status:** Water thundering through the pyramid tiers.")
+    st.progress(min(1.0, effective_pulse / 20))
+    st.write("The stone foundation is 'riding' the planetary wave.")
 
 st.divider()
-st.subheader("🧬 Result: The Terrestrial Map")
-st.write("The city isn't just sitting on the ground; it is 'plugged into' the planet.")
-st.write("In String Theory terms, the city is a 'Macro-Node' vibrating on the Earth's primary Brane.")
+st.subheader("🧬 Result: The Global Node")
+st.write(f"The 'String' is vibrating at its peak semiannual amplitude.")
+st.write("In String Theory terms, the Equinox is the moment when the 'Beringian' and 'Amazonian' Branes reach a point of perfect interference.")
