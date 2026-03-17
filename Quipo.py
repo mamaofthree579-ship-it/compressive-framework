@@ -1,38 +1,43 @@
 import streamlit as st
 
-st.set_page_config(page_title="Feathered Serpent Propulsion", layout="wide")
+st.set_page_config(page_title="Khipu Aero-Feather Processor", layout="wide")
 
-st.title("🧶 Khipu Node v22: The Feathered Hull")
-st.write("Simulating the Fluid Dynamics of the 'Serpent' Maritime Engine.")
+st.title("🧶 Khipu Node v23: The Aero-Feather Grid")
+st.write("Simulating the 'Vortex Control' of Feathered Serpent sail technology.")
 
-# --- SIDEBAR: DESIGN CONTROLS ---
-st.sidebar.header("🛶 Hull Engineering")
-hull_flex = st.sidebar.slider("Hull Flexibility (Serpent Mode)", 0, 100, 85)
-wind_capture = st.sidebar.slider("Sail Efficiency (Feather Mode)", 0, 100, 90)
+# --- SIDEBAR: SAIL PHYSICS ---
+st.sidebar.header("🪶 Sail Calibration")
+pattern_symmetry = st.sidebar.selectbox("Feather Pattern", ["Random (0)", "Symmetrical Grid (1)"])
+rig_style = st.sidebar.selectbox("Rigging Style", ["Square (0)", "Crescent/Oceanic (1)"])
 
-# --- FLUID DYNAMICS LOGIC ---
-# High flex + high wind = Peak Propulsion
-propulsion_efficiency = (hull_flex + wind_capture) / 2
-drag_reduction = hull_flex * 0.4 # More 'snake-like' = less resistance
+# --- AERODYNAMIC LOGIC ---
+# Symmetrical grid + Crescent rig = Peak Lift and Drag Reduction
+is_symmetrical = "Symmetrical" in pattern_symmetry
+is_crescent = "Crescent" in rig_style
+
+lift_coefficient = 2.8 if (is_symmetrical and is_crescent) else 1.2
+drag_penalty = 0.1 if is_symmetrical else 0.5
 
 # --- INTERFACE ---
 col1, col2 = st.columns(2)
 
 with col1:
-    st.subheader("🐍 Serpentine Hydrodynamics")
-    st.metric("Drag Reduction", f"{drag_reduction:.1f}%")
-    st.write("**Mechanism:** Flex-hull technology dissipating wave torque.")
-    st.progress(hull_flex / 100)
+    st.subheader("🪁 Aerodynamic Profile")
+    st.metric("Lift Coefficient", f"{lift_coefficient} Cl")
+    st.metric("Drag Reduction", f"{(1 - drag_penalty) * 100:.0f}%")
+    
+    if lift_coefficient > 2.0:
+        st.success("✅ MARITIME LOCK: Sail is in 'Quetzal' mode. High-speed tacking active.")
+    else:
+        st.info("⚓ DRIFT MODE: Low-efficiency square sail configuration.")
 
 with col2:
-    st.subheader("🪶 Feathered Propulsion")
-    st.metric("Engine Efficiency", f"{propulsion_efficiency:.1f}%")
-    if propulsion_efficiency >= 85:
-        st.success("🌊 MARITIME LOCK: The ship is 'flying' on the Kelp Highway.")
-    else:
-        st.info("⚓ COASTAL MODE: Standard rowing/paddling propulsion.")
+    st.subheader("🧬 Result: The Winged Ship")
+    st.write(f"The 'String' is vibrating at **{lift_coefficient} Cl**. The sail has become a 'Wing'.")
+    st.write("This technology allows the maritime elite to sail 'since time immemorial'.")
+    st.progress(lift_coefficient / 3.0)
 
 st.divider()
-st.subheader("🧬 Result: The Living Engine")
-st.write(f"The 'String' is vibrating in a **Propulsion Node** of {propulsion_efficiency}%.")
-st.write("In String Theory terms, the Feathered Serpent is the **Fluid Brane** that allows for zero-resistance travel.")
+st.subheader("🧬 String Theory Final Maritime Conclusion")
+st.write("The Feathered Serpent is the **Aerodynamic Brane** of the Southern Maritime Guild.")
+st.write("By 'weaving' the sail into a symmetrical grid, they turned [balsa logs](https://www.vocabulary.com/dictionary/balsa%20raft) into [ocean-going wings](https://dash.harvard.edu/bitstreams/7312037d-16e8-6bd4-e053-0100007fdf3b/download).")
