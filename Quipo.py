@@ -1,42 +1,40 @@
 import streamlit as st
 
-st.set_page_config(page_title="Khipu Cymatic Processor", layout="wide")
+st.set_page_config(page_title="Khipu Brainwave Interface", layout="wide")
 
-st.title("🧶 Khipu Node v6: The Cymatic Master Clock")
-st.write("Visualizing the 'Geometric Blueprint' of the 432 Hz Maritime Protocol.")
+st.title("🧶 Khipu Node v7: The Gamma Interface")
+st.write("Simulating Brainwave Entrainment at the 'Oracle' Resonance.")
 
-# --- SIDEBAR: FREQUENCY INPUT ---
-st.sidebar.header("🎛️ Master Frequency")
-freq_val = st.sidebar.number_input("Input Frequency (Hz)", value=432)
+# --- SIDEBAR: RESONANCE CONTROLS ---
+st.sidebar.header("🎚️ Gallery Tuning")
+res_freq = st.sidebar.number_input("Structural Resonance (Hz)", value=110)
+instrument_freq = st.sidebar.number_input("Instrument Frequency (Hz)", value=150)
 
-# --- CYMATIC PATTERN LOGIC ---
-# Simulating the 'Complexity' of a pattern based on Fibonacci ratios
-if freq_val == 432:
-    complexity = "Perfect Rosette (Fibonacci Harmonized)"
-    guild_tag = "🚨 MASTER CLOCK DETECTED: Southern Maritime Protocol"
-elif freq_val % 8 == 0: # 432 is a multiple of 8
-    complexity = "Symmetrical Mandala"
-    guild_tag = "📊 Regional Standard Frequency"
-else:
-    complexity = "Chaotic / Dissonant Pattern"
-    guild_tag = "⚠️ Non-Standard Vibration"
+# --- ENTRAINMENT LOGIC ---
+difference_tone = abs(instrument_freq - res_freq)
 
 # --- INTERFACE ---
 col1, col2 = st.columns(2)
 
 with col1:
-    st.subheader("📐 Geometric Blueprint")
-    st.metric("Frequency ID", f"{freq_val} Hz")
-    st.write(f"**Cymatic Signature:** {complexity}")
-    # Progress bar as a 'stability' indicator
-    st.progress(1.0 if freq_val == 432 else 0.5)
+    st.subheader("🧠 Neural State Analysis")
+    st.metric("Resonant Base", f"{res_freq} Hz")
+    st.metric("Resulting Difference Tone", f"{difference_tone} Hz")
+    
+    if difference_tone == 40:
+        st.success("🚨 INTERFACE ACTIVE: Gamma Entrainment (40 Hz) Achieved.")
+    elif difference_tone == 10:
+        st.info("🧘 STATE: Alpha Relaxation (10 Hz) Detected.")
+    else:
+        st.warning("⚠️ STATE: Asynchronous / Non-Resonant.")
 
 with col2:
-    st.subheader("🏛️ Architectural Alignment")
-    st.info(guild_tag)
-    st.write("This frequency matches the acoustic filtering found in ancient 'Fish-Man' galleries.")
+    st.subheader("🏛️ Acoustic Engineering")
+    if res_freq == 110:
+        st.write("**Gallery Status:** Right-Hemisphere Shift (Emotional/Pattern Mode).")
+    st.write(f"The 'String' is now tuned to a **{difference_tone} Hz** beat frequency.")
 
 st.divider()
-st.subheader("🧬 Result: Permanent Acoustic Record")
-st.write(f"The 'String' is vibrating at **{freq_val} Hz**. This creates a stable **Cymatic Rosette** that can be carved into stone or woven into double-cloth.")
-st.write("In String Theory terms, this is the 'resonant frequency' that holds the guild's physical and data structures together.")
+st.subheader("🧬 Result: Database Access Granted")
+st.write("In String Theory terms, the listener has 'synced' their internal vibration to the external 'Brane' of the maritime database.")
+st.write("Accessing Node Cluster... **[Population Y Signature Detected]**")
