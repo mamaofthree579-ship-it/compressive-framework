@@ -1,46 +1,40 @@
 import streamlit as st
 
-st.set_page_config(page_title="Khipu Optical Transponder", layout="wide")
+st.set_page_config(page_title="Khipu Spondylus Signal", layout="wide")
 
-st.title("🧶 Khipu Node v24: The Optical Transponder")
-st.write("Decoding the 'Red & White' Binary Barcodes of the Maritime Guilds.")
+st.title("🧶 Khipu Node v25: The Spondylus Signal")
+st.write("Simulating the 'Red Gold' Optical Barcode of the Pacific Guilds.")
 
 # --- SIDEBAR: SIGNALING INPUT ---
-st.sidebar.header("📡 Optical Header")
-stripe_pattern = st.sidebar.text_input("Stripe Sequence (e.g., 10101)", "11010")
+st.sidebar.header("📡 Spondylus 'Ping'")
+shell_polish = st.sidebar.slider("Inner Pearl Polish (%)", 0, 100, 95)
+ambient_light = st.sidebar.selectbox("Signal Context", ["Sunlight (Day)", "Torchlight (Night)"])
 
-# --- SIGNALING LOGIC ---
-# Each sequence maps to a specific Specialist Guild
-guild_map = {
-    "11010": "💎 Southern Maritime Elite (Population Y)",
-    "10101": "🌶️ Chili/Agricultural Trade Hub",
-    "11111": "🚨 Imperial High-Speed Courier",
-    "00001": "🛠️ Engineering/Mica-Transport Fleet"
-}
-
-current_id = guild_map.get(stripe_pattern, "❓ Unknown Merchant / Independent")
+# --- OPTICAL LOGIC ---
+# Reflective surfaces can reach distances of several miles
+reflection_distance = (shell_polish / 100) * (15 if "Sunlight" in ambient_light else 5)
+signal_strength = "High Priority" if shell_polish >= 90 else "Routine"
 
 # --- INTERFACE ---
 col1, col2 = st.columns(2)
 
 with col1:
-    st.subheader("🏁 Visual Barcode")
-    # Displaying the 'Stripes'
-    cols = st.columns(len(stripe_pattern))
-    for i, bit in enumerate(stripe_pattern):
-        color = "red" if bit == "1" else "white"
-        cols[i].markdown(f"<div style='background-color:{color}; height:100px; border:1px solid black;'></div>", unsafe_allow_html=True)
-    
-    st.metric("Binary Header", stripe_pattern)
+    st.subheader("🐚 Sea-Mirror Reflection")
+    st.metric("Signal Distance", f"{reflection_distance:.1f} Miles")
+    st.write(f"**Priority Level:** {signal_strength}")
+    if reflection_distance >= 10:
+        st.success("✅ OPTICAL LOCK: Ship-to-ship connection established.")
+    else:
+        st.info("⚓ LOCAL PING: Communication limited to immediate fleet.")
 
 with col2:
-    st.subheader("🆔 Guild Identification")
-    if "Elite" in current_id:
-        st.success(f"ACCESS GRANTED: {current_id}")
-    else:
-        st.info(f"REGISTRY: {current_id}")
+    st.subheader("🧬 Guild Status: Red Gold")
+    if shell_polish >= 90:
+        st.success("💎 CURRENCY-CODE: High-Value Elite Merchant Signature.")
+    st.write("The Spondylus interior acts as the 'Mirror' to reflect the Guild's status.")
+    st.progress(shell_polish / 100)
 
 st.divider()
-st.subheader("🧬 String Theory Result")
-st.write(f"The 'String' is vibrating with an **Optical Frequency** of {stripe_pattern}.")
-st.write("This is the 'Digital Signature' that links the floating sail to the stone database.")
+st.subheader("🧬 Result: The Luminous Ledger")
+st.write(f"The 'String' is vibrating with a **Luminous Frequency** of {shell_polish}%.")
+st.write("In String Theory terms, the Spondylus is the **Reflective Brane** that allows for light-speed data exchange.")
