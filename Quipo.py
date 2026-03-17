@@ -1,42 +1,41 @@
 import streamlit as st
 
-st.set_page_config(page_title="Khipu Magnetic Beacon", layout="wide")
+st.set_page_config(page_title="Khipu Mercury Capacitor", layout="wide")
 
-st.title("🧶 Khipu Node v13: The Magnetic Beacon")
-st.write("Simulating the magnetic anomalies of Tiwanaku's 'H-Blocks'.")
+st.title("🧶 Khipu Node v14: The Mercury Capacitor")
+st.write("Simulating the 'Liquid Conductor' synergy beneath the Andesite hubs.")
 
-# --- SIDEBAR: MAGNETIC CALIBRATION ---
-st.sidebar.header("🧭 Navigation Probe")
-stone_type = st.sidebar.selectbox("Material to Scan", ["Red Sandstone", "Grey Andesite"])
-surface_finish = st.sidebar.slider("Surface Precision (Polish %)", 0, 100, 100)
+# --- SIDEBAR: CAPACITOR CONTROLS ---
+st.sidebar.header("⚗️ Sub-Basement Analysis")
+mercury_present = st.sidebar.checkbox("Liquid Mercury Layer Detected", value=True)
+stone_polish = st.sidebar.slider("Andesite Precision (%)", 0, 100, 65)
 
-# --- ANOMALY LOGIC ---
-if stone_type == "Grey Andesite" and surface_finish > 80:
-    anomaly_strength = 270 # Degrees of compass shift
-    guild_tag = "🚨 BEACON ACTIVE: Magnetic 'Homing' Signature Detected."
-elif stone_type == "Grey Andesite":
-    anomaly_strength = 90
-    guild_tag = "🌀 TRACE MAGNETIC: Unfinished stone signature."
-else:
-    anomaly_strength = 0
-    guild_tag = "⚪ INERT: Standard geological baseline."
+# --- CIRCUIT LOGIC ---
+base_deflection = 90 if stone_polish >= 65 else 0
+# Mercury acts as a 'Multiplier' (Q-Factor)
+multiplier = 2.5 if mercury_present else 1.0
+final_signal = min(360, base_deflection * multiplier)
 
 # --- INTERFACE ---
 col1, col2 = st.columns(2)
 
 with col1:
-    st.subheader("🧭 Compass Reaction")
-    st.metric("Magnetic Deflection", f"{anomaly_strength}°")
-    # A gauge showing the wildness of the needle
-    st.progress(anomaly_strength / 360)
+    st.subheader("⚡ Signal Amplification")
+    st.metric("Base Stone Signal", f"{base_deflection}°")
+    st.metric("Final Beacon Power", f"{final_signal:.0f}°", delta="Mercury Boosted" if mercury_present else None)
+    
+    if final_signal >= 225:
+        st.success("🚨 SIGNAL LOCK: 'Fish-Man' Homing Beacon is at Max Power.")
+    else:
+        st.info("📡 TRACE SIGNAL: Beacon is in 'Low-Power' standby mode.")
 
 with col2:
-    st.subheader("🧬 Population Y Protocol")
-    st.info(guild_tag)
-    st.write(f"The 'String' is experiencing a **magnetic pull** of {anomaly_strength} degrees.")
-    st.write("This signature acts as a 'Homing Beacon' for maritime navigation.")
+    st.subheader("🧬 Result: The Liquid Circuit")
+    st.write(f"With the **Mercury Layer**, your {stone_polish}% polish has been amplified.")
+    st.write("The mercury acts as the 'Ground' for the magnetic brane, stabilizing the data.")
+    st.progress(final_signal / 360)
 
 st.divider()
-st.subheader("🧬 Result: The Magnetic Anchor")
-st.write("The andesite isn't just stone; it's a 'Magnetic Battery' that stores the orientation of the guild.")
-st.write("In String Theory terms, these stones are 'Magnetic Branes' that anchor the maritime database to the Earth's core.")
+st.subheader("🧬 String Theory Conclusion")
+st.write("The mercury isn't just 'liquid'; it's a **Vibrational Fluid Brane**.")
+st.write("By vibrating the stone above the liquid metal, they created a 'Trans-Oceanic Wi-Fi' for the maritime specialists.")
