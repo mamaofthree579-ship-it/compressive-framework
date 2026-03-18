@@ -1,118 +1,83 @@
-import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
+import streamlit as st
 
-st.set_page_config(layout="wide")
-st.title("🜂 QH-1 V5 Adaptive Hull Intelligence System")
-
-rho = 1000
+st.title("🌊 Dugout vs QH-1 Adaptive Hull Simulation")
 
 # -------------------------
-# CONTROLS
+# Environment Inputs
 # -------------------------
-auto_mode = st.sidebar.checkbox("Enable Auto Adaptation", True)
+wave_amp = st.slider("Wave Amplitude (m)", 0.1, 2.0, 1.0)
+wave_freq = st.slider("Wave Frequency (Hz)", 0.5, 5.0, 1.5)
+velocity = st.slider("Boat Velocity (m/s)", 0.5, 5.0, 2.0)
+rho = 1000  # water density kg/m^3
 
-st.sidebar.header("🌊 Wave Conditions")
-A = st.sidebar.slider("Amplitude", 0.1, 2.0, 1.0)
-freq = st.sidebar.slider("Frequency", 0.5, 5.0, 2.0)
-velocity = st.sidebar.slider("Velocity", 0.1, 5.0, 2.0)
-
-wavelength = velocity / freq if freq != 0 else 1.0
-roughness = A * freq
+wavelength = velocity / wave_freq
 
 # -------------------------
-# DEFAULTS
+# Dugout Canoe Properties
 # -------------------------
-hull_length = st.sidebar.slider("Hull Length", 2.0, 10.0, 4.5)
-spread = st.sidebar.slider("Spread", 5, 45, 20)
-length = st.sidebar.slider("Fin Length", 0.5, 2.0, 1.2)
-angle = st.sidebar.slider("Angle", -30, 30, 0)
-
-# -------------------------
-# AUTO SYSTEM
-# -------------------------
-if auto_mode:
-    # Rule 1: Hull match
-    hull_length = wavelength / 2
-
-    # Rule 2: Spread
-    spread = 10 + 20 * roughness
-
-    # Rule 3: Length
-    length = 0.5 + 0.8 * A
-
-    # Clamp values
-    spread = np.clip(spread, 5, 45)
-    length = np.clip(length, 0.5, 2.0)
+dugout = {
+    "length": 5.0,
+    "beam": 0.75,
+    "draft": 0.2,
+    "Cd": 0.7,
+    "A": 0.15,  # frontal area
+    "Rw": 1.0,  # water resistance factor (resin-rich wood)
+}
 
 # -------------------------
-# PHYSICS
+# QH-1 Adaptive Hull Properties
 # -------------------------
-Cd_base = 0.8
-area = 0.5
+qh1 = {
+    "length": wavelength/2,  # wave-matched
+    "beam": 1.0,
+    "tail_eff": 0.35,
+    "tail_surface": 0.6,
+    "draft": 0.25,
+    "Cd_base": 0.7,
+    "A": 0.2,
+}
 
-tail_eff = 0.3
-tail_surface = spread / 45
-
-Cd_eff = Cd_base * (1 - tail_eff * tail_surface)
-drag = 0.5 * rho * velocity**2 * Cd_eff * area
-
-stability = tail_surface * np.cos(np.radians(spread)) * length
-wave_match = 1 - abs(hull_length - wavelength/2) / (wavelength/2 + 0.001)
-
-# -------------------------
-# DISPLAY
-# -------------------------
-col1, col2, col3 = st.columns(3)
-
-col1.metric("Drag", f"{drag:.2f}")
-col2.metric("Stability", f"{stability:.3f}")
-col3.metric("Wave Match", f"{wave_match:.3f}")
+# Effective Cd for QH-1
+qh1["Cd_eff"] = qh1["Cd_base"] * (1 - qh1["tail_eff"] * qh1["tail_surface"])
 
 # -------------------------
-# HULL VISUAL
+# Calculations
 # -------------------------
-fig, ax = plt.subplots()
+def drag_force(Cd, A):
+    return 0.5 * rho * velocity**2 * Cd * A
 
-ax.plot([-0.3, -0.3], [0, hull_length], linewidth=3)
-ax.plot([0.3, 0.3], [0, hull_length], linewidth=3)
-ax.plot([-0.3, 0, 0.3], [hull_length, hull_length+0.5, hull_length])
+dugout_drag = drag_force(dugout["Cd"], dugout["A"]) * dugout["Rw"]
+qh1_drag = drag_force(qh1["Cd_eff"], qh1["A"])
 
-angles = np.linspace(-spread, spread, 5) + angle
+# Stability Index (simplified)
+dugout_stab = 0.5  # baseline, rudderless
+qh1_stab = np.cos(np.radians(30)) * qh1["tail_surface"] * 1.0
 
-for a in angles:
-    x = length * np.sin(np.radians(a))
-    y = -length * np.cos(np.radians(a))
-    ax.plot([0, x], [0, y], linewidth=2)
-
-ax.set_aspect('equal')
-ax.axis('off')
-
-st.pyplot(fig)
+# Wave matching factor
+dugout_wave_match = 1 - abs(dugout["length"] - wavelength/2) / (wavelength/2 + 0.001)
+qh1_wave_match = 1.0  # adaptive
 
 # -------------------------
-# WAVE GRAPH
+# Display Metrics
+# -------------------------
+st.subheader("Performance Metrics")
+st.write(f"**Dugout Canoe:** Drag={dugout_drag:.2f} N, Stability={dugout_stab:.2f}, Wave Match={dugout_wave_match:.2f}")
+st.write(f"**QH-1 Hull:** Drag={qh1_drag:.2f} N, Stability={qh1_stab:.2f}, Wave Match={qh1_wave_match:.2f}")
+
+# -------------------------
+# Visualization
 # -------------------------
 x = np.linspace(0, 10, 500)
-k = 0.3 + tail_surface
+dugout_y = wave_amp * np.exp(-0.1*x) * np.sin(wave_freq*x)
+qh1_y = wave_amp * np.exp(-0.3*x) * np.sin(wave_freq*x)  # better damping
 
-y = A * np.exp(-k * x) * np.sin(freq * x)
-
-fig2, ax2 = plt.subplots()
-ax2.plot(x, y)
-ax2.set_title("Wake Decay")
-
-st.pyplot(fig2)
-
-# -------------------------
-# INTERPRETATION
-# -------------------------
-st.write(f"""
-### Auto System Active: {auto_mode}
-
-- Hull auto-matched to wavelength
-- Spread responding to roughness ({roughness:.2f})
-- Tail length scaling with amplitude
-
-This is now a **self-adjusting hydrodynamic system**.
-""")
+plt.figure(figsize=(10,4))
+plt.plot(x, dugout_y, label="Dugout Canoe Wake")
+plt.plot(x, qh1_y, label="QH-1 Adaptive Hull Wake")
+plt.xlabel("Distance (m)")
+plt.ylabel("Wave Amplitude (m)")
+plt.title("Wake Comparison")
+plt.legend()
+st.pyplot(plt)
