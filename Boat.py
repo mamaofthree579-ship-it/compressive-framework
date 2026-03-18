@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 st.set_page_config(layout="wide")
-st.title("🌊 QH-1 Adaptive Hull: Real-Time Interactive Simulation")
+st.title("🌊 Multi-Environment Adaptive Hull Simulator: Dugout vs QH-1")
 
 # -------------------------
 # Environment Presets
@@ -18,23 +18,8 @@ environments = {
 # -------------------------
 # Hull Defaults
 # -------------------------
-dugout = {
-    "length": 5.0,
-    "beam": 0.75,
-    "draft": 0.2,
-    "Cd": 0.7,
-    "A": 0.15,
-    "Rw": 1.0
-}
-
-qh1 = {
-    "tail_eff": 0.35,
-    "tail_surface": 0.6,
-    "beam": 1.0,
-    "draft": 0.25,
-    "Cd_base": 0.7,
-    "A": 0.2
-}
+dugout = {"length": 5.0, "beam": 0.75, "draft": 0.2, "Cd": 0.7, "A": 0.15, "Rw": 1.0}
+qh1 = {"tail_eff": 0.35, "tail_surface": 0.6, "beam": 1.0, "draft": 0.25, "Cd_base": 0.7, "A": 0.2}
 
 # -------------------------
 # Interactive Controls
@@ -48,8 +33,7 @@ modular_width = st.sidebar.slider("Hull Width (m)", 0.6, 1.2, 1.0)
 # -------------------------
 # Simulation Function
 # -------------------------
-def simulate_hull(env_name, tail_angle, tail_spread, length_factor, width):
-    env = environments[env_name]
+def simulate_hull(env, tail_angle, tail_spread, length_factor, width):
     amp, freq, velocity = env["amp"], env["freq"], env["velocity"]
     wavelength = velocity / freq
 
@@ -65,9 +49,9 @@ def simulate_hull(env_name, tail_angle, tail_spread, length_factor, width):
     qh1["Cd_eff"] = qh1["Cd_base"] * (1 - qh1["tail_eff"] * qh1["tail_surface"])
     qh1_drag = 0.5 * 1000 * velocity**2 * qh1["Cd_eff"] * qh1["A"]
     qh1_stab = np.cos(np.radians(tail_spread)) * qh1["tail_surface"]
-    qh1_wave = 1.0  # adaptive system
+    qh1_wave = 1.0
 
-    # Wake decay for visualization
+    # Wake for plotting
     x_line = np.linspace(0, 20, 500)
     dugout_y = amp * np.exp(-0.1 * x_line) * np.sin(freq * x_line)
     qh1_y = amp * np.exp(-0.3 * x_line) * np.sin(freq * x_line)
@@ -75,43 +59,92 @@ def simulate_hull(env_name, tail_angle, tail_spread, length_factor, width):
     return dugout_drag, qh1_drag, dugout_stab, qh1_stab, dugout_wave, qh1_wave, x_line, dugout_y, qh1_y
 
 # -------------------------
-# Run Simulation for Selected Environment
+# Run Simulation for All Environments
 # -------------------------
-env_selected = st.selectbox("Select Environment", list(environments.keys()))
-dugout_drag, qh1_drag, dugout_stab, qh1_stab, dugout_wave, qh1_wave, x_line, dugout_y, qh1_y = simulate_hull(
-    env_selected, tail_angle, tail_spread, modular_length_factor, modular_width
-)
+results = []
+for name, env in environments.items():
+    dugout_drag, qh1_drag, dugout_stab, qh1_stab, dugout_wave, qh1_wave, x_line, dugout_y, qh1_y = simulate_hull(
+        env, tail_angle, tail_spread, modular_length_factor, modular_width
+    )
+    results.append({
+        "Environment": name,
+        "Dugout Drag (N)": dugout_drag,
+        "QH-1 Drag (N)": qh1_drag,
+        "Dugout Stability": dugout_stab,
+        "QH-1 Stability": qh1_stab,
+        "Dugout Wave Match": dugout_wave,
+        "QH-1 Wave Match": qh1_wave,
+        "x_line": x_line,
+        "dugout_y": dugout_y,
+        "qh1_y": qh1_y
+    })
 
 # -------------------------
-# Display Metrics
+# Display Metrics Table
 # -------------------------
-st.subheader(f"Performance Metrics: {env_selected}")
-df = pd.DataFrame({
-    "Metric": ["Drag (N)", "Stability", "Wave Match"],
-    "Dugout Canoe": [dugout_drag, dugout_stab, dugout_wave],
-    "QH-1 Adaptive Hull": [qh1_drag, qh1_stab, qh1_wave]
-})
-st.dataframe(df)
+st.subheader("Performance Metrics Across Environments")
+df_metrics = pd.DataFrame([{k: r[k] for k in r if k != "x_line" and k != "dugout_y" and k != "qh1_y"} for r in results])
+st.dataframe(df_metrics)
 
 # -------------------------
-# Visualize Wake
+# Visualize Wake Side-by-Side
 # -------------------------
-st.subheader(f"Wake Visualization: {env_selected}")
-fig, ax = plt.subplots(figsize=(10,4))
-ax.plot(x_line, dugout_y, label="Dugout Canoe Wake")
-ax.plot(x_line, qh1_y, label="QH-1 Adaptive Hull Wake")
-ax.set_xlabel("Distance (m)")
-ax.set_ylabel("Wave Amplitude (m)")
-ax.set_title(f"Wake Decay Comparison: {env_selected}")
-ax.legend()
+st.subheader("Wake Visualization Across Environments")
+fig, axs = plt.subplots(1, 3, figsize=(18,4))
+for ax, r in zip(axs, results):
+    ax.plot(r["x_line"], r["dugout_y"], label="Dugout")
+    ax.plot(r["x_line"], r["qh1_y"], label="QH-1")
+    ax.set_title(r["Environment"])
+    ax.set_xlabel("Distance (m)")
+    ax.set_ylabel("Wave Amplitude (m)")
+    ax.legend()
+plt.tight_layout()
 st.pyplot(fig)
 
 # -------------------------
-# Interpretation
+# Comparative Bar Charts
 # -------------------------
+st.subheader("Drag, Stability, and Wave Match Comparison")
+x = np.arange(len(results))
+width = 0.35
+
+# Drag
+fig1, ax1 = plt.subplots()
+ax1.bar(x - width/2, [r["Dugout Drag (N)"] for r in results], width, label="Dugout")
+ax1.bar(x + width/2, [r["QH-1 Drag (N)"] for r in results], width, label="QH-1")
+ax1.set_xticks(x)
+ax1.set_xticklabels([r["Environment"] for r in results])
+ax1.set_ylabel("Drag (N)")
+ax1.set_title("Drag Comparison")
+ax1.legend()
+st.pyplot(fig1)
+
+# Stability
+fig2, ax2 = plt.subplots()
+ax2.bar(x - width/2, [r["Dugout Stability"] for r in results], width, label="Dugout")
+ax2.bar(x + width/2, [r["QH-1 Stability"] for r in results], width, label="QH-1")
+ax2.set_xticks(x)
+ax2.set_xticklabels([r["Environment"] for r in results])
+ax2.set_ylabel("Stability Index")
+ax2.set_title("Stability Comparison")
+ax2.legend()
+st.pyplot(fig2)
+
+# Wave Match
+fig3, ax3 = plt.subplots()
+ax3.bar(x - width/2, [r["Dugout Wave Match"] for r in results], width, label="Dugout")
+ax3.bar(x + width/2, [r["QH-1 Wave Match"] for r in results], width, label="QH-1")
+ax3.set_xticks(x)
+ax3.set_xticklabels([r["Environment"] for r in results])
+ax3.set_ylabel("Wave Match Factor")
+ax3.set_title("Wave Match Comparison")
+ax3.legend()
+st.pyplot(fig3)
+
 st.write("""
 ### Interpretation:
-- Dugout canoes perform best in calm lakes, but lose efficiency in rivers and oceans.  
-- QH-1 maintains high wave matching, improves stability, and accelerates wake decay through tail adjustment and modular hull length.  
-- Use sliders to experiment with tail angles, spread, and hull length to optimize performance for different water conditions.
+- Dugout canoes are optimized for calm lakes but struggle in rivers and oceans.  
+- QH-1 adaptive hull maintains high wave matching and improves stability in all environments.  
+- Tail adjustments and modular hull length allow QH-1 to efficiently damp wakes and reduce drag.  
+- Use the sidebar sliders to experiment with hull parameters and observe real-time performance changes across all environments.
 """)
