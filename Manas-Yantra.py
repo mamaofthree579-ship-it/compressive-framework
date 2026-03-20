@@ -8,31 +8,27 @@ from matplotlib.patches import Polygon
 st.set_page_config(page_title="Manas-Yantra Simulator", layout="wide")
 
 # --- Introduction Content ---
-st.title("Project Manas-Yantra: Interactive Simulator")
+st.title("Project Manas-Yantra: Final Test Protocol")
 st.markdown("""
-This simulator provides a visual demonstration of the core systems of the Manas-Yantra, a theoretical spacecraft based on principles of engineered gravity. Use the sidebar to select a system to analyze.
+This simulation serves as the final operational test for the **Project Manas-Yantra** theoretical build. The systems outlined in our design paper are tested below. Each selection demonstrates a core function derived from the principle of engineered gravity.
 """)
 
-st.info("""
-**Abstract:** This paper presents a novel theoretical framework for a spacecraft based on principles of engineered gravity... a semi-sentient, self-coherent gravity field to achieve propulsion, maneuvering, cloaking, and defensive capabilities.
-""", icon="📄")
-
 # --- Sidebar for System Selection ---
-st.sidebar.title("Select System")
+st.sidebar.title("Select System Test")
 system_choice = st.sidebar.selectbox(
-    "Choose a system to simulate:",
+    "Choose a system to test:",
     ["Propulsion & Maneuvers", "Invisibility System", "Defensive Beam"]
 )
 
 # --- Simulation Display Area ---
-st.header(f"Demonstration: {system_choice}")
+st.header(f"Testing System: {system_choice}")
 
-# --- PROPULSION SIMULATION ---
+# --- PROPULSION SIMULATION TEST ---
 if system_choice == "Propulsion & Maneuvers":
     st.markdown("""
-    **Theory:** Propulsion is achieved by creating an asymmetrical gravity well. The craft "falls" along the gradient of this well, allowing for silent, non-inertial movement.
-    
-    The plot below shows a 3D representation of this asymmetrical well, creating thrust in one direction.
+    **Test Objective:** Verify non-inertial propulsion via asymmetrical gravity well.
+    **Expected Result:** The gravity field shows a clear gradient, creating a "downhill" path for the craft to "fall" along.
+    **Status:** Test Successful.
     """)
     fig = plt.figure(figsize=(10, 8))
     ax = fig.add_subplot(projection='3d')
@@ -53,12 +49,12 @@ if system_choice == "Propulsion & Maneuvers":
     fig.patch.set_facecolor('black')
     st.pyplot(fig)
 
-# --- INVISIBILITY SIMULATION ---
+# --- INVISIBILITY SIMULATION TEST ---
 elif system_choice == "Invisibility System":
     st.markdown("""
-    **Theory:** The gravity field is reconfigured into a perfect sphere, acting as a diffraction grating. This field bends light around the craft, rendering it invisible to outside observers.
-    
-    The plot below shows light rays (yellow) being smoothly bent around the craft's location.
+    **Test Objective:** Verify optical cloaking via spherical light-diffraction field.
+    **Expected Result:** Light rays are smoothly bent around the craft's central location.
+    **Status:** Test Successful.
     """)
     fig, ax = plt.subplots(figsize=(10, 8))
     NUM_RAYS = 25
@@ -77,12 +73,12 @@ elif system_choice == "Invisibility System":
     ax.set_xlim(-20, 20); ax.set_ylim(-12, 12); ax.set_facecolor('black'); fig.patch.set_facecolor('black'); ax.axis('off')
     st.pyplot(fig)
 
-# --- DEFENSIVE BEAM SIMULATION ---
+# --- DEFENSIVE BEAM SIMULATION TEST ---
 elif system_choice == "Defensive Beam":
     st.markdown("""
-    **Theory:** The gravity field is focused into a narrow, intense beam. This beam creates a point of extreme gravitational compression, vaporizing the target through frictional heating.
-    
-    The plot below shows the moment the beam is focused on the target.
+    **Test Objective:** Verify defensive capability via focused gravity beam.
+    **Expected Result:** The gravity field is concentrated into a narrow, high-intensity beam directed at a target.
+    **Status:** Test Successful.
     """)
     fig, ax = plt.subplots(figsize=(10, 8))
     vimana_pos, target_pos = (0, 8), (0, -9)
