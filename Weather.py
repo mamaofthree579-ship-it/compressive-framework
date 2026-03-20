@@ -27,8 +27,5 @@ ax.set_title(f"Wave Interference (Single Frame)")
 ax.set_xticks([])
 ax.set_yticks([])
 
-# This line will try to open an interactive window to show the plot
 plt.show()
 
-# You can uncomment the line below to save the image as a file instead
-# plt.savefig('static_wave_frame.png')
