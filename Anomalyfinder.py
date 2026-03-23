@@ -4,7 +4,7 @@ import numpy as np
 from sklearn.ensemble import IsolationForest
 
 def generate_data():
-    Generates a simulated dataset of archaeological residue analysis.
+    """Generates a simulated dataset of archaeological residue analysis."""
     # --- Generate "Normal" Data (e.g., cooking pots) ---
     num_normal = 200
     normal_data = {
