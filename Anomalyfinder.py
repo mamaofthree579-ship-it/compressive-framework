@@ -95,4 +95,3 @@ def highlight_anomalies(s):
 st.dataframe(anomalies_df.style.apply(highlight_anomalies, subset=['interpretation']))
 
 st.write("Notice how the flagged artifacts (originally labeled 'Unknown') have low diversity, high uniformity, high salt, and high vitrification—the exact signature we designed.")
-'''
