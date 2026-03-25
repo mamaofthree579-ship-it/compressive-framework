@@ -11,34 +11,63 @@ def haversine(lat1, lon1, lat2, lon2):
     a = np.sin(dlat/2)**2 + np.cos(np.radians(lat1)) * np.cos(np.radians(lat2)) * np.sin(dlon/2)**2
     return R * 2 * np.arcsin(np.sqrt(a))
 
-# 2. Robust Data Load (Fixes Tokenization Error)
+# 2. Robust UAP Data Load
 @st.cache_data
 def get_uap_data():
     url = "https://corgis-edu.github.io"
     try:
-        # 'on_bad_lines' skips rows that don't match the expected column count
         response = requests.get(url, timeout=10)
         df = pd.read_csv(io.StringIO(response.text), on_bad_lines='skip', engine='python')
-        return df.rename(columns={'Location.Latitude': 'lat', 'Location.Longitude': 'lon'})
+        # Ensure we have clean floats for coordinates
+        df = df.rename(columns={'Location.Latitude': 'lat', 'Location.Longitude': 'lon'})
+        df['lat'] = pd.to_numeric(df['lat'], errors='coerce')
+        df['lon'] = pd.to_numeric(df['lon'], errors='coerce')
+        return df.dropna(subset=['lat', 'lon'])
     except: return pd.DataFrame()
 
-# 3. Seismic & Cluster Logic
-st.title("Guardian Predictor: Cluster Analysis")
+# 3. Correct USGS JSON Feed
+def get_live_seismic():
+    # This specific URL provides the actual JSON data
+    url = "https://earthquake.usgs.gov"
+    try:
+        resp = requests.get(url, timeout=10).json()
+        points = []
+        for f in resp['features']:
+            coords = f['geometry']['coordinates']
+            points.append({
+                'lat': coords[1], 
+                'lon': coords[0], 
+                'mag': f['properties']['mag'],
+                'type': 'Live Stress'
+            })
+        return pd.DataFrame(points)
+    except: return pd.DataFrame()
+
+# 4. Processing & Magnitude Weighting
+st.title("Guardian Predictor: Weighted Cluster Analysis")
 df_uap = get_uap_data()
-# Fetching live M4.5+ seismic data
-resp = requests.get("https://earthquake.usgs.gov").json()
-live_stress = pd.DataFrame([{'lat': f['geometry'], 'lon': f['geometry'], 'mag': f['properties']['mag']} for f in resp['features']])
+live_stress = get_live_seismic()
 
 if not live_stress.empty and not df_uap.empty:
-    # Cluster Detection: Find UAPs within 300km of live stress
-    active_nodes = []
-    for _, quake in live_stress.iterrows():
-        dist = haversine(quake['lat'], quake['lon'], df_uap['lat'], df_uap['lon'])
-        matches = df_uap[dist <= 300].copy()
-        matches['type'] = 'Active Cluster'
-        active_nodes.append(matches)
+    active_clusters = []
     
-    # Display Map
-    display_df = pd.concat([live_stress.assign(type='Live Stress')] + active_nodes)
-    st.map(display_df, color='type')
-    st.write(f"Detected **{len(pd.concat(active_nodes))} historical nodes** in active cluster zones.")
+    for _, quake in live_stress.iterrows():
+        # MAGNITUDE WEIGHT: Radius = (Magnitude^2) * 10 
+        # (e.g., M5 = 250km, M7 = 490km)
+        dynamic_radius = (quake['mag'] ** 2) * 10
+        
+        dist = haversine(quake['lat'], quake['lon'], df_uap['lat'], df_uap['lon'])
+        matches = df_uap[dist <= dynamic_radius].copy()
+        matches['type'] = 'Active Node'
+        active_clusters.append(matches)
+    
+    # 5. Build Map
+    all_points = pd.concat([live_stress.assign(type='Seismic Trigger')] + active_clusters)
+    st.map(all_points, color='type')
+    
+    st.sidebar.write(f"Live Triggers: {len(live_stress)}")
+    st.sidebar.write("🔴 **Red:** Seismic Trigger")
+    st.sidebar.write("🔵 **Blue:** Activated Guardian Node")
+else:
+    st.warning("Awaiting live data stream...")
+
