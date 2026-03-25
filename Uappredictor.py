@@ -3,66 +3,42 @@ import pandas as pd
 import requests
 import io
 import numpy as np
-from datetime import datetime
 
-# 1. Page Config
-st.set_page_config(page_title="Guardian Predictor", layout="wide")
-st.title("The Guardians: Planetary Regulation System")
+# 1. Haversine Distance (km)
+def haversine(lat1, lon1, lat2, lon2):
+    R = 6371
+    dlat, dlon = np.radians(lat2 - lat1), np.radians(lon2 - lon1)
+    a = np.sin(dlat/2)**2 + np.cos(np.radians(lat1)) * np.cos(np.radians(lat2)) * np.sin(dlon/2)**2
+    return R * 2 * np.arcsin(np.sqrt(a))
 
-# 2. Stable Data Fetcher (CORGIS Mirror)
+# 2. Robust Data Load (Fixes Tokenization Error)
 @st.cache_data
 def get_uap_data():
     url = "https://corgis-edu.github.io"
     try:
+        # 'on_bad_lines' skips rows that don't match the expected column count
         response = requests.get(url, timeout=10)
-        df = pd.read_csv(io.StringIO(response.text))
-        # RENAME IS CRITICAL: Streamlit needs 'lat' and 'lon'
-        df = df.rename(columns={
-            'Location.Latitude': 'lat',
-            'Location.Longitude': 'lon',
-            'Data.Date.Time': 'date_string'
-        })
-        return df
-    except Exception as e:
-        st.error(f"Data Load Error: {e}")
-        return pd.DataFrame()
+        df = pd.read_csv(io.StringIO(response.text), on_bad_lines='skip', engine='python')
+        return df.rename(columns={'Location.Latitude': 'lat', 'Location.Longitude': 'lon'})
+    except: return pd.DataFrame()
 
-# 3. Live Seismic Fetcher (Sp)
-def get_live_seismic():
-    url = "https://earthquake.usgs.gov"
-    try:
-        data = requests.get(url).json()
-        points = []
-        for f in data['features']:
-            c = f['geometry']['coordinates']
-            points.append({'lat': c[1], 'lon': c[0], 'mag': f['properties']['mag'], 'type': 'Live Stress'})
-        return pd.DataFrame(points)
-    except:
-        return pd.DataFrame()
+# 3. Seismic & Cluster Logic
+st.title("Guardian Predictor: Cluster Analysis")
+df_uap = get_uap_data()
+# Fetching live M4.5+ seismic data
+resp = requests.get("https://earthquake.usgs.gov").json()
+live_stress = pd.DataFrame([{'lat': f['geometry'], 'lon': f['geometry'], 'mag': f['properties']['mag']} for f in resp['features']])
 
-# 4. Processing
-df = get_uap_data()
-live_seismic = get_live_seismic()
-
-# Sidebar: Planetary Boundary Adjustment
-st.sidebar.header("Planetary Health Check")
-boundaries_crossed = st.sidebar.slider("Boundaries Surpassed (out of 9)", 0, 9, 7)
-# Jones Logic: More boundaries crossed = Lower activation threshold
-resonance_threshold = 9.0 - (boundaries_crossed * 0.4) 
-
-# 5. Build the Map
-if not df.empty:
-    # Filter for 'Tier 1' (Sightings > 1 hour) to avoid a blank map from the time-delta
-    tier_1_df = df[df['Data.Encounter.Duration'] > 3600].copy()
-    tier_1_df['type'] = 'Historical Node'
+if not live_stress.empty and not df_uap.empty:
+    # Cluster Detection: Find UAPs within 300km of live stress
+    active_nodes = []
+    for _, quake in live_stress.iterrows():
+        dist = haversine(quake['lat'], quake['lon'], df_uap['lat'], df_uap['lon'])
+        matches = df_uap[dist <= 300].copy()
+        matches['type'] = 'Active Cluster'
+        active_nodes.append(matches)
     
-    # Combine with Live Seismic
-    combined = pd.concat([tier_1_df[['lat', 'lon', 'type']], live_seismic[['lat', 'lon', 'type']]])
-    
-    st.subheader(f"Current Activation Threshold (Kr): {resonance_threshold:.1f}")
-    st.map(combined, color='type')
-    
-    st.write("🔴 **Red/Live:** Seismic Stress points (M4.5+)")
-    st.write("🔵 **Blue/Historical:** Tier 1 Guardian Manifestations")
-else:
-    st.error("Dataset is empty or columns mismatched.")
+    # Display Map
+    display_df = pd.concat([live_stress.assign(type='Live Stress')] + active_nodes)
+    st.map(display_df, color='type')
+    st.write(f"Detected **{len(pd.concat(active_nodes))} historical nodes** in active cluster zones.")
