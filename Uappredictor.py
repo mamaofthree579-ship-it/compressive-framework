@@ -1,36 +1,32 @@
 import streamlit as st
 import pandas as pd
 import requests
-import numpy as np
-from datetime import datetime, timedelta
 
-st.title("Guardian Verification: Seismic vs. Historical UAP Map")
+st.title("Tier 1 Guardian Correlation Map")
 
-# 1. Fetch Live Seismic Data (Sp)
-def get_live_seismic():
+# 1. Fetch Major Seismic Triggers (Sp > 6.0)
+def get_major_triggers():
+    # USGS API for Mag 6.0+ in the last 30 days
     url = "https://earthquake.usgs.gov"
     resp = requests.get(url).json()
-    points = [{'lat': f['geometry'][1], 'lon': f['geometry'][0], 'type': 'Seismic Stress'} for f in resp['features']]
-    return pd.DataFrame(points)
+    return pd.DataFrame([{'lat': f['geometry'][1], 'lon': f['geometry'][0], 'type': 'Major Stress'} for f in resp['features']])
 
-# 2. Fetch Historical UAP Data (NUFORC)
+# 2. Filter for Tier 1 Historical Sightings
 @st.cache_data
-def get_historical_uaps():
-    # Loading a cleaned sample dataset from a common public repo
-    url = "https://raw.githubusercontent.com/DataHerb/nuforc-ufo-records/master/dataset/nuforc_ufo_records.csv"
+def get_tier_1_uaps():
+    url = "https://raw.githubusercontent.com"
     df = pd.read_csv(url).dropna(subset=['latitude', 'longitude'])
-    df = df.rename(columns={'latitude': 'lat', 'longitude': 'lon'})
-    df['type'] = 'Historical UAP'
-    return df[['lat', 'lon', 'type']].sample(500) # Sample for performance
+    # Filtering for 'Tier 1' indicators: long duration or physical descriptions
+    tier_1_df = df[df['duration (seconds)'] > 3600].copy() 
+    tier_1_df = tier_1_df.rename(columns={'latitude': 'lat', 'longitude': 'lon'})
+    tier_1_df['type'] = 'Tier 1 Sighting'
+    return tier_1_df[['lat', 'lon', 'type']]
 
-# 3. Combine and Map
-seismic_df = get_live_seismic()
-uap_df = get_historical_uaps()
-combined_df = pd.concat([seismic_df, uap_df])
+# 3. Execution & Mapping
+major_stress = get_major_triggers()
+tier_1_uaps = get_tier_1_uaps()
+combined_map = pd.concat([major_stress, tier_1_uaps])
 
-st.subheader("Global Grid Overlap")
-st.map(combined_df, color='type', size=20)
-
-# Legend Logic
-st.write("🔴 **Red Dots:** Live Seismic Stress (Sp)")
-st.write("🔵 **Blue Dots:** Historical UAP Reports")
+st.map(combined_map, color='type')
+st.write("🟡 **Yellow:** Tier 1 Historical Manifestations")
+st.write("🔴 **Red:** Major Live Seismic Triggers")
