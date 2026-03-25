@@ -1,61 +1,67 @@
 import streamlit as st
 import requests
-import numpy as np
 import pandas as pd
+import numpy as np
 from datetime import datetime, timedelta
 
-# 1. Setup the Page
-st.title("The Guardians: Real-Time Planetary Regulation")
-st.write("Live-feeding USGS seismic data into Hope Jones's algorithm.")
+# 1. Dashboard Header
+st.title("The Guardians: Live Planetary & UAP Prediction Map")
+st.write("Visualizing planetary stress (Sp) triggers across the global grid.")
 
-# 2. Function to fetch live seismic data (Sp)
-def get_live_seismic_stress():
-    # Fetching earthquakes from the last 24 hours (Magnitude 2.5+)
+# 2. Fetch Live Seismic Data with Coordinates
+def get_live_map_data():
     endtime = datetime.utcnow().isoformat()
-    starttime = (datetime.utcnow() - timedelta(days=1)).isoformat()
-    url = f"https://earthquake.usgs.gov{starttime}&endtime={endtime}&minmagnitude=2.5"
+    starttime = (datetime.utcnow() - timedelta(days=7)).isoformat() # Past 7 days for better map density
+    url = f"https://earthquake.usgs.gov{starttime}&endtime={endtime}&minmagnitude=4.0"
     
     try:
         response = requests.get(url)
         data = response.json()
-        features = data.get('features', [])
         
-        if not features:
-            return 1.0 # Minimum background stress
+        # Extract coordinates and magnitudes
+        locations = []
+        for f in data['features']:
+            locations.append({
+                'latitude': f['geometry']['coordinates'][1],
+                'longitude': f['geometry']['coordinates'][0],
+                'magnitude': f['properties']['mag']
+            })
         
-        # Stress Calculation: Energy scales exponentially with magnitude
-        # We sum 10^mag to represent relative energy release
-        total_energy = sum([10**f['properties']['mag'] for f in features])
-        
-        # Normalize to a 1-10 scale for the simulator
-        stress_score = min(10, np.log10(total_energy) / 2)
-        return round(stress_score, 2), len(features)
+        df = pd.DataFrame(locations)
+        # Calculate Stress Score (Sp) from average magnitude
+        stress_score = df['magnitude'].mean() if not df.empty else 1.0
+        return df, round(stress_score, 2)
     except:
-        return 5.0, 0 # Fallback value
+        return pd.DataFrame(columns=['latitude', 'longitude']), 5.0
 
-# 3. Live Inputs
-live_stress, quake_count = get_live_seismic_stress()
-st.sidebar.header("Live Feed Status")
-st.sidebar.metric("Live Seismic Stress (Sp)", live_stress)
-st.sidebar.write(f"Based on {quake_count} earthquakes (24h)")
+# 3. Process Inputs
+df_map, live_stress = get_live_map_data()
 
-# Manual input for the "Resonance Key" (Intent)
+st.sidebar.header("Parameters")
+st.sidebar.metric("Average Seismic Stress (Sp)", live_stress)
 human_intent = st.sidebar.slider("Human Coherence (Ih) - Z-Score", 0.0, 5.0, 1.0)
-resonance_threshold = 7.5 # Jones's activation constant (Kr)
+resonance_threshold = 7.5
 
-# 4. The Algorithm Logic
+# 4. Jones Algorithm Execution
 def calculate_activation(sp, ih):
-    weight = 0.3548 # Hope Jones's specific correlation weight
+    weight = 0.3548 # Jones's correlation coefficient
+    # Activation Score normalized to a 10-point scale
     score = (sp * weight) + (ih * (1 - weight))
     return np.clip(score * 1.5, 0, 10)
 
 activation_score = calculate_activation(live_stress, human_intent)
 
-# 5. Result Display
+# 5. Display Prediction and Map
+st.subheader("Planetary Stress Map (Active Triggers)")
+if not df_map.empty:
+    st.map(df_map) # Streamlit built-in mapping component
+else:
+    st.write("No major seismic triggers detected in the last 7 days.")
+
 st.subheader("System Status")
 if activation_score >= resonance_threshold:
-    st.success(f"ACTIVATED (Score: {activation_score:.2f})")
-    st.write("Guardian system has reached activation threshold. Sightings likely.")
+    st.error(f"SYSTEM ACTIVE (Score: {activation_score:.2f})")
+    st.write("Predictive Model: UAP activity likely near mapped seismic coordinates.")
 else:
-    st.info(f"DORMANT (Score: {activation_score:.2f})")
-    st.write("System remains in low-power standby mode.")
+    st.success(f"SYSTEM DORMANT (Score: {activation_score:.2f})")
+    st.write("The 'Guardians' remain in low-power standby mode.")
