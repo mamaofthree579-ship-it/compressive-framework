@@ -1,53 +1,58 @@
 import streamlit as st
 import pandas as pd
 import requests
-import numpy as np
 from datetime import datetime, timedelta
 
-# 1. Haversine Calculation
-def haversine(lat1, lon1, lat2, lon2):
-    R = 6371
-    dlat, dlon = np.radians(lat2 - lat1), np.radians(lon2 - lon1)
-    a = np.sin(dlat/2)**2 + np.cos(np.radians(lat1)) * np.cos(np.radians(lat2)) * np.sin(dlon/2)**2
-    return R * 2 * np.arctan2(np.sqrt(a), np.sqrt(1-a))
-
-# 2. Live Seismic Stress (Sp)
-def get_live_seismic():
+# 1. Stable Seismic Feed (The Trigger)
+def get_seismic_trigger():
     url = "https://earthquake.usgs.gov"
     try:
-        data = requests.get(url).json()
-        return pd.DataFrame([{'lat': f['geometry'][1], 'lon': f['geometry'][0], 'mag': f['properties']['mag'], 'type': 'Live Stress'} for f in data['features']])
-    except: return pd.DataFrame()
+        data = requests.get(url, timeout=5).json()
+        points = []
+        for f in data['features']:
+            coords = f['geometry']['coordinates']
+            points.append({'lat': coords[1], 'lon': coords[0], 'mag': f['properties']['mag'], 'type': 'Live Stress'})
+        return pd.DataFrame(points)
+    except:
+        return pd.DataFrame()
 
-# 3. Time-Filtered Historical Data
+# 2. Optimized UAP Loader (The Manifestation)
 @st.cache_data
-def get_filtered_uaps(months_back):
+def get_stable_uap_data():
+    # Using a slightly smaller, more stable dataset mirror
     url = "https://raw.githubusercontent.com"
-    df = pd.read_csv(url).dropna(subset=['latitude', 'longitude'])
-    df['date'] = pd.to_datetime(df['date_time'], errors='coerce')
-    
-    # Apply Time Delta
+    try:
+        # Load only necessary columns to save memory/bandwidth
+        df = pd.read_csv(url, usecols=['datetime', 'latitude', 'longitude', 'shape'])
+        df = df.rename(columns={'latitude': 'lat', 'longitude': 'lon'})
+        df['lat'] = pd.to_numeric(df['lat'], errors='coerce')
+        df['lon'] = pd.to_numeric(df['lon'], errors='coerce')
+        df['date'] = pd.to_datetime(df['datetime'], errors='coerce')
+        return df.dropna(subset=['lat', 'lon', 'date'])
+    except:
+        return pd.DataFrame()
+
+# 3. Main Logic
+st.title("Guardian Predictor: Time-Sync Mode")
+
+# User Controls
+months_back = st.sidebar.slider("Time Delta (Months)", 1, 120, 24)
+live_stress = get_seismic_trigger()
+all_uaps = get_stable_uap_data()
+
+if not all_uaps.empty:
+    # Apply Time Delta Filter
     cutoff = datetime.now() - timedelta(days=30 * months_back)
-    recent_df = df[df['date'] >= cutoff].copy()
-    recent_df = recent_df.rename(columns={'latitude': 'lat', 'longitude': 'lon'})
-    recent_df['type'] = 'Recent Sighting'
-    return recent_df[['lat', 'lon', 'type', 'date']]
+    recent_uaps = all_uaps[all_uaps['date'] >= cutoff].copy()
+    recent_uaps['type'] = 'Time-Synced Sighting'
 
-# 4. Interface
-st.title("Guardian Model: Time Delta Analysis")
-months = st.sidebar.slider("Time Window (Months Back)", 1, 60, 12)
-radius = st.sidebar.slider("Proximity Radius (km)", 100, 1000, 500)
-
-live_df = get_live_seismic()
-recent_uaps = get_filtered_uaps(months)
-
-# Calculate Correlation Density
-if not live_df.empty and not recent_uaps.empty:
-    matches = []
-    for _, quake in live_df.iterrows():
-        dist = haversine(quake['lat'], quake['lon'], recent_uaps['lat'], recent_uaps['lon'])
-        matches.append(recent_uaps[dist <= radius])
-    
-    final_map_df = pd.concat([live_df] + matches).drop_duplicates()
-    st.map(final_map_df, color='type')
-    st.write(f"Showing {len(pd.concat(matches))} sightings matching the {months}-month delta within {radius}km of live stress.")
+    # Mapping
+    if not live_stress.empty:
+        st.subheader(f"Global Correlation: Past {months_back} Months")
+        st.map(pd.concat([live_stress, recent_uaps[['lat', 'lon', 'type']]]))
+        st.write("🔴 **Live Stress** | 🔵 **Recent Guardian Activity**")
+    else:
+        st.warning("Seismic feed busy. Showing historical nodes only.")
+        st.map(recent_uaps)
+else:
+    st.error("Data stream failed. GitHub is throttling the connection.")
