@@ -9,33 +9,34 @@ st.set_page_config(layout="wide", page_title="Cuneiform Sound Synthesizer")
 
 def generate_tone(frequency, duration_s, sample_rate=44100):
     """Generates a pure sine wave."""
-    t = np.linspace(0., duration_s, int(sample_rate * duration_s))
+    t = np.linspace(0., duration_s, int(sample_rate * duration_s), endpoint=False)
     amplitude = np.iinfo(np.int16).max * 0.5
     data = amplitude * np.sin(2. * np.pi * frequency * t)
     return data.astype(np.int16)
 
 def apply_envelope(data, attack_s, decay_s, sustain_level, sample_rate=44100):
-    """Applies an ADSR-like envelope to a tone."""
+    """Applies an ADSR-like envelope to a tone. More robust version."""
+    total_samples = len(data)
     attack_samples = int(attack_s * sample_rate)
     decay_samples = int(decay_s * sample_rate)
-    sustain_samples = len(data) - attack_samples - decay_samples
+    
+    # Ensure attack and decay don't exceed total length
+    if attack_samples > total_samples:
+        attack_samples = total_samples
+        decay_samples = 0
+    elif attack_samples + decay_samples > total_samples:
+        decay_samples = total_samples - attack_samples
 
-    if sustain_samples < 0: # Handle short sounds
-        decay_samples = len(data) - attack_samples
-        sustain_samples = 0
+    sustain_samples = total_samples - attack_samples - decay_samples
+
+    # Create envelope segments
+    attack = np.linspace(0, 1, attack_samples) if attack_samples > 0 else np.array([])
+    decay = np.linspace(1, sustain_level, decay_samples) if decay_samples > 0 else np.array([])
+    sustain = np.full(sustain_samples, sustain_level) if sustain_samples > 0 else np.array([])
     
-    attack = np.linspace(0, 1, attack_samples)
-    decay = np.linspace(1, sustain_level, decay_samples)
-    sustain = np.full(sustain_samples, sustain_level)
-    
+    # Combine segments to form the final envelope
     envelope = np.concatenate((attack, decay, sustain))
     
-    # Ensure envelope is the same length as data
-    if len(envelope) < len(data):
-        envelope = np.concatenate((envelope, np.zeros(len(data) - len(envelope))))
-    elif len(envelope) > len(data):
-        envelope = envelope[:len(data)]
-        
     return (data * envelope).astype(np.int16)
 
 def synthesize_script(script, params, sample_rate=44100):
@@ -60,7 +61,6 @@ def synthesize_script(script, params, sample_rate=44100):
         if '-' in char:
             harmonic_freq = base_freq * params["harmonic_multiplier"]
             harmonic_wave = generate_tone(harmonic_freq, duration_s, sample_rate)
-            # Mix harmonic at 50% volume
             char_wave = (char_wave * 0.7 + harmonic_wave * 0.5).astype(np.int16)
 
         # 3. Apply Envelope (from '>')
@@ -131,8 +131,11 @@ if st.button("Generate Sound from Script"):
             
             # Display Waveform Chart
             st.markdown("##### Waveform Visualization")
-            # Downsample for faster plotting
-            st.line_chart(synthesized_wave[::10])
+            # Downsample for faster plotting if waveform is long
+            plot_data = synthesized_wave
+            if len(plot_data) > 100000:
+                 plot_data = synthesized_wave[::10]
+            st.line_chart(plot_data)
             
             st.success(f"Successfully generated sound for script: `{script_input}`")
 
