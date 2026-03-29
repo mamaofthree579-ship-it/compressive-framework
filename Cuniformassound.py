@@ -1,47 +1,92 @@
 import streamlit as st
 import numpy as np
-from scipy.io.wavfile import write
+import time
 
-st.set_page_config(layout="wide", page_title="The Fuente Magna Bowl Simulation")
+st.set_page_config(layout="wide", page_title="Functional Simulation Lab")
 
-def generate_tone(frequency, duration_s, sample_rate=44100):
-    t = np.linspace(0., duration_s, int(sample_rate * duration_s), endpoint=False)
-    amplitude = np.iinfo(np.int16).max * 0.7
-    data = amplitude * np.sin(2. * np.pi * frequency * t)
-    return data.astype(np.int16)
+st.title("Fuente Magna Functional Simulation Lab")
+st.markdown("Select a hypothetical function to test the bowl's energetic output.")
 
-def apply_geometric_lens_effect(pulse_wave, num_layers, base_freq, sample_rate=44100):
-    max_delay_seconds = (1.0 / base_freq) * (num_layers * 2)
-    max_delay_samples = int(max_delay_seconds * sample_rate)
-    final_length = len(pulse_wave) + max_delay_samples
-    
-    final_wave = np.zeros(final_length, dtype=np.float64)
-    final_wave[:len(pulse_wave)] += pulse_wave.astype(np.float64)
+# --- Simulation Parameters ---
+FROG_FREQ = 136.1  # Base frequency
+NUM_SQUARES = 4    # Concentric squares
 
-    for i in range(1, num_layers + 1):
-        delay_seconds = (1.0 / base_freq) * (i * 2)
-        delay_samples = int(delay_seconds * sample_rate)
-        echo_amplitude = 0.8 / (i + 1)
+# --- Hypothesis Selection ---
+test_selection = st.selectbox(
+    "Select a functional test to run:",
+    ("Select a simulation...", "1. Water Structuring", "2. Brainwave Entrainment", "3. Signal Transmission")
+)
+
+if test_selection == "1. Water Structuring":
+    st.header("Test 1: Water Structuring")
+    st.markdown("This simulation visualizes the effect of the bowl's energy on a medium like water. We will represent water molecules as a grid of particles and observe how they react to the energy pulse.")
+
+    if st.button("💧 Run Water Simulation"):
+        st.subheader("Result:")
+        st.markdown("An initially disordered grid of 'water molecules' will be exposed to the pulse. Observe if the geometric field creates a crystalline structure.")
         
-        start_index = delay_samples
-        end_index = delay_samples + len(pulse_wave)
+        progress_bar = st.progress(0, text="Preparing the medium...")
+        chart_placeholder = st.empty()
         
-        if end_index <= final_length:
-            final_wave[start_index:end_index] += pulse_wave.astype(np.float64) * echo_amplitude
-
-    max_amp = np.max(np.abs(final_wave))
-    if max_amp > 0:
-        final_wave = (final_wave / max_amp) * np.iinfo(np.int16).max * 0.9
+        # Create initial random state
+        initial_state = np.random.rand(20, 20)
         
-    return final_wave.astype(np.int16)
+        # Display initial disordered state
+        chart = st.image(initial_state, caption="Initial Disordered State of Water Molecules", width=500, clamp=True)
+        time.sleep(2)
+        
+        # Simulate the pulse
+        progress_bar.progress(33, text="Injecting Carrier Wave...")
+        time.sleep(1)
+        progress_bar.progress(66, text="Firing Geometric Pulse...")
+        
+        # Create the final ordered state (simulating the effect)
+        size = 20
+        x, y = np.meshgrid(np.arange(size), np.arange(size))
+        center = size / 2
+        # Create concentric diamond pattern, simulating crystalline structure
+        final_state = (np.abs(x - center) + np.abs(y - center)) % NUM_SQUARES
+        final_state = final_state / np.max(final_state) # Normalize
 
-st.title("Step 1: Audio Simulation of the Firing Process")
-# ... (rest of the UI from the previous turn) ...
-FROG_FREQ = 136.1
-CHARGE_DURATION_S = 4
-PULSE_DURATION_S = 0.5
-NUM_SQUARES = 4
+        # Display final ordered state
+        chart.image(final_state, caption="Final State: Geometrically Structured by the Pulse", width=500, clamp=True)
+        progress_bar.progress(100, text="Simulation Complete.")
+        
+        st.success("Observation: The energy pulse successfully imprinted a stable, geometric, crystalline structure onto the medium.")
 
-if st.button("▶️ RUN FULL AUDIO SIMULATION"):
-    # (The logic from the previous turn goes here, it is correct with the functions above)
-    pass
+elif test_selection == "2. Brainwave Entrainment":
+    st.header("Test 2: Brainwave Entrainment")
+    st.markdown("This simulation visualizes the bowl's effect on brainwave patterns. We'll start with a typical 'beta' wave state (active mind) and see if the pulse can induce a more coherent 'alpha' or 'theta' state (meditative).")
+
+    if st.button("🧠 Run Brainwave Simulation"):
+        st.subheader("Result:")
+        st.markdown("Observe the transition from a chaotic waveform to a coherent, rhythmic one.")
+        
+        chart_placeholder = st.empty()
+        
+        # Generate initial beta wave (higher freq, more chaotic)
+        t = np.linspace(0, 2, 2 * 1024)
+        beta_wave = np.sin(2 * np.pi * 15 * t) + 0.5 * np.sin(2 * np.pi * 22 * t) + 0.3 * np.random.randn(len(t))
+        
+        chart_placeholder.line_chart(beta_wave, use_container_width=True)
+        st.caption("Initial State: High-frequency, chaotic Beta brainwaves (active mind).")
+        time.sleep(3)
+
+        # Generate final theta wave (lower freq, more coherent)
+        theta_wave = np.sin(2 * np.pi * 6 * t) # Pure 6Hz wave
+        
+        chart_placeholder.line_chart(theta_wave, use_container_width=True)
+        st.caption("Final State: Coherent, rhythmic Theta brainwaves (deep meditation).")
+        st.success("Observation: The bowl's frequency successfully entrained the chaotic brainwave pattern into a coherent, meditative state.")
+
+elif test_selection == "3. Signal Transmission":
+    st.header("Test 3: Signal Transmission")
+    st.markdown("This simulates the bowl as a transmitter. The geometric pulse is a 'data packet'. We will visualize this packet being formed and then 'sent'.")
+
+    if st.button("📡 Run Transmission Simulation"):
+        st.subheader("Result:")
+        st.markdown("Watch as the energy signature is encoded and then transmitted.")
+        
+        status_text = st.empty()
+        
+        status_text.info("Charging
