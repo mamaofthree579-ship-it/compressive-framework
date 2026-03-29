@@ -89,4 +89,4 @@ elif test_selection == "3. Signal Transmission":
         
         status_text = st.empty()
         
-        status_text.info("Charging
+        status_text.info("Charging")
