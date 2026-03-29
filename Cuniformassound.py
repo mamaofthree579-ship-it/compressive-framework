@@ -28,27 +28,20 @@ if test_selection == "1. Water Structuring":
         progress_bar = st.progress(0, text="Preparing the medium...")
         chart_placeholder = st.empty()
         
-        # Create initial random state
         initial_state = np.random.rand(20, 20)
-        
-        # Display initial disordered state
         chart = st.image(initial_state, caption="Initial Disordered State of Water Molecules", width=500, clamp=True)
         time.sleep(2)
         
-        # Simulate the pulse
         progress_bar.progress(33, text="Injecting Carrier Wave...")
         time.sleep(1)
         progress_bar.progress(66, text="Firing Geometric Pulse...")
         
-        # Create the final ordered state (simulating the effect)
         size = 20
         x, y = np.meshgrid(np.arange(size), np.arange(size))
         center = size / 2
-        # Create concentric diamond pattern, simulating crystalline structure
         final_state = (np.abs(x - center) + np.abs(y - center)) % NUM_SQUARES
-        final_state = final_state / np.max(final_state) # Normalize
+        final_state = final_state / np.max(final_state) 
 
-        # Display final ordered state
         chart.image(final_state, caption="Final State: Geometrically Structured by the Pulse", width=500, clamp=True)
         progress_bar.progress(100, text="Simulation Complete.")
         
@@ -64,7 +57,6 @@ elif test_selection == "2. Brainwave Entrainment":
         
         chart_placeholder = st.empty()
         
-        # Generate initial beta wave (higher freq, more chaotic)
         t = np.linspace(0, 2, 2 * 1024)
         beta_wave = np.sin(2 * np.pi * 15 * t) + 0.5 * np.sin(2 * np.pi * 22 * t) + 0.3 * np.random.randn(len(t))
         
@@ -72,8 +64,7 @@ elif test_selection == "2. Brainwave Entrainment":
         st.caption("Initial State: High-frequency, chaotic Beta brainwaves (active mind).")
         time.sleep(3)
 
-        # Generate final theta wave (lower freq, more coherent)
-        theta_wave = np.sin(2 * np.pi * 6 * t) # Pure 6Hz wave
+        theta_wave = np.sin(2 * np.pi * 6 * t) 
         
         chart_placeholder.line_chart(theta_wave, use_container_width=True)
         st.caption("Final State: Coherent, rhythmic Theta brainwaves (deep meditation).")
@@ -89,4 +80,21 @@ elif test_selection == "3. Signal Transmission":
         
         status_text = st.empty()
         
-        status_text.info("Charging")
+        status_text.info("Charging carrier wave...")
+        time.sleep(2) # <-- FIX: Added delay
+        
+        status_text.warning("Encoding geometric data packet from concentric squares...")
+        time.sleep(3) # <-- FIX: Added delay
+
+        status_text.success("PULSE! Transmission sent.")
+        
+        st.code("""
+        --- DATA PACKET SENT ---
+        Carrier Freq: 136.1 Hz
+        Encoding: Geometric (Concentric Squares, 4-layer)
+        Amplitude: High
+        Type: Longitudinal Scalar
+        Timestamp: {ts}
+        --- TRANSMISSION END ---
+        """.format(ts=time.time()), language="text")
+        st.success("Observation: The system successfully converted the geometric pattern into a transmittable data packet.")
