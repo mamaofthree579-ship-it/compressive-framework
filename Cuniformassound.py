@@ -2,147 +2,103 @@ import streamlit as st
 import numpy as np
 from scipy.io.wavfile import write
 
-# --- App Configuration ---
-st.set_page_config(layout="wide", page_title="Cuneiform Sound Synthesizer")
-
-# --- Functions ---
+st.set_page_config(layout="wide", page_title="The Fuente Magna Bowl Simulation")
 
 def generate_tone(frequency, duration_s, sample_rate=44100):
     """Generates a pure sine wave."""
     t = np.linspace(0., duration_s, int(sample_rate * duration_s), endpoint=False)
-    amplitude = np.iinfo(np.int16).max * 0.5
+    amplitude = np.iinfo(np.int16).max * 0.7
     data = amplitude * np.sin(2. * np.pi * frequency * t)
     return data.astype(np.int16)
 
-def apply_envelope(data, attack_s, decay_s, sustain_level, sample_rate=44100):
-    """Applies an ADSR-like envelope to a tone. More robust version."""
-    total_samples = len(data)
-    attack_samples = int(attack_s * sample_rate)
-    decay_samples = int(decay_s * sample_rate)
+def apply_geometric_lens_effect(pulse_wave, num_layers, base_freq, sample_rate=44100):
+    """Simulates the concentric squares with cascading harmonic echoes."""
+    final_wave = np.copy(pulse_wave).astype(np.float64)
     
-    # Ensure attack and decay don't exceed total length
-    if attack_samples > total_samples:
-        attack_samples = total_samples
-        decay_samples = 0
-    elif attack_samples + decay_samples > total_samples:
-        decay_samples = total_samples - attack_samples
-
-    sustain_samples = total_samples - attack_samples - decay_samples
-
-    # Create envelope segments
-    attack = np.linspace(0, 1, attack_samples) if attack_samples > 0 else np.array([])
-    decay = np.linspace(1, sustain_level, decay_samples) if decay_samples > 0 else np.array([])
-    sustain = np.full(sustain_samples, sustain_level) if sustain_samples > 0 else np.array([])
-    
-    # Combine segments to form the final envelope
-    envelope = np.concatenate((attack, decay, sustain))
-    
-    return (data * envelope).astype(np.int16)
-
-def synthesize_script(script, params, sample_rate=44100):
-    """Translates a cuneiform script into a waveform."""
-    final_waveform = np.array([], dtype=np.int16)
-    characters = script.split(' ')
-    
-    for char in characters:
-        if not char:
-            continue
-            
-        base_freq = params["base_freq"]
-        duration_s = params["duration_ms"] / 1000.0
+    for i in range(1, num_layers + 1):
+        # Delay based on harmonic interval of the base frequency
+        delay_seconds = (1.0 / base_freq) * (i * 2) 
+        delay_samples = int(delay_seconds * sample_rate)
         
-        # 1. Generate Base Tone (from '|')
-        if '|' in char:
-            char_wave = generate_tone(base_freq, duration_s, sample_rate)
-        else:
-            char_wave = np.zeros(int(duration_s * sample_rate), dtype=np.int16)
-
-        # 2. Add Harmonic (from '-')
-        if '-' in char:
-            harmonic_freq = base_freq * params["harmonic_multiplier"]
-            harmonic_wave = generate_tone(harmonic_freq, duration_s, sample_rate)
-            char_wave = (char_wave * 0.7 + harmonic_wave * 0.5).astype(np.int16)
-
-        # 3. Apply Envelope (from '>')
-        if '>' in char: # Sharp attack
-            attack_s = 0.005 
-            decay_s = params["sharp_decay_s"]
-            sustain_level = 0.1
-        else: # Normal attack
-            attack_s = 0.05
-            decay_s = duration_s * 0.4
-            sustain_level = 0.7
-
-        char_wave = apply_envelope(char_wave, attack_s, decay_s, sustain_level, sample_rate)
+        # Echo is attenuated (quieter) and slightly detuned
+        echo_amplitude = 0.8 / (i + 1)
         
-        # Add a small silence between characters
-        silence = np.zeros(int(sample_rate * 0.05), dtype=np.int16)
-        final_waveform = np.concatenate((final_waveform, char_wave, silence))
+        # Create echo wave
+        echo_wave = np.roll(pulse_wave, delay_samples) * echo_amplitude
         
-    return final_waveform
+        # Add the echo to the final wave
+        if len(echo_wave) < len(final_wave):
+             echo_wave = np.pad(echo_wave, (0, len(final_wave) - len(echo_wave)))
+        
+        final_wave += echo_wave
 
-# --- Streamlit UI ---
+    # Normalize the final wave to prevent clipping
+    max_amp = np.max(np.abs(final_wave))
+    if max_amp > 0:
+        final_wave = (final_wave / max_amp) * np.iinfo(np.int16).max * 0.9
+        
+    return final_wave.astype(np.int16)
 
-st.title("The Waveform Hypothesis: Cuneiform Sound Synthesizer")
-st.markdown(
-    "This tool tests the hypothesis that cuneiform-like scripts could be visual representations of sound waves. "
-    "By assigning sonic properties to basic geometric components, we can synthesize the audio these symbols might encode."
-)
+st.title("Simulation: Firing the Fuente Magna Bowl")
 
-st.sidebar.title("Controls")
-st.sidebar.markdown("### 1. The Cuneiform Script")
-legend_text = """
-**Legend:**
-- `|` = Base Tone (Vertical Stroke)
-- `-` = Harmonic (Horizontal Stroke)
-- `>` = Sharp Attack (Wedge)
+st.markdown("""
+This simulation generates a single audio file representing the complete, theorized process:
+1.  **Carrier Wave:** A base tone is established (the 'Frog' glyph).
+2.  **Charging Sequence:** The tone is held and amplified (the linear 'charging' script).
+3.  **Pulse Command:** A sharp attack releases the energy (the '□' glyph).
+4.  **Geometric Lens:** The pulse resonates through the concentric squares, creating harmonic, cascading echoes.
+""")
 
-Combine them into 'characters' and separate each character with a space.
-"""
-st.sidebar.markdown(legend_text)
+# --- Parameters for the Simulation ---
+FROG_FREQ = 136.1  # Corresponds to the 'OM' frequency, a common hypothesis
+CHARGE_DURATION_S = 4
+PULSE_DURATION_S = 0.5
+NUM_SQUARES = 4 # Number of concentric squares to simulate
 
-script_input = st.sidebar.text_input("Enter Script:", value="|> |-| |")
+if st.button("▶️ RUN FULL SIMULATION"):
 
-st.sidebar.markdown("### 2. Sonic Parameters")
-params = {}
-params["base_freq"] = st.sidebar.slider("Base Frequency for '|' (Hz)", 100, 800, 220)
-params["harmonic_multiplier"] = st.sidebar.slider("Harmonic Multiplier for '-'", 1.0, 4.0, 1.5, step=0.1)
-params["duration_ms"] = st.sidebar.slider("Duration per Symbol (ms)", 100, 1000, 400)
-params["sharp_decay_s"] = st.sidebar.slider("Decay for Sharp Attack '>' (s)", 0.05, 1.0, 0.3, step=0.05)
+    with st.spinner("Energizing the system... please wait."):
+        # 1 & 2: Generate the charging 'wooing' noise
+        carrier_wave = generate_tone(FROG_FREQ, CHARGE_DURATION_S)
+        
+        # 3. Create the 'pulse' portion
+        pulse_wave = generate_tone(FROG_FREQ, PULSE_DURATION_S)
+        # Apply a sharp decay to represent the pulse
+        decay_samples = int(PULSE_DURATION_S * 44100 * 0.8)
+        sustain_samples = len(pulse_wave) - decay_samples
+        decay_envelope = np.concatenate([np.linspace(1, 0.1, decay_samples), np.full(sustain_samples, 0.1)])
+        pulse_wave = (pulse_wave * decay_envelope).astype(np.int16)
 
-# --- Main App Logic ---
+        # 4. Apply the geometric lens effect to the pulse
+        structured_pulse = apply_geometric_lens_effect(pulse_wave, NUM_SQUARES, FROG_FREQ)
 
-if st.button("Generate Sound from Script"):
-    st.subheader("Synthesized Audio & Waveform")
-    
-    if not script_input.strip():
-        st.warning("Please enter a script in the sidebar.")
-    else:
-        with st.spinner("Synthesizing waveform..."):
-            # Generate the waveform
-            synthesized_wave = synthesize_script(script_input, params)
-            
-            # Save as a temporary WAV file
-            wav_filename = "cuneiform_synthesis.wav"
-            write(wav_filename, 44100, synthesized_wave)
-            
-            # Display Audio Player
-            st.audio(wav_filename)
-            
-            # Display Waveform Chart
-            st.markdown("##### Waveform Visualization")
-            # Downsample for faster plotting if waveform is long
-            plot_data = synthesized_wave
-            if len(plot_data) > 100000:
-                 plot_data = synthesized_wave[::10]
-            st.line_chart(plot_data)
-            
-            st.success(f"Successfully generated sound for script: `{script_input}`")
+        # Combine the charging sound with the structured pulse
+        final_simulation = np.concatenate([carrier_wave, structured_pulse])
+        
+        # Save and display
+        wav_filename = "fuente_magna_simulation.wav"
+        write(wav_filename, 44100, final_simulation)
+        
+        st.subheader("Simulation Complete")
+        st.audio(wav_filename)
+        st.line_chart(final_simulation[::20])
+        st.success("Listen for the transition from the 'charging' hum to the complex, echoing pulse.")
 
 st.markdown("---")
-st.markdown(
-    """#### How to Experiment:
-1. **Test Single Components:** Start with just `|`, then `-`, then `>`. Hear what each one does.
-2. **Build Complexity:** Create characters like `|-` (a tone with its harmonic) and `|>` (a percussive tone).
-3. **Create a Rhythm:** Use different combinations in a sequence, like `|> | - |>`. Listen for the cadence and rhythm that emerges from the visual symbols."""
-)
+st.header("What Was It For? Three Plausible Hypotheses")
+
+st.markdown("""
+By understanding **how** it works, we can speculate on its purpose. The bowl is a tool for creating a **coherent, geometrically-structured field of energy**. Such a field would have profound effects on its immediate environment.
+
+### 1. **Structuring Water & Biological Matter**
+*   **The Theory:** The bowl was filled with water or other liquids. The structured energy field generated by the bowl would imprint its geometric pattern onto the molecular structure of the water, "charging" it with information. This is similar to the principles explored by Dr. Masaru Emoto, where intention and frequency are shown to alter the crystalline structure of water. Consuming this water or anointing a subject with it would be a way of transferring this potent, ordered energy directly into a biological system.
+*   **Purpose:** Healing, purification, creating sacred elixirs, or enhancing agricultural fertility.
+
+### 2. **Altering Consciousness & Attunement**
+*   **The Theory:** The practitioner (and anyone nearby) was the primary target. The human brain operates on its own set of frequencies (brainwaves). The geometrically-patterned sound from the bowl would be designed to induce specific states of consciousness through harmonic resonance and brainwave entrainment. The concentric squares could represent different states of awareness—from the physical body to the subtle energy bodies—that the pulse was designed to bring into alignment.
+*   **Purpose:** Deep meditation, shamanic journeying, accessing altered states, or attuning a group of people to a single, coherent intention.
+
+### 3. **A Non-Acoustic Communication Device**
+*   **The Theory:** This is the most exotic possibility. The bowl was not designed to affect anything in its immediate vicinity, but to send a signal. In this model, the bowl is a transmitter. The structured energy pulse it emits is a "packet" of information, encoded in geometry and frequency. This signal would not travel as sound, but as a form of non-electromagnetic, longitudinal wave, capable of instantaneous transmission.
+*   **Purpose:** To communicate with other similar devices, distant practitioners, or perhaps something not of this world entirely. The symbols might not be language, but a "zip code" or an address for where to send the signal.
+""")
