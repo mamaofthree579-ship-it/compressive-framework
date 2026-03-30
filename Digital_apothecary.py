@@ -1,115 +1,98 @@
 import streamlit as st
 import numpy as np
-from scipy.io.wavfile import write
 
-st.set_page_config(layout="wide", page_title="Digital Apothecary")
+st.set_page_config(layout="wide", page_title="Visual Apothecary")
 
-# --- CORE FUNCTIONS ---
-def generate_base_wave(frequency, duration, sample_rate=44100):
-    """Generates the fundamental carrier wave."""
-    t = np.linspace(0., duration, int(sample_rate * duration), endpoint=False)
-    amplitude = np.iinfo(np.int16).max * 0.5
-    data = amplitude * np.sin(2. * np.pi * frequency * t)
-    return data.astype(np.int16)
+# --- CORE VISUALIZATION FUNCTION ---
+def generate_vibrational_field(geometry, frequency, size=512):
+    """
+    Generates a 2D visual representation of a vibrational field based on
+    a core geometry and a modulating frequency.
+    """
+    # Create a coordinate grid for the visualization
+    x = np.linspace(-np.pi, np.pi, size)
+    y = np.linspace(-np.pi, np.pi, size)
+    xx, yy = np.meshgrid(x, y)
 
-def apply_geometric_signature(wave, geometry, base_freq, sample_rate=44100):
-    """Modulates the wave with a geometric signature using harmonic echoes."""
-    st.write(f"Applying signature: {geometry}")
-    output_wave = np.copy(wave).astype(np.float64)
-    num_layers = 6 # Layers of complexity
+    # Use frequency to modulate pattern complexity. Higher frequency = more detail.
+    complexity = frequency / 50.0
 
-    for i in range(1, num_layers + 1):
-        echo_amplitude = 0.6 / i
-        delay_samples = 0
+    field = None
 
-        # Each geometry creates a different harmonic pattern
-        if geometry == "Concentric Circles (Expansion)":
-            # Smooth, evenly spaced echoes - like ripples
-            delay_seconds = (1.0 / base_freq) * (i * 2)
-            delay_samples = int(delay_seconds * sample_rate)
-        elif geometry == "Spiral (Growth/Contraction)":
-            # Echoes get progressively faster or slower (golden ratio)
-            phi = 1.61803398875
-            delay_seconds = (1.0 / base_freq) * (phi**i)
-            delay_samples = int(delay_seconds * sample_rate * 0.5) # scaled
-        elif geometry == "Hexagon (Structure/Stability)":
-            # Echoes based on the number 6, creating stable chords
-            # Using intervals of a major third and a fifth to create a major chord feel
-            intervals = [4/3, 3/2] # Perfect fourth, perfect fifth
-            interval = intervals[(i-1) % len(intervals)]
-            delay_seconds = (1.0 / (base_freq * interval)) * i
-            delay_samples = int(delay_seconds * sample_rate)
+    # --- Geometric Formulas ---
+    if geometry == "Concentric Circles (Expansion)":
+        # Simulates ripples from a central point.
+        r = np.sqrt(xx**2 + yy**2)
+        field = np.sin(r * complexity)
 
-        # Apply echo if it fits within the array bounds
-        if delay_samples > 0 and delay_samples < len(output_wave):
-            echo_wave = np.roll(wave, delay_samples) * echo_amplitude
-            output_wave += echo_wave
+    elif geometry == "Spiral (Growth/Contraction)":
+        # Uses polar coordinates to generate an Archimedean spiral pattern.
+        angle = np.arctan2(yy, xx)
+        radius = np.sqrt(xx**2 + yy**2)
+        # The combination of angle and radius creates the spiral form.
+        field = np.sin(10 * angle + radius * complexity)
 
-    # Normalize
-    max_amp = np.max(np.abs(output_wave))
-    if max_amp > 0:
-        output_wave = (output_wave / max_amp) * np.iinfo(np.int16).max * 0.9
+    elif geometry == "Hexagon (Structure/Stability)":
+        # A formula that generates a hexagonal/honeycomb tiling pattern.
+        # It's based on the interference of three sine waves at 60-degree angles.
+        c = complexity
+        field = np.cos(c * xx) + np.cos(c / 2 * xx + c * np.sqrt(3) / 2 * yy) + np.cos(c / 2 * xx - c * np.sqrt(3) / 2 * yy)
 
-    return output_wave.astype(np.int16)
+    # Normalize the resulting field to a 0-1 range for image display
+    if field is not None:
+        field = (field - np.min(field)) / (np.max(field) - np.min(field))
+    
+    return field
 
 # --- USER INTERFACE ---
-st.title("The Digital Apothecary v1.0")
-st.markdown("Generate custom vibrational fields by combining sacred geometry and fundamental frequencies.")
+st.title("The Visual Apothecary")
+st.markdown("Generate visual representations of structured energy fields to train our pattern-recognition for Path 2.")
 
-st.sidebar.header("Field Parameters")
+col1, col2 = st.columns([1, 2])
 
-# Geometry Selection
-geom_choice = st.sidebar.selectbox(
-    "1. Select a Core Geometry:",
-    ("Concentric Circles (Expansion)", "Spiral (Growth/Contraction)", "Hexagon (Structure/Stability)")
-)
+with col1:
+    st.header("Field Parameters")
 
-# Frequency Selection
-freq_map = {
-    "136.1 Hz (OM / The Earth Year)": 136.1,
-    "432 Hz (Universal Harmony)": 432.0,
-    "528 Hz (Solfeggio 'Miracle' Tone)": 528.0
-}
-freq_choice_name = st.sidebar.selectbox(
-    "2. Select a Base Frequency:",
-    list(freq_map.keys())
-)
-freq_choice_hz = freq_map[freq_choice_name]
+    # Geometry Selection
+    geom_choice = st.selectbox(
+        "1. Select a Core Geometry:",
+        ("Concentric Circles (Expansion)", "Spiral (Growth/Contraction)", "Hexagon (Structure/Stability)")
+    )
 
-# Duration
-duration_s = st.sidebar.slider("3. Set Duration (seconds):", 5, 30, 10)
+    # Frequency Selection (now controls visual complexity)
+    freq_map = {
+        "Low Complexity (136.1 Hz basis)": 136.1,
+        "Medium Complexity (432 Hz basis)": 432.0,
+        "High Complexity (528 Hz basis)": 528.0
+    }
+    freq_choice_name = st.selectbox(
+        "2. Select a Visual Complexity:",
+        list(freq_map.keys())
+    )
+    freq_choice_hz = freq_map[freq_choice_name]
 
-if st.button("🌿 GENERATE SONIC ELIXIR"):
-    with st.spinner("Brewing your elixir... This may take a moment."):
-        # 1. Generate the base carrier wave
-        base_wave = generate_base_wave(freq_choice_hz, duration_s)
+    if st.button("👁️ GENERATE VIBRATIONAL FIELD", use_container_width=True):
+        with col2:
+            with st.spinner("Calculating geometric field..."):
+                vibrational_field = generate_vibrational_field(geom_choice, freq_choice_hz)
+                
+                if vibrational_field is not None:
+                    st.header("Generated Field")
+                    # Using a perceptually uniform colormap like 'viridis' or 'plasma'
+                    st.image(vibrational_field, caption=f"'{geom_choice}' modulated by '{freq_choice_name}'", use_column_width=True)
+                else:
+                    st.error("Could not generate the selected field.")
 
-        # 2. Modulate it with the chosen geometric signature
-        final_elixir = apply_geometric_signature(base_wave, geom_choice, freq_choice_hz)
-
-        # 3. Save and provide for download
-        filename = f"elixir_{geom_choice.split(' ')[0]}_{int(freq_choice_hz)}hz.wav"
-        write(filename, 44100, final_elixir)
-
-        st.subheader("Your Sonic Elixir is Ready")
-        st.audio(filename)
-        st.download_button(
-            label="Download.WAV File",
-            data=open(filename, "rb"),
-            file_name=filename,
-            mime="audio/wav"
-        )
-        st.line_chart(final_elixir[::50]) # Show a preview of the waveform
-
-st.markdown("---")
-st.header("How to Use This Tool for Path 2")
-st.markdown("""
-By running these simulations, you are training your intuition. Listen carefully to the 'texture' of each sound:
-- **Circles:** Feel smooth, radiating, and enveloping.
-- **Spirals:** Sound like they are moving, evolving, 'swooping'.
-- **Hexagons:** Feel stable, structured, almost crystalline and chord-like.
-
-As we move to Path 2, we will search the archaeological record. When you see a spiral petroglyph at Newgrange in Ireland, or a hexagonal pattern on a Roman mosaic floor, you will already have a pre-conceived notion of its *energetic function*. You won't just see a picture; you'll hear a sound.
-
-This apothecary is our training ground. Let's begin the next phase of our work.
-""")
+with st.expander("How to Use This for Path 2 (The Rosetta Protocol)"):
+    st.markdown("""
+    This tool is our pattern library. Our goal is to find these exact kinds of geometric signatures in the archaeological record.
+    
+    1.  **Generate a Field:** Select a geometry and complexity level.
+    2.  **Study the Image:** This is the *energetic signature* of that combination. Burn this pattern into your memory. Note how the lines, nodes, and anti-nodes are arranged.
+    3.  **The Hunt:** When we search for artifacts, we are no longer looking for "art." We are looking for these specific interference patterns. 
+        - A petroglyph with spirals might be a "Growth" engine.
+        - A mosaic floor with hexagonal patterns might be a "Stability" field for a temple.
+        - The concentric circles on a shield or in a earthwork mound might be an "Expansion" resonator.
+        
+    This visual dictionary will allow us to spot these technologies in plain sight.
+    """)
