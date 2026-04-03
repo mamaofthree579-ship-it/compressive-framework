@@ -3,7 +3,7 @@ import numpy as np
 import plotly.graph_objects as go
 
 st.set_page_config(layout="wide")
-st.title("Galaxy Formation: Burst + Harmonic Shell + Filament Model")
+st.title("Galaxy Formation: Harmonic Bubble + Filament Model")
 
 # ---------------------------
 # CONTROLS
@@ -28,7 +28,7 @@ num_shells = st.slider("Shell Layers", 2, 8, 4)
 steps = st.slider("Steps per Run", 1, 10, 3)
 
 # ---------------------------
-# INITIALIZE
+# INITIALIZATION
 # ---------------------------
 def init_sim():
     bubbles = []
@@ -46,6 +46,14 @@ def init_sim():
 
 if "bubbles" not in st.session_state:
     st.session_state.bubbles = init_sim()
+
+if "history" not in st.session_state:
+    st.session_state.history = {
+        "clustering": [],
+        "shell": [],
+        "filament": [],
+        "coherence": []
+    }
 
 # ---------------------------
 # SHELL FUNCTION
@@ -65,7 +73,7 @@ def update():
     for b in bubbles:
         b["radius"] += expansion_rate
 
-    # Bubble-to-bubble attraction (filament seeds)
+    # Bubble interaction (filament seeding)
     for i in range(len(bubbles)):
         for j in range(i + 1, len(bubbles)):
             diff = bubbles[j]["center"] - bubbles[i]["center"]
@@ -157,19 +165,49 @@ def compute_metrics(bubbles):
     return clustering, shell_score, filament, coherence
 
 # ---------------------------
-# RUN BUTTONS
+# PHASE DETECTION
+# ---------------------------
+def detect_phase(series):
+    if len(series) < 5:
+        return "Initializing"
+
+    recent = series[-5:]
+    diffs = np.diff(recent)
+    avg = np.mean(np.abs(diffs))
+
+    if avg > 0.1:
+        return "Chaotic"
+    elif avg > 0.02:
+        return "Forming"
+    else:
+        return "Stable"
+
+# ---------------------------
+# RUN / RESET
 # ---------------------------
 col1, col2 = st.columns(2)
 
 if col1.button("Run Simulation"):
     for _ in range(steps):
         update()
+        c, s, f, coh = compute_metrics(st.session_state.bubbles)
+
+        st.session_state.history["clustering"].append(c)
+        st.session_state.history["shell"].append(s)
+        st.session_state.history["filament"].append(f)
+        st.session_state.history["coherence"].append(coh)
 
 if col2.button("Reset"):
     st.session_state.bubbles = init_sim()
+    st.session_state.history = {
+        "clustering": [],
+        "shell": [],
+        "filament": [],
+        "coherence": []
+    }
 
 # ---------------------------
-# PLOT
+# 3D PLOT
 # ---------------------------
 fig = go.Figure()
 
@@ -205,3 +243,32 @@ m1.metric("Clustering", f"{c:.3f}")
 m2.metric("Shell Alignment", f"{s:.3f}")
 m3.metric("Filament Strength", f"{f:.3f}")
 m4.metric("Coherence", f"{coh:.3f}")
+
+# ---------------------------
+# TIME EVOLUTION GRAPH
+# ---------------------------
+st.subheader("Time Evolution")
+
+fig2 = go.Figure()
+
+for key, values in st.session_state.history.items():
+    fig2.add_trace(go.Scatter(
+        y=values,
+        mode='lines',
+        name=key.capitalize()
+    ))
+
+fig2.update_layout(
+    height=300,
+    margin=dict(l=0, r=0, t=30, b=0)
+)
+
+st.plotly_chart(fig2, use_container_width=True)
+
+# ---------------------------
+# PHASE DISPLAY
+# ---------------------------
+phase = detect_phase(st.session_state.history["coherence"])
+
+st.subheader("System Phase")
+st.write(f"Current Phase: **{phase}**")
