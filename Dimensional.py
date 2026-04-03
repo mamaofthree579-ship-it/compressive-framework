@@ -3,7 +3,7 @@ import numpy as np
 import plotly.graph_objects as go
 
 st.set_page_config(layout="wide")
-st.title("Burst-Seeded Galaxy Bubble Simulator")
+st.title("Harmonic Shell Galaxy Model")
 
 # ---------------------------
 # Controls
@@ -13,6 +13,10 @@ burst_strength = st.slider("Burst Strength", 0.1, 3.0, 1.0)
 expansion_rate = st.slider("Expansion Rate", 0.01, 0.2, 0.05)
 rotation_strength = st.slider("Rotation", 0.0, 0.1, 0.02)
 compression_strength = st.slider("Compression", 0.0, 0.05, 0.01)
+
+shell_strength = st.slider("Shell Strength", 0.0, 0.2, 0.05)
+num_shells = st.slider("Number of Shells", 2, 10, 5)
+
 steps = st.slider("Steps per run", 1, 10, 3)
 
 # ---------------------------
@@ -24,52 +28,51 @@ if "pos" not in st.session_state:
     st.session_state.radius = 0.1
 
 # ---------------------------
+# Harmonic Shell Function
+# ---------------------------
+def shell_force(distance, max_radius):
+    spacing = max_radius / num_shells
+    nearest_shell = round(distance / spacing) * spacing
+    return (nearest_shell - distance)
+
+# ---------------------------
 # Simulation Step
 # ---------------------------
 def update():
     pos = st.session_state.pos
     vel = st.session_state.vel
     radius = st.session_state.radius
-    
+
     center = np.array([0.0, 0.0, 0.0])
-    
-    # Expand boundary (bubble growth)
     radius += expansion_rate
-    
+
     for i in range(len(pos)):
         direction = pos[i] - center
         dist = np.linalg.norm(direction) + 1e-5
-        
-        # Normalize
         dir_norm = direction / dist
-        
-        # ---------------------------
-        # Burst outward push (initial)
-        # ---------------------------
+
+        # Burst expansion
         vel[i] += burst_strength * dir_norm * 0.01
-        
-        # ---------------------------
-        # Boundary trapping
-        # ---------------------------
+
+        # Boundary containment
         if dist > radius:
-            # push back inward if escaping
             vel[i] -= dir_norm * 0.05
-        
-        # ---------------------------
-        # Compression toward center
-        # ---------------------------
+
+        # Compression
         vel[i] -= compression_strength * dir_norm
-        
-        # ---------------------------
-        # Rotation (around Z axis)
-        # ---------------------------
+
+        # Rotation
         rot = np.array([-pos[i][1], pos[i][0], 0])
         vel[i] += rotation_strength * rot
-    
-    # Update positions
+
+        # ---------------------------
+        # Harmonic Shell Influence
+        # ---------------------------
+        shell_adjust = shell_force(dist, radius)
+        vel[i] += shell_strength * shell_adjust * dir_norm
+
     pos += vel
-    
-    # Save back
+
     st.session_state.pos = pos
     st.session_state.vel = vel
     st.session_state.radius = radius
@@ -94,20 +97,23 @@ fig.add_trace(go.Scatter3d(
     mode='markers'
 ))
 
-# Bubble boundary (visual sphere)
-u = np.linspace(0, 2*np.pi, 30)
-v = np.linspace(0, np.pi, 15)
+# Draw shell layers
 r = st.session_state.radius
+for i in range(1, num_shells+1):
+    shell_r = r * (i / num_shells)
 
-xs = r * np.outer(np.cos(u), np.sin(v))
-ys = r * np.outer(np.sin(u), np.sin(v))
-zs = r * np.outer(np.ones(np.size(u)), np.cos(v))
+    u = np.linspace(0, 2*np.pi, 20)
+    v = np.linspace(0, np.pi, 10)
 
-fig.add_trace(go.Surface(
-    x=xs, y=ys, z=zs,
-    opacity=0.1,
-    showscale=False
-))
+    xs = shell_r * np.outer(np.cos(u), np.sin(v))
+    ys = shell_r * np.outer(np.sin(u), np.sin(v))
+    zs = shell_r * np.outer(np.ones(np.size(u)), np.cos(v))
+
+    fig.add_trace(go.Surface(
+        x=xs, y=ys, z=zs,
+        opacity=0.05,
+        showscale=False
+    ))
 
 fig.update_layout(
     margin=dict(l=0, r=0, b=0, t=0),
