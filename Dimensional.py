@@ -106,25 +106,77 @@ def compute_coherence(bubbles):
     return 1 / (np.std(dist) + 1e-5)
 
 # ---------------------------
+# PHASE DETECTION
+# ---------------------------
+def detect_phase(series):
+    if len(series) < 5:
+        return "Initializing"
+    recent = series[-5:]
+    diffs = np.diff(recent)
+    avg = np.mean(np.abs(diffs))
+
+    if avg > 0.1:
+        return "Chaotic"
+    elif avg > 0.02:
+        return "Forming"
+    else:
+        return "Stable"
+
+# ---------------------------
+# CLASSIFICATION
+# ---------------------------
+def classify_structure(bubbles):
+    all_pos = np.vstack([b["pos"] for b in bubbles])
+    all_vel = np.vstack([b["vel"] for b in bubbles])
+
+    center = np.mean(all_pos, axis=0)
+    rel_pos = all_pos - center
+
+    distances = np.linalg.norm(rel_pos, axis=1)
+    spread = np.std(distances)
+
+    angular = np.cross(rel_pos, all_vel)
+    ang_mag = np.mean(np.linalg.norm(angular, axis=1))
+
+    cov = np.cov(rel_pos.T)
+    eigvals = np.linalg.eigvals(cov)
+    eigvals = np.sort(np.abs(eigvals))
+    planarity = eigvals[0] / (eigvals[-1] + 1e-5)
+
+    if ang_mag > 0.05 and planarity < 0.3:
+        return 2  # Spiral
+    elif spread < 0.5:
+        return 1  # Cluster
+    else:
+        return 0  # Void
+
+def label_structure(val):
+    return ["Void / Diffuse", "Clustered", "Spiral-like"][val]
+
+# ---------------------------
 # RUN
 # ---------------------------
-if st.button("Run Simulation"):
+col1, col2 = st.columns(2)
+
+if col1.button("Run Simulation"):
     for _ in range(steps):
         st.session_state.bubbles = update(st.session_state.bubbles)
         coh = compute_coherence(st.session_state.bubbles)
         st.session_state.history["coherence"].append(coh)
 
+if col2.button("Reset"):
+    st.session_state.bubbles = init_sim()
+    st.session_state.history = {"coherence": []}
+
 # ---------------------------
-# 3D PLOT
+# 3D VISUAL
 # ---------------------------
 fig = go.Figure()
 
 for b in st.session_state.bubbles:
     pos = b["pos"]
     fig.add_trace(go.Scatter3d(
-        x=pos[:,0],
-        y=pos[:,1],
-        z=pos[:,2],
+        x=pos[:,0], y=pos[:,1], z=pos[:,2],
         mode='markers'
     ))
 
@@ -132,16 +184,26 @@ fig.update_layout(margin=dict(l=0, r=0, b=0, t=0))
 st.plotly_chart(fig, use_container_width=True)
 
 # ---------------------------
-# TIME GRAPH
+# TIME EVOLUTION
 # ---------------------------
 fig2 = go.Figure()
-fig2.add_trace(go.Scatter(y=st.session_state.history["coherence"], mode='lines'))
+fig2.add_trace(go.Scatter(
+    y=st.session_state.history["coherence"],
+    mode='lines',
+    name="Coherence"
+))
 st.plotly_chart(fig2, use_container_width=True)
 
+phase = detect_phase(st.session_state.history["coherence"])
+st.write(f"**Phase:** {phase}")
+
+structure = label_structure(classify_structure(st.session_state.bubbles))
+st.write(f"**Detected Structure:** {structure}")
+
 # ---------------------------
-# PARAMETER SWEEP
+# PARAMETER SWEEP + CLASS MAP
 # ---------------------------
-st.subheader("Parameter Sweep Heatmap")
+st.subheader("Structure Map (Shell vs Filament)")
 
 if st.button("Run Sweep"):
 
@@ -155,11 +217,10 @@ if st.button("Run Sweep"):
 
             bubbles = init_sim()
 
-            for _ in range(5):
+            for _ in range(4):
                 for b in bubbles:
                     b["radius"] += expansion_rate
 
-                for b in bubbles:
                     for p in b["pos"]:
                         direction = p - b["center"]
                         dist = np.linalg.norm(direction) + 1e-5
@@ -172,12 +233,18 @@ if st.button("Run Sweep"):
                         nearest = round(dist / spacing) * spacing
                         p += s_val * (nearest - dist) * dir_norm
 
-            heatmap[i, j] = compute_coherence(bubbles)
+                        p += f_val * (np.random.randn(3)) * 0.01
+
+            heatmap[i, j] = classify_structure(bubbles)
 
     fig3 = go.Figure(data=go.Heatmap(
         z=heatmap,
         x=filament_vals,
-        y=shell_vals
+        y=shell_vals,
+        colorbar=dict(
+            tickvals=[0,1,2],
+            ticktext=["Void", "Cluster", "Spiral"]
+        )
     ))
 
     fig3.update_layout(
