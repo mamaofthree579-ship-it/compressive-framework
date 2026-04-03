@@ -4,117 +4,64 @@ import plotly.graph_objects as go
 import time
 
 st.set_page_config(layout="wide")
+st.title("Galaxy Formation Simulator")
 
-st.title("Dimensional Construction Model")
+# ---------------------------
+# Settings
+# ---------------------------
+num_particles = st.slider("Number of particles", 50, 300, 120)
+gravity_strength = st.slider("Attraction strength", 0.001, 0.05, 0.01)
+noise_level = st.slider("Initial noise", 0.0, 0.5, 0.1)
+steps_per_frame = 2
 
 # ---------------------------
 # Session state
 # ---------------------------
-if "dim" not in st.session_state:
-    st.session_state.dim = 1
+if "positions" not in st.session_state:
+    st.session_state.positions = np.random.uniform(-1, 1, (num_particles, 3)) * noise_level
+    st.session_state.velocities = np.zeros((num_particles, 3))
 
 # ---------------------------
-# Controls
+# Physics step
 # ---------------------------
-col1, col2 = st.columns(2)
+def update():
+    pos = st.session_state.positions
+    vel = st.session_state.velocities
+    
+    forces = np.zeros_like(pos)
 
-with col1:
-    if st.button("⬅️ Previous Dimension"):
-        st.session_state.dim = max(1, st.session_state.dim - 1)
+    for i in range(len(pos)):
+        diff = pos - pos[i]
+        dist = np.linalg.norm(diff, axis=1) + 0.01
+        
+        attraction = (diff.T / dist**3).T
+        forces[i] += np.sum(attraction, axis=0)
+    
+    vel += gravity_strength * forces
+    pos += vel
 
-with col2:
-    if st.button("➡️ Next Dimension"):
-        st.session_state.dim = min(5, st.session_state.dim + 1)
-
-dim = st.session_state.dim
-
-st.markdown(f"### Current Dimension: {dim}D")
-
-# ---------------------------
-# Geometry builders
-# ---------------------------
-
-def build_line():
-    x = np.linspace(0, 1, 50)
-    return x, np.zeros_like(x), np.zeros_like(x)
-
-def build_square():
-    pts = []
-    for i in np.linspace(0,1,20):
-        pts.append((i,0))
-        pts.append((i,1))
-        pts.append((0,i))
-        pts.append((1,i))
-    return pts
-
-def build_cube():
-    pts = []
-    for x in [0,1]:
-        for y in np.linspace(0,1,10):
-            for z in np.linspace(0,1,10):
-                pts.append((x,y,z))
-    for y in [0,1]:
-        for x in np.linspace(0,1,10):
-            for z in np.linspace(0,1,10):
-                pts.append((x,y,z))
-    for z in [0,1]:
-        for x in np.linspace(0,1,10):
-            for y in np.linspace(0,1,10):
-                pts.append((x,y,z))
-    return pts
-
-def build_tesseract_projection():
-    pts = []
-    for x in [0,1]:
-        for y in [0,1]:
-            for z in [0,1]:
-                for w in [0,1]:
-                    # project 4D → 3D
-                    scale = 1 / (1 + w*0.8)
-                    pts.append((x*scale, y*scale, z*scale))
-    return pts
-
-def build_5d_projection():
-    pts = []
-    for a in [0,1]:
-        for x in [0,1]:
-            for y in [0,1]:
-                for z in [0,1]:
-                    for w in [0,1]:
-                        scale = 1 / (1 + w*0.6 + a*0.6)
-                        pts.append((x*scale, y*scale, z*scale))
-    return pts
+    st.session_state.positions = pos
+    st.session_state.velocities = vel
 
 # ---------------------------
-# Plotting
+# Run simulation
 # ---------------------------
+if st.button("Run Simulation"):
+    for _ in range(steps_per_frame):
+        update()
+
+# ---------------------------
+# Plot
+# ---------------------------
+pos = st.session_state.positions
+x, y, z = pos[:,0], pos[:,1], pos[:,2]
 
 fig = go.Figure()
 
-if dim == 1:
-    x,y,z = build_line()
-    fig.add_trace(go.Scatter3d(x=x,y=y,z=z, mode='lines'))
-
-elif dim == 2:
-    pts = build_square()
-    x,y = zip(*pts)
-    z = [0]*len(x)
-    fig.add_trace(go.Scatter3d(x=x,y=y,z=z, mode='markers'))
-
-elif dim == 3:
-    pts = build_cube()
-    x,y,z = zip(*pts)
-    fig.add_trace(go.Scatter3d(x=x,y=y,z=z, mode='markers'))
-
-elif dim == 4:
-    pts = build_tesseract_projection()
-    x,y,z = zip(*pts)
-    fig.add_trace(go.Scatter3d(x=x,y=y,z=z, mode='markers'))
-
-elif dim == 5:
-    pts = build_5d_projection()
-    x,y,z = zip(*pts)
-    fig.add_trace(go.Scatter3d(x=x,y=y,z=z, mode='markers'))
+fig.add_trace(go.Scatter3d(
+    x=x, y=y, z=z,
+    mode='markers'
+))
 
 fig.update_layout(
     margin=dict(l=0, r=0, b=0, t=0),
@@ -128,11 +75,10 @@ fig.update_layout(
 st.plotly_chart(fig, use_container_width=True)
 
 # ---------------------------
-# Concept Explanation
+# Coherence Index
 # ---------------------------
+center = np.mean(pos, axis=0)
+distances = np.linalg.norm(pos - center, axis=1)
+coherence_index = 1 / (np.std(distances) + 0.001)
 
-if dim == 4:
-    st.info("4D: You are seeing a 3D projection of a tesseract (cube evolving across a new axis).")
-
-if dim == 5:
-    st.info("5D: This represents multiple tesseract states layered together — a higher-order structure of transformations.")
+st.metric("Coherence Index", f"{coherence_index:.3f}")
