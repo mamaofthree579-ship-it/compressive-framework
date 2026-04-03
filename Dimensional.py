@@ -3,82 +3,111 @@ import numpy as np
 import plotly.graph_objects as go
 
 st.set_page_config(layout="wide")
-st.title("Harmonic Shell Galaxy Model")
+st.title("Multi-Bubble Galaxy + Filament Simulator")
 
 # ---------------------------
 # Controls
 # ---------------------------
-num_particles = st.slider("Particles", 50, 400, 150)
-burst_strength = st.slider("Burst Strength", 0.1, 3.0, 1.0)
-expansion_rate = st.slider("Expansion Rate", 0.01, 0.2, 0.05)
+num_bubbles = st.slider("Number of Bubbles", 2, 5, 3)
+particles_per_bubble = st.slider("Particles per Bubble", 50, 200, 100)
+
+burst_strength = st.slider("Burst Strength", 0.1, 2.0, 1.0)
+expansion_rate = st.slider("Expansion Rate", 0.01, 0.1, 0.03)
 rotation_strength = st.slider("Rotation", 0.0, 0.1, 0.02)
 compression_strength = st.slider("Compression", 0.0, 0.05, 0.01)
 
-shell_strength = st.slider("Shell Strength", 0.0, 0.2, 0.05)
-num_shells = st.slider("Number of Shells", 2, 10, 5)
+shell_strength = st.slider("Shell Strength", 0.0, 0.1, 0.03)
+num_shells = st.slider("Shell Layers", 2, 8, 4)
+
+filament_strength = st.slider("Filament Strength", 0.0, 0.05, 0.01)
 
 steps = st.slider("Steps per run", 1, 10, 3)
 
 # ---------------------------
 # Initialize state
 # ---------------------------
-if "pos" not in st.session_state:
-    st.session_state.pos = np.random.uniform(-0.1, 0.1, (num_particles, 3))
-    st.session_state.vel = np.zeros((num_particles, 3))
-    st.session_state.radius = 0.1
+if "bubbles" not in st.session_state:
+    bubbles = []
+    for i in range(num_bubbles):
+        center = np.random.uniform(-2, 2, 3)
+        pos = center + np.random.uniform(-0.1, 0.1, (particles_per_bubble, 3))
+        vel = np.zeros((particles_per_bubble, 3))
+        bubbles.append({"center": center, "pos": pos, "vel": vel, "radius": 0.2})
+    
+    st.session_state.bubbles = bubbles
 
 # ---------------------------
-# Harmonic Shell Function
+# Shell function
 # ---------------------------
 def shell_force(distance, max_radius):
     spacing = max_radius / num_shells
-    nearest_shell = round(distance / spacing) * spacing
-    return (nearest_shell - distance)
+    nearest = round(distance / spacing) * spacing
+    return nearest - distance
 
 # ---------------------------
 # Simulation Step
 # ---------------------------
 def update():
-    pos = st.session_state.pos
-    vel = st.session_state.vel
-    radius = st.session_state.radius
+    bubbles = st.session_state.bubbles
+    
+    for b in bubbles:
+        b["radius"] += expansion_rate
 
-    center = np.array([0.0, 0.0, 0.0])
-    radius += expansion_rate
+    # Bubble interactions (centers attract slightly)
+    for i in range(len(bubbles)):
+        for j in range(i+1, len(bubbles)):
+            dir_vec = bubbles[j]["center"] - bubbles[i]["center"]
+            dist = np.linalg.norm(dir_vec) + 1e-5
+            force = dir_vec / dist * filament_strength
 
-    for i in range(len(pos)):
-        direction = pos[i] - center
-        dist = np.linalg.norm(direction) + 1e-5
-        dir_norm = direction / dist
+            bubbles[i]["center"] += force * 0.01
+            bubbles[j]["center"] -= force * 0.01
 
-        # Burst expansion
-        vel[i] += burst_strength * dir_norm * 0.01
+    # Particle updates
+    for b in bubbles:
+        center = b["center"]
+        pos = b["pos"]
+        vel = b["vel"]
+        radius = b["radius"]
 
-        # Boundary containment
-        if dist > radius:
-            vel[i] -= dir_norm * 0.05
+        for i in range(len(pos)):
+            direction = pos[i] - center
+            dist = np.linalg.norm(direction) + 1e-5
+            dir_norm = direction / dist
 
-        # Compression
-        vel[i] -= compression_strength * dir_norm
+            # Burst
+            vel[i] += burst_strength * dir_norm * 0.01
 
-        # Rotation
-        rot = np.array([-pos[i][1], pos[i][0], 0])
-        vel[i] += rotation_strength * rot
+            # Containment
+            if dist > radius:
+                vel[i] -= dir_norm * 0.05
 
-        # ---------------------------
-        # Harmonic Shell Influence
-        # ---------------------------
-        shell_adjust = shell_force(dist, radius)
-        vel[i] += shell_strength * shell_adjust * dir_norm
+            # Compression
+            vel[i] -= compression_strength * dir_norm
 
-    pos += vel
+            # Rotation
+            rot = np.array([-direction[1], direction[0], 0])
+            vel[i] += rotation_strength * rot
 
-    st.session_state.pos = pos
-    st.session_state.vel = vel
-    st.session_state.radius = radius
+            # Shells
+            shell_adj = shell_force(dist, radius)
+            vel[i] += shell_strength * shell_adj * dir_norm
+
+            # ---------------------------
+            # Filament pull toward other bubbles
+            # ---------------------------
+            for other in bubbles:
+                if not np.array_equal(other["center"], center):
+                    link = other["center"] - pos[i]
+                    d = np.linalg.norm(link) + 1e-5
+                    vel[i] += filament_strength * link / d * 0.01
+
+        pos += vel
+
+    st.session_state.bubbles = bubbles
 
 # ---------------------------
-# Run Simulation
+# Run
 # ---------------------------
 if st.button("Run Simulation"):
     for _ in range(steps):
@@ -87,32 +116,15 @@ if st.button("Run Simulation"):
 # ---------------------------
 # Plot
 # ---------------------------
-pos = st.session_state.pos
-x, y, z = pos[:,0], pos[:,1], pos[:,2]
-
 fig = go.Figure()
 
-fig.add_trace(go.Scatter3d(
-    x=x, y=y, z=z,
-    mode='markers'
-))
+for b in st.session_state.bubbles:
+    pos = b["pos"]
+    x, y, z = pos[:,0], pos[:,1], pos[:,2]
 
-# Draw shell layers
-r = st.session_state.radius
-for i in range(1, num_shells+1):
-    shell_r = r * (i / num_shells)
-
-    u = np.linspace(0, 2*np.pi, 20)
-    v = np.linspace(0, np.pi, 10)
-
-    xs = shell_r * np.outer(np.cos(u), np.sin(v))
-    ys = shell_r * np.outer(np.sin(u), np.sin(v))
-    zs = shell_r * np.outer(np.ones(np.size(u)), np.cos(v))
-
-    fig.add_trace(go.Surface(
-        x=xs, y=ys, z=zs,
-        opacity=0.05,
-        showscale=False
+    fig.add_trace(go.Scatter3d(
+        x=x, y=y, z=z,
+        mode='markers'
     ))
 
 fig.update_layout(
@@ -129,10 +141,5 @@ st.plotly_chart(fig, use_container_width=True)
 # ---------------------------
 # Metrics
 # ---------------------------
-center = np.mean(pos, axis=0)
-distances = np.linalg.norm(pos - center, axis=1)
-
-coherence = 1 / (np.std(distances) + 1e-5)
-
-st.metric("Bubble Radius", f"{st.session_state.radius:.2f}")
-st.metric("Coherence Index", f"{coherence:.3f}")
+total_particles = sum(len(b["pos"]) for b in st.session_state.bubbles)
+st.metric("Total Particles", total_particles)
