@@ -3,7 +3,7 @@ import numpy as np
 import plotly.graph_objects as go
 
 st.set_page_config(layout="wide")
-st.title("Galaxy Formation Discovery Engine")
+st.title("Galaxy Formation Discovery Engine — Full System")
 
 # ---------------------------
 # CONTROLS
@@ -28,7 +28,7 @@ num_shells = st.slider("Shell Layers", 2, 6, 4)
 steps = st.slider("Steps per Run", 1, 8, 3)
 
 # ---------------------------
-# INIT
+# INITIALIZATION
 # ---------------------------
 def init_sim():
     bubbles = []
@@ -144,17 +144,61 @@ def classify_structure(bubbles):
     planarity = eigvals[0] / (eigvals[-1] + 1e-5)
 
     if ang_mag > 0.05 and planarity < 0.3:
-        return 2  # Spiral
+        return 2
     elif spread < 0.5:
-        return 1  # Cluster
+        return 1
     else:
-        return 0  # Void
+        return 0
 
 def label_structure(val):
     return ["Void / Diffuse", "Clustered", "Spiral-like"][val]
 
 # ---------------------------
-# RUN
+# REFERENCE COSMIC WEB
+# ---------------------------
+def generate_reference_web():
+    points = []
+
+    for _ in range(5):
+        start = np.random.uniform(-2, 2, 3)
+        direction = np.random.randn(3)
+        direction /= np.linalg.norm(direction)
+
+        for t in np.linspace(-2, 2, 100):
+            p = start + direction * t + np.random.normal(0, 0.05, 3)
+            points.append(p)
+
+    for _ in range(5):
+        center = np.random.uniform(-2, 2, 3)
+        cluster = center + np.random.normal(0, 0.2, (50, 3))
+        points.extend(cluster)
+
+    return np.array(points)
+
+# ---------------------------
+# STRUCTURE COMPARISON
+# ---------------------------
+def compare_structures(sim_bubbles, ref_points):
+    sim_points = np.vstack([b["pos"] for b in sim_bubbles])
+
+    sim_dist = np.linalg.norm(sim_points - np.mean(sim_points, axis=0), axis=1)
+    ref_dist = np.linalg.norm(ref_points - np.mean(ref_points, axis=0), axis=1)
+
+    density = 1 / (abs(np.std(sim_dist) - np.std(ref_dist)) + 1e-5)
+    cluster = 1 / (abs(np.mean(sim_dist) - np.mean(ref_dist)) + 1e-5)
+
+    sim_cov = np.cov(sim_points.T)
+    ref_cov = np.cov(ref_points.T)
+
+    sim_eig = np.sort(np.linalg.eigvals(sim_cov))
+    ref_eig = np.sort(np.linalg.eigvals(ref_cov))
+
+    filament = 1 / (np.linalg.norm(sim_eig - ref_eig) + 1e-5)
+
+    return density, cluster, filament
+
+# ---------------------------
+# RUN / RESET
 # ---------------------------
 col1, col2 = st.columns(2)
 
@@ -180,33 +224,30 @@ for b in st.session_state.bubbles:
         mode='markers'
     ))
 
-fig.update_layout(margin=dict(l=0, r=0, b=0, t=0))
 st.plotly_chart(fig, use_container_width=True)
 
 # ---------------------------
 # TIME EVOLUTION
 # ---------------------------
 fig2 = go.Figure()
-fig2.add_trace(go.Scatter(
-    y=st.session_state.history["coherence"],
-    mode='lines',
-    name="Coherence"
-))
+fig2.add_trace(go.Scatter(y=st.session_state.history["coherence"], mode='lines'))
 st.plotly_chart(fig2, use_container_width=True)
 
+# ---------------------------
+# STATUS
+# ---------------------------
 phase = detect_phase(st.session_state.history["coherence"])
-st.write(f"**Phase:** {phase}")
-
 structure = label_structure(classify_structure(st.session_state.bubbles))
+
+st.write(f"**Phase:** {phase}")
 st.write(f"**Detected Structure:** {structure}")
 
 # ---------------------------
-# PARAMETER SWEEP + CLASS MAP
+# PARAMETER SWEEP MAP
 # ---------------------------
-st.subheader("Structure Map (Shell vs Filament)")
+st.subheader("Structure Map")
 
 if st.button("Run Sweep"):
-
     shell_vals = np.linspace(0.0, 0.1, 8)
     filament_vals = np.linspace(0.0, 0.05, 8)
 
@@ -220,7 +261,6 @@ if st.button("Run Sweep"):
             for _ in range(4):
                 for b in bubbles:
                     b["radius"] += expansion_rate
-
                     for p in b["pos"]:
                         direction = p - b["center"]
                         dist = np.linalg.norm(direction) + 1e-5
@@ -233,7 +273,7 @@ if st.button("Run Sweep"):
                         nearest = round(dist / spacing) * spacing
                         p += s_val * (nearest - dist) * dir_norm
 
-                        p += f_val * (np.random.randn(3)) * 0.01
+                        p += f_val * np.random.randn(3) * 0.01
 
             heatmap[i, j] = classify_structure(bubbles)
 
@@ -247,9 +287,39 @@ if st.button("Run Sweep"):
         )
     ))
 
-    fig3.update_layout(
-        xaxis_title="Filament Strength",
-        yaxis_title="Shell Strength"
+    st.plotly_chart(fig3, use_container_width=True)
+
+# ---------------------------
+# REALITY COMPARISON
+# ---------------------------
+st.subheader("Reality Comparison")
+
+if st.button("Compare to Reference"):
+    ref = generate_reference_web()
+    d, c, f = compare_structures(st.session_state.bubbles, ref)
+
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Density Match", f"{d:.3f}")
+    col2.metric("Cluster Match", f"{c:.3f}")
+    col3.metric("Filament Match", f"{f:.3f}")
+
+    fig_compare = go.Figure()
+
+    sim_points = np.vstack([b["pos"] for b in st.session_state.bubbles]
+
     )
 
-    st.plotly_chart(fig3, use_container_width=True)
+    fig_compare.add_trace(go.Scatter3d(
+        x=sim_points[:,0], y=sim_points[:,1], z=sim_points[:,2],
+        mode='markers',
+        name='Simulation'
+    ))
+
+    fig_compare.add_trace(go.Scatter3d(
+        x=ref[:,0], y=ref[:,1], z=ref[:,2],
+        mode='markers',
+        name='Reference',
+        opacity=0.3
+    ))
+
+    st.plotly_chart(fig_compare, use_container_width=True)
