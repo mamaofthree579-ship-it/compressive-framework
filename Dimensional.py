@@ -315,3 +315,42 @@ if real_data is not None:
     c1.metric("Density Match", f"{d:.3f}")
     c2.metric("Spread Match", f"{s:.3f}")
     c3.metric("Structure Match", f"{stc:.3f}")
+
+# ---------------------------
+# CORRELATION FUNCTION
+# ---------------------------
+st.subheader("Two-Point Correlation Function")
+
+def compute_correlation(points, bins=20):
+    from scipy.spatial import distance_matrix
+
+    dists = distance_matrix(points, points)
+    dists = dists[np.triu_indices_from(dists, k=1)]
+
+    hist, edges = np.histogram(dists, bins=bins)
+    random = np.random.uniform(0, np.max(points), points.shape)
+    rand_dists = distance_matrix(random, random)
+    rand_dists = rand_dists[np.triu_indices_from(rand_dists, k=1)]
+
+    rand_hist, _ = np.histogram(rand_dists, bins=edges)
+
+    correlation = (hist / (rand_hist + 1e-5)) - 1
+
+    centers = 0.5 * (edges[:-1] + edges[1:])
+    return centers, correlation
+
+if st.button("Compute Correlation"):
+
+    sim_points = np.vstack([b["pos"] for b in st.session_state.bubbles])
+    sim_points = normalize_points(sim_points)
+
+    x_sim, y_sim = compute_correlation(sim_points)
+
+    fig_corr = go.Figure()
+    fig_corr.add_trace(go.Scatter(x=x_sim, y=y_sim, mode='lines', name='Simulation'))
+
+    if real_data is not None:
+        x_real, y_real = compute_correlation(real_data)
+        fig_corr.add_trace(go.Scatter(x=x_real, y=y_real, mode='lines', name='Real Data'))
+
+    st.plotly_chart(fig_corr, use_container_width=True)
