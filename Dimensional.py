@@ -1,9 +1,10 @@
 import streamlit as st
 import numpy as np
 import plotly.graph_objects as go
+import pandas as pd
 
 st.set_page_config(layout="wide")
-st.title("Galaxy Formation Discovery Engine — Full System")
+st.title("Galaxy Formation Discovery Engine — Real Data Integrated")
 
 # ---------------------------
 # CONTROLS
@@ -54,7 +55,7 @@ def shell_force(distance, max_radius):
     return nearest - distance
 
 # ---------------------------
-# UPDATE
+# UPDATE STEP
 # ---------------------------
 def update(bubbles):
     for b in bubbles:
@@ -97,7 +98,7 @@ def update(bubbles):
     return bubbles
 
 # ---------------------------
-# COHERENCE
+# METRICS
 # ---------------------------
 def compute_coherence(bubbles):
     all_pos = np.vstack([b["pos"] for b in bubbles])
@@ -105,9 +106,6 @@ def compute_coherence(bubbles):
     dist = np.linalg.norm(all_pos - center, axis=1)
     return 1 / (np.std(dist) + 1e-5)
 
-# ---------------------------
-# PHASE DETECTION
-# ---------------------------
 def detect_phase(series):
     if len(series) < 5:
         return "Initializing"
@@ -122,9 +120,6 @@ def detect_phase(series):
     else:
         return "Stable"
 
-# ---------------------------
-# CLASSIFICATION
-# ---------------------------
 def classify_structure(bubbles):
     all_pos = np.vstack([b["pos"] for b in bubbles])
     all_vel = np.vstack([b["vel"] for b in bubbles])
@@ -139,63 +134,15 @@ def classify_structure(bubbles):
     ang_mag = np.mean(np.linalg.norm(angular, axis=1))
 
     cov = np.cov(rel_pos.T)
-    eigvals = np.linalg.eigvals(cov)
-    eigvals = np.sort(np.abs(eigvals))
+    eigvals = np.sort(np.abs(np.linalg.eigvals(cov)))
     planarity = eigvals[0] / (eigvals[-1] + 1e-5)
 
     if ang_mag > 0.05 and planarity < 0.3:
-        return 2
+        return "Spiral-like"
     elif spread < 0.5:
-        return 1
+        return "Clustered"
     else:
-        return 0
-
-def label_structure(val):
-    return ["Void / Diffuse", "Clustered", "Spiral-like"][val]
-
-# ---------------------------
-# REFERENCE COSMIC WEB
-# ---------------------------
-def generate_reference_web():
-    points = []
-
-    for _ in range(5):
-        start = np.random.uniform(-2, 2, 3)
-        direction = np.random.randn(3)
-        direction /= np.linalg.norm(direction)
-
-        for t in np.linspace(-2, 2, 100):
-            p = start + direction * t + np.random.normal(0, 0.05, 3)
-            points.append(p)
-
-    for _ in range(5):
-        center = np.random.uniform(-2, 2, 3)
-        cluster = center + np.random.normal(0, 0.2, (50, 3))
-        points.extend(cluster)
-
-    return np.array(points)
-
-# ---------------------------
-# STRUCTURE COMPARISON
-# ---------------------------
-def compare_structures(sim_bubbles, ref_points):
-    sim_points = np.vstack([b["pos"] for b in sim_bubbles])
-
-    sim_dist = np.linalg.norm(sim_points - np.mean(sim_points, axis=0), axis=1)
-    ref_dist = np.linalg.norm(ref_points - np.mean(ref_points, axis=0), axis=1)
-
-    density = 1 / (abs(np.std(sim_dist) - np.std(ref_dist)) + 1e-5)
-    cluster = 1 / (abs(np.mean(sim_dist) - np.mean(ref_dist)) + 1e-5)
-
-    sim_cov = np.cov(sim_points.T)
-    ref_cov = np.cov(ref_points.T)
-
-    sim_eig = np.sort(np.linalg.eigvals(sim_cov))
-    ref_eig = np.sort(np.linalg.eigvals(ref_cov))
-
-    filament = 1 / (np.linalg.norm(sim_eig - ref_eig) + 1e-5)
-
-    return density, cluster, filament
+        return "Void / Diffuse"
 
 # ---------------------------
 # RUN / RESET
@@ -237,13 +184,13 @@ st.plotly_chart(fig2, use_container_width=True)
 # STATUS
 # ---------------------------
 phase = detect_phase(st.session_state.history["coherence"])
-structure = label_structure(classify_structure(st.session_state.bubbles))
+structure = classify_structure(st.session_state.bubbles)
 
 st.write(f"**Phase:** {phase}")
 st.write(f"**Detected Structure:** {structure}")
 
 # ---------------------------
-# PARAMETER SWEEP MAP
+# PARAMETER SWEEP
 # ---------------------------
 st.subheader("Structure Map")
 
@@ -260,7 +207,6 @@ if st.button("Run Sweep"):
 
             for _ in range(4):
                 for b in bubbles:
-                    b["radius"] += expansion_rate
                     for p in b["pos"]:
                         direction = p - b["center"]
                         dist = np.linalg.norm(direction) + 1e-5
@@ -275,51 +221,97 @@ if st.button("Run Sweep"):
 
                         p += f_val * np.random.randn(3) * 0.01
 
-            heatmap[i, j] = classify_structure(bubbles)
+            heatmap[i, j] = ["Void / Diffuse","Clustered","Spiral-like"].index(classify_structure(bubbles))
 
-    fig3 = go.Figure(data=go.Heatmap(
-        z=heatmap,
-        x=filament_vals,
-        y=shell_vals,
-        colorbar=dict(
-            tickvals=[0,1,2],
-            ticktext=["Void", "Cluster", "Spiral"]
-        )
-    ))
-
+    fig3 = go.Figure(data=go.Heatmap(z=heatmap, x=filament_vals, y=shell_vals))
     st.plotly_chart(fig3, use_container_width=True)
 
 # ---------------------------
-# REALITY COMPARISON
+# REAL DATA IMPORT
 # ---------------------------
-st.subheader("Reality Comparison")
+st.subheader("Import Real Galaxy Data")
 
-if st.button("Compare to Reference"):
-    ref = generate_reference_web()
-    d, c, f = compare_structures(st.session_state.bubbles, ref)
+uploaded_file = st.file_uploader("Upload CSV", type=["csv"])
 
-    col1, col2, col3 = st.columns(3)
-    col1.metric("Density Match", f"{d:.3f}")
-    col2.metric("Cluster Match", f"{c:.3f}")
-    col3.metric("Filament Match", f"{f:.3f}")
+def normalize_points(points):
+    points = points - np.mean(points, axis=0)
+    scale = np.max(np.linalg.norm(points, axis=1)) + 1e-5
+    return points / scale
 
-    fig_compare = go.Figure()
+def convert_spherical_to_cartesian(ra, dec, z):
+    ra = np.radians(ra)
+    dec = np.radians(dec)
 
-    sim_points = np.vstack([b["pos"] for b in st.session_state.bubbles]
+    x = z * np.cos(dec) * np.cos(ra)
+    y = z * np.cos(dec) * np.sin(ra)
+    z = z * np.sin(dec)
 
-    )
+    return np.vstack((x, y, z)).T
 
-    fig_compare.add_trace(go.Scatter3d(
+real_data = None
+
+if uploaded_file:
+    df = pd.read_csv(uploaded_file)
+
+    if {"x","y","z"}.issubset(df.columns):
+        real_data = df[["x","y","z"]].values
+
+    elif {"ra","dec","redshift"}.issubset(df.columns):
+        real_data = convert_spherical_to_cartesian(
+            df["ra"].values,
+            df["dec"].values,
+            df["redshift"].values
+        )
+
+    if real_data is not None:
+        real_data = normalize_points(real_data)
+        st.success("Dataset loaded")
+
+# ---------------------------
+# OVERLAY + METRICS
+# ---------------------------
+if real_data is not None:
+
+    sim_points = np.vstack([b["pos"] for b in st.session_state.bubbles])
+    sim_points = normalize_points(sim_points)
+
+    fig_real = go.Figure()
+
+    fig_real.add_trace(go.Scatter3d(
         x=sim_points[:,0], y=sim_points[:,1], z=sim_points[:,2],
         mode='markers',
         name='Simulation'
     ))
 
-    fig_compare.add_trace(go.Scatter3d(
-        x=ref[:,0], y=ref[:,1], z=ref[:,2],
+    fig_real.add_trace(go.Scatter3d(
+        x=real_data[:,0], y=real_data[:,1], z=real_data[:,2],
         mode='markers',
-        name='Reference',
+        name='Real Data',
         opacity=0.3
     ))
 
-    st.plotly_chart(fig_compare, use_container_width=True)
+    st.plotly_chart(fig_real, use_container_width=True)
+
+    def compare_real(sim, real):
+        sim_dist = np.linalg.norm(sim, axis=1)
+        real_dist = np.linalg.norm(real, axis=1)
+
+        density = 1 / (abs(np.std(sim_dist) - np.std(real_dist)) + 1e-5)
+        spread = 1 / (abs(np.mean(sim_dist) - np.mean(real_dist)) + 1e-5)
+
+        sim_cov = np.cov(sim.T)
+        real_cov = np.cov(real.T)
+
+        sim_eig = np.sort(np.linalg.eigvals(sim_cov))
+        real_eig = np.sort(np.linalg.eigvals(real_cov))
+
+        structure = 1 / (np.linalg.norm(sim_eig - real_eig) + 1e-5)
+
+        return density, spread, structure
+
+    d, s, stc = compare_real(sim_points, real_data)
+
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Density Match", f"{d:.3f}")
+    c2.metric("Spread Match", f"{s:.3f}")
+    c3.metric("Structure Match", f"{stc:.3f}")
