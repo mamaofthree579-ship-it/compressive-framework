@@ -4,7 +4,7 @@ import plotly.graph_objects as go
 import pandas as pd
 
 st.set_page_config(layout="wide")
-st.title("Galaxy Formation Discovery Engine — Coherence Enabled")
+st.title("Galaxy Formation Discovery Engine — Coherence Field Enabled")
 
 # ---------------------------
 # CONTROLS
@@ -42,9 +42,6 @@ def init_sim():
 
 if "bubbles" not in st.session_state:
     st.session_state.bubbles = init_sim()
-
-if "history" not in st.session_state:
-    st.session_state.history = {"coherence": []}
 
 if "ci_history" not in st.session_state:
     st.session_state.ci_history = []
@@ -104,7 +101,7 @@ def update(bubbles):
     return bubbles
 
 # ---------------------------
-# COHERENCE INDEX
+# GLOBAL COHERENCE INDEX
 # ---------------------------
 def compute_coherence_index(bubbles):
 
@@ -114,17 +111,14 @@ def compute_coherence_index(bubbles):
     center = np.mean(all_pos, axis=0)
     rel_pos = all_pos - center
 
-    # Radial order
     distances = np.linalg.norm(rel_pos, axis=1)
     radial_score = 1 / (np.std(distances) + 1e-5)
 
-    # Velocity alignment
     vel_norms = np.linalg.norm(all_vel, axis=1) + 1e-5
     norm_vel = all_vel / vel_norms[:, None]
     alignment = np.mean(np.dot(norm_vel, norm_vel.T))
     alignment_score = np.clip(alignment, 0, 1)
 
-    # Temporal stability
     if st.session_state.last_positions is not None:
         delta = all_pos - st.session_state.last_positions
         stability = 1 / (np.mean(np.linalg.norm(delta, axis=1)) + 1e-5)
@@ -140,6 +134,43 @@ def compute_coherence_index(bubbles):
     return CI
 
 # ---------------------------
+# LOCAL COHERENCE FIELD
+# ---------------------------
+def compute_local_coherence(bubbles):
+
+    all_pos = np.vstack([b["pos"] for b in bubbles])
+    all_vel = np.vstack([b["vel"] for b in bubbles])
+
+    N = len(all_pos)
+    local_ci = np.zeros(N)
+
+    for i in range(N):
+
+        p = all_pos[i]
+        dists = np.linalg.norm(all_pos - p, axis=1)
+        neighbors = dists < 0.5
+
+        if np.sum(neighbors) < 3:
+            continue
+
+        neighbor_pos = all_pos[neighbors]
+        neighbor_vel = all_vel[neighbors]
+
+        center = np.mean(neighbor_pos, axis=0)
+        rel = neighbor_pos - center
+        distances = np.linalg.norm(rel, axis=1)
+        radial_score = 1 / (np.std(distances) + 1e-5)
+
+        vel_norms = np.linalg.norm(neighbor_vel, axis=1) + 1e-5
+        norm_vel = neighbor_vel / vel_norms[:, None]
+        alignment = np.mean(np.dot(norm_vel, norm_vel.T))
+        alignment_score = np.clip(alignment, 0, 1)
+
+        local_ci[i] = 0.5 * radial_score + 0.5 * alignment_score
+
+    return local_ci
+
+# ---------------------------
 # RUN / RESET
 # ---------------------------
 col1, col2 = st.columns(2)
@@ -153,21 +184,36 @@ if col1.button("Run Simulation"):
 
 if col2.button("Reset"):
     st.session_state.bubbles = init_sim()
-    st.session_state.history = {"coherence": []}
     st.session_state.ci_history = []
     st.session_state.last_positions = None
 
 # ---------------------------
-# 3D VISUAL
+# COHERENCE FIELD VISUAL
 # ---------------------------
+st.subheader("3D Coherence Field")
+
+all_pos = np.vstack([b["pos"] for b in st.session_state.bubbles])
+local_ci = compute_local_coherence(st.session_state.bubbles)
+
+ci_min = np.min(local_ci)
+ci_max = np.max(local_ci) + 1e-5
+colors = (local_ci - ci_min) / (ci_max - ci_min)
+
 fig = go.Figure()
 
-for b in st.session_state.bubbles:
-    pos = b["pos"]
-    fig.add_trace(go.Scatter3d(
-        x=pos[:,0], y=pos[:,1], z=pos[:,2],
-        mode='markers'
-    ))
+fig.add_trace(go.Scatter3d(
+    x=all_pos[:,0],
+    y=all_pos[:,1],
+    z=all_pos[:,2],
+    mode='markers',
+    marker=dict(
+        size=4,
+        color=colors,
+        colorscale='Viridis',
+        opacity=0.9,
+        colorbar=dict(title="Local Coherence")
+    )
+))
 
 st.plotly_chart(fig, use_container_width=True)
 
@@ -222,8 +268,6 @@ if uploaded_file:
 # ---------------------------
 # CORRELATION FUNCTION
 # ---------------------------
-st.subheader("Two-Point Correlation")
-
 from scipy.spatial import distance_matrix
 
 def compute_correlation(points):
@@ -256,8 +300,6 @@ if st.button("Compute Correlation"):
 # ---------------------------
 # POWER SPECTRUM
 # ---------------------------
-st.subheader("Power Spectrum")
-
 def compute_power(points):
     grid_size = 32
     grid = np.zeros((grid_size,)*3)
