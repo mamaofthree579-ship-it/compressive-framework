@@ -1,10 +1,15 @@
 import streamlit as st
 import math
 
-st.set_page_config(page_title="Khipu Quantum Matrix v33", layout="wide")
+# --- MAIN PAGE CONFIGURATION ---
+st.set_page_config(
+    page_title="Khipu Global Fiber Topology v33", 
+    layout="wide", 
+    initial_sidebar_state="expanded"
+)
 
 st.title("🧶 Khipu Node v33: Unified Global Narrative Matrix Engine")
-st.write("Integrating Haversine Geographic Coordinates, Administrative Mita Protocols, and Narrative String Decoders.")
+st.write("Simulating Haversine Geographic Coordinates, Administrative Mita Protocols, and Narrative String Decoders.")
 
 # --- GEOGRAPHIC TRUE COORDINATE DATABASE ---
 nodes_geo = {
@@ -17,7 +22,7 @@ nodes_geo = {
 
 # Haversine Global Curve Formula Engine
 def calculate_haversine_distance(lat1, lon1, lat2, lon2):
-    R = 6371.0 # Earth radius in km
+    R = 6371.0 # Earth's radius in kilometers
     phi1, phi2 = math.radians(lat1), math.radians(lat2)
     delta_phi = math.radians(lat2 - lat1)
     delta_lambda = math.radians(lon2 - lon1)
@@ -31,19 +36,25 @@ origin_key = st.sidebar.selectbox("Origin Node", list(nodes_geo.keys()), index=0
 dest_key = st.sidebar.selectbox("Destination Node", list(nodes_geo.keys()), index=3, format_func=lambda x: nodes_geo[x]["name"])
 
 st.sidebar.header("⚖️ Administrative Taxation Engine")
-protocol_mode = st.sidebar.selectbox("Inca Administrative Class", ["Mita (Labor Tax Stream)", "Agricultural Quota (Maize/Chicha)", "Chasqui Royal Decree (High Priority)", "Military Mobilization Fleet"])
+protocol_mode = st.sidebar.selectbox(
+    "Inca Administrative Class", 
+    ["Mita (Labor Tax Stream)", "Agricultural Quota (Maize/Chicha)", "Chasqui Royal Decree (High Priority)", "Military Mobilization Fleet"]
+)
 
 st.sidebar.header("🪢 Structural Mechanics Vector")
 twist = st.sidebar.radio("Structural Axis (Urton Markedness)", ["Z-Twist (Default/Linear)", "S-Twist (Marked/Compressed)"])
 attachment = st.sidebar.radio("Hitch Geometry", ["Recto (Parallel Pack)", "Verso (Orthogonal Resist)"])
-color_profile = st.sidebar.selectbox("Cord Color Schema", ["Solid Natural (Single Carrier)", "Bi-Chrome Barber-Pole (2-Channel MUX)", "Tri-Color Mottled (3-Channel MUX)"])
+color_profile = st.sidebar.selectbox(
+    "Cord Color Schema", 
+    ["Solid Natural (Single Carrier)", "Bi-Chrome Barber-Pole (2-Channel MUX)", "Tri-Color Mottled (3-Channel MUX)"]
+)
 subsidiaries = st.sidebar.slider("Subsidiary Parity Cords Attached", min_value=0, max_value=4, value=1)
 
 # --- ENGINE COMPUTATIONAL LAYER ---
 geo1, geo2 = nodes_geo[origin_key], nodes_geo[dest_key]
 true_distance = calculate_haversine_distance(geo1["lat"], geo1["lon"], geo2["lat"], geo2["lon"])
 
-base_speed = 9.2 # km/h at 5 knots
+base_speed = 9.2 # Baseline migration velocity (5 knots in km/h)
 
 # 1. Administrative Protocol Tuning
 protocol_map = {
@@ -56,9 +67,13 @@ current_proto = protocol_map[protocol_mode]
 
 # 2. Structural Matrix Modifications
 if twist == "Z-Twist (Default/Linear)":
-    compression_ratio = 1.0; structural_entropy = 0.42; twist_mod = 1.0
+    compression_ratio = 1.0
+    structural_entropy = 0.42
+    twist_mod = 1.0
 else:
-    compression_ratio = 2.6; structural_entropy = 0.94; twist_mod = 0.85
+    compression_ratio = 2.6
+    structural_entropy = 0.94
+    twist_mod = 0.85
 
 mux_channels = 1 if "Solid" in color_profile else (2 if "Bi-Chrome" in color_profile else 3)
 color_attenuation = 1.0 if mux_channels == 1 else (1.18 if mux_channels == 2 else 1.35)
@@ -86,29 +101,41 @@ with col2:
     st.subheader("🧮 Data-Stream Multiplex Metrics")
     st.metric("Aggregate Transmission Rate", f"{throughput_rate:.1f} Mod-MB Equivalents")
     st.metric("System Information Entropy", f"{structural_entropy:.2f} Sh/cord")
-    st.progress(1.0 if latency_days == 0 else min(1.0, 12.0 / latency_days))
+    
+    # Progress visualization safely handling loopback bounds
+    progress_val = 1.0 if latency_days == 0 else min(1.0, 12.0 / latency_days)
+    st.progress(progress_val)
 
 st.divider()
 
 # --- DECIMAL KHIPU STRUCTURAL TRANSLATION ---
 st.subheader("🪢 Terminal Output Vector: Physical Cord Architecture")
 rounded_days = int(round(latency_days))
-hundreds, tens, units = rounded_days // 100, (rounded_days % 100) // 10, rounded_days % 10
+hundreds = rounded_days // 100
+tens = (rounded_days % 100) // 10
+units = rounded_days % 10
 
 if rounded_days == 0:
-    st.code("─── (0.0 Days Latency / Local Interface Loopback Mode)")
+    st.code("─── (0.0 Days Latency / Local Interface Loopback Mode)", language="text")
 else:
     khipu_string = f"───[Main Primary Cord Matrix | {origin_key.upper()} ({geo1['lat']:.1f}°) ➔ {dest_key.upper()} ({geo2['lat']:.1f}°)]───\n"
     khipu_string += f"   ├── Administrative Signature: [{protocol_mode}] Fiber Density Vector: {current_proto['thickness']}\n"
     khipu_string += f"   ├── Active Hash Matrix Layout: [{twist}][{attachment}][{color_profile}]\n"
     
+    # Base-10 Vertical Tier Generator
     if hundreds > 0:
         khipu_string += f"   ├── Pendant String Tier (10^2): {hundreds}x Simple Cluster Knots (●)\n"
     if tens > 0:
         khipu_string += f"   ├── Pendant String Tier (10^1): {tens}x Simple Cluster Knots (●)\n"
     if units > 0:
-        khipu_string += "   ├── Pendant String Tier (10^0): 1x Figure-Eight Knot (∞)\n" if units == 1 else f"   ├── Pendant String Tier (10^0): 1x Long Knot [{units} wraps] (▰)\n"
+        if units == 1:
+            khipu_string += "   ├── Pendant String Tier (10^0): 1x Figure-Eight Knot (∞)\n"
+        else:
+            khipu_string += f"   ├── Pendant String Tier (10^0): 1x Long Knot [{units} wraps] (▰)\n"
+    else:
+        khipu_string += "   ├── Pendant String Tier (10^0): 0x Knot Void [Explicit Decimal Zero] ( )\n"
     
+    # Recursive Parity Subsections
     for i in range(1, subsidiaries + 1):
         khipu_string += f"   │     └── [Subsidiary Parity {i}] ── Checksum Verification Segment (◈)\n"
         
