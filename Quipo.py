@@ -1,12 +1,12 @@
 import streamlit as st
 import math
 
-st.set_page_config(page_title="Khipu Matrix Physics", layout="wide")
+st.set_page_config(page_title="Khipu Quantum Matrix v32", layout="wide")
 
-st.title("🧶 Khipu Node v31: S/Z Compression Physics Engine")
-st.write("Simulating Data Density, Structural Entropy, and Multi-Tiered Geometric Matrices on the Kelp Highway.")
+st.title("🧶 Khipu Node v32: Chromatographic Matrix & Parity Engine")
+st.write("Simulating S/Z Markedness, Color Channel Multiplexing, and Subsidiary Cord Error-Correction.")
 
-# --- ENCODING DICTIONARIES & PROPERTIES ---
+# --- CORE ROUTING ARRAYS ---
 nodes = {
     "Bering": "Bering Strait (Gateway)",
     "Columbia": "Columbia River (Hub)",
@@ -21,80 +21,97 @@ distance_matrix = {
     ("Amazon", "Tiwanaku"): 3100, ("Amazon", "Easter"): 7400, ("Tiwanaku", "Easter"): 4200,
 }
 
-# --- SIDEBAR CONTROL PANEL ---
+# --- SIDEBAR CONTROL MATRIX ---
 st.sidebar.header("🗺️ Network Topology")
 origin_key = st.sidebar.selectbox("Origin Node", list(nodes.keys()), index=0, format_func=lambda x: nodes[x])
 dest_key = st.sidebar.selectbox("Destination Node", list(nodes.keys()), index=2, format_func=lambda x: nodes[x])
 
-st.sidebar.header("🪢 Structural Matrix Variables")
+st.sidebar.header("🪢 Twist & Attachment Engine")
 twist = st.sidebar.radio("Structural Axis (Urton Markedness)", ["Z-Twist (Default/Linear)", "S-Twist (Marked/Compressed)"])
 attachment = st.sidebar.radio("Hitch Geometry", ["Recto (Parallel Pack)", "Verso (Orthogonal Resist)"])
 material = st.sidebar.selectbox("Fiber Material Vector", ["Whale Baleen (Rigid)", "Marine Cotton (Standard)", "Camelid Wool (Elastic)"])
 
-# --- PHYSICAL ENGINE MATHEMATICS ---
+st.sidebar.header("🎨 Chromatographic Channels")
+color_profile = st.sidebar.selectbox("Cord Color Schema", ["Solid Natural (Single Carrier)", "Bi-Chrome Barber-Pole (2-Channel MUX)", "Tri-Color Mottled (3-Channel MUX)"])
+
+st.sidebar.header("🌿 Error Correction Layer")
+subsidiaries = st.sidebar.slider("Subsidiary Parity Cords Attached", min_value=0, max_value=4, value=1, help="Subsidiary strings hanging off pendants handle parity checksums.")
+
+# --- CORE COMPUTATIONAL PHYSICS PHYSICS Engine ---
 pair, reverse_pair = (origin_key, dest_key), (dest_key, origin_key)
 dist = 0 if origin_key == dest_key else distance_matrix.get(pair, distance_matrix.get(reverse_pair, 5000))
 
-# Baseline parameters
-raw_data_payload_mb = 450.0
-base_speed = 9.2 # 5 Knots in km/h
+raw_data_payload_mb = 600.0
+base_speed = 9.2  # km/h at 5 knots
 
-# Asymmetrical Physics Tuning
+# 1. S/Z Compression Factor
 if twist == "Z-Twist (Default/Linear)":
-    compression_ratio = 1.0  # Raw uncompressed stream
-    structural_entropy = 0.42 # Low structural layout complexity
-    speed_factor = 1.0
+    compression_ratio = 1.0; structural_entropy = 0.42; twist_speed_mod = 1.0
 else:
-    compression_ratio = 2.45 # S-Twist acts as a code modifier compressing structural footprint
-    structural_entropy = 0.89 # Highly variable informational density
-    speed_factor = 0.85 # Tying and interpreting marked S-shunts slows raw travel speed by 15%
+    compression_ratio = 2.5; structural_entropy = 0.91; twist_speed_mod = 0.85
 
-# Attachment physics mod
+# 2. Color Channel Multiplexing
+if "Solid" in color_profile:
+    mux_channels = 1; color_attenuation = 1.0
+elif "Bi-Chrome" in color_profile:
+    mux_channels = 2; color_attenuation = 1.18  # 18% signal drag due to phase-splitting
+else:
+    mux_channels = 3; color_attenuation = 1.35  # 35% chromatic interference drag
+
+# 3. Subsidiary Error-Correction Parity
+# Each subsidiary adds data structural mass (slowing travel) but exponentially drops frame drops
+packet_loss_rate = max(0.0, 4.5 - (subsidiaries * 1.5))
+parity_overhead_mod = 1.0 + (subsidiaries * 0.08)
+
+# 4. Geometry and Material Constraints
 hitch_modifier = 1.12 if attachment == "Verso (Orthogonal Resist)" else 1.00
-effective_distance = dist * hitch_modifier
-
-# Material attenuation factors
 material_attenuation = {"Whale Baleen (Rigid)": 0.95, "Marine Cotton (Standard)": 1.00, "Camelid Wool (Elastic)": 1.15}
-mat_factor = material_attenuation[material]
 
-# Final Payload calculations
-compressed_payload_size = raw_data_payload_mb / compression_ratio
-latency_days = 0.0 if dist == 0 else (effective_distance * mat_factor) / (base_speed * speed_factor * 24)
+# 5. Final Equations
+effective_distance = dist * hitch_modifier * color_attenuation * parity_overhead_mod
+final_speed = base_speed * twist_speed_mod
+latency_days = 0.0 if dist == 0 else (effective_distance * material_attenuation[material]) / (final_speed * 24)
+throughput_rate = (raw_data_payload_mb * mux_channels) / compression_ratio
 
-# --- GRAPHIC INTERFACE GRID ---
+# --- DASHBOARD VISUALIZATIONS ---
 col1, col2 = st.columns(2)
 
 with col1:
-    st.subheader("📊 Physics & Compression Summary")
-    st.metric("Compression Efficiency Ratio", f"{compression_ratio:.2f} : 1")
-    st.metric("Effective Physical Latency", f"{latency_days:.2f} Days")
-    st.info(f"**Structural Footprint:** Compressing original {raw_data_payload_mb} MB payload down to **{compressed_payload_size:.1f} MB** string length equivalents.")
+    st.subheader("📊 Dynamic Multiplexing Profiles")
+    st.metric("Aggregate Transmission Rate", f"{throughput_rate:.1f} Mod-MB Equivalents")
+    st.metric("Total Latency Timeframe", f"{latency_days:.2f} Days")
+    st.info(f"**Split Multiplexing:** Operating **{mux_channels} concurrent color carrier paths** across the main infrastructure backbone.")
 
 with col2:
-    st.subheader("🧬 Material Vector Attenuation")
-    st.metric("Matrix Structural Entropy", f"{structural_entropy:.2f} Sh/cord")
-    st.metric("Dynamic Speed Constriction Factor", f"{speed_factor * (1/mat_factor):.2f}x")
-    
-    progress_val = 1.0 if latency_days == 0 else min(1.0, 12.0 / latency_days)
-    st.progress(progress_val)
+    st.subheader("🛡️ Array Integrity & Fault Tolerance")
+    st.metric("Simulated Packet Drop Rate", f"{packet_loss_rate:.2f} %")
+    st.metric("Structural Data Parity Buffer", f"+{(parity_overhead_mod - 1.0)*100:.0f}% mass overhead")
+    st.progress(1.0 if latency_days == 0 else min(1.0, 12.0 / latency_days))
 
 st.divider()
 
-# --- DECIMAL KHIPU STRUCTURAL TRANSLATION ---
-st.subheader("🧮 Resulting Physical Cord Matrix State")
+# --- GEOMETRIC RECORD MAP DISPLAY ---
+st.subheader("🧮 Terminal Output Vector: Physical Cord Architecture")
 rounded_days = int(round(latency_days))
 hundreds, tens, units = rounded_days // 100, (rounded_days % 100) // 10, rounded_days % 10
 
 if rounded_days == 0:
-    st.code("─── (No Latency / Local Network Loopback)")
+    st.code("─── (0.0 Days Latency / Local Interface Loopback Mode)")
 else:
-    khipu_string = f"───[Main Primary Cord String Matrix | Origin: {origin_key} ➔ Dest: {dest_key}]───\n"
-    khipu_string += f"   ├── Physics Modifier Tag: [{twist[:1]}][{attachment[:1]}][{material[:3].upper()}]\n"
-    if hundreds > 0:
-        khipu_string += f"   ├── Hundreds Tier (10^2): {hundreds}x Simple Cluster Knots (●)\n"
-    if tens > 0:
-        khipu_string += f"   ├── Tens Tier     (10^1): {tens}x Simple Cluster Knots (●)\n"
-    if units > 0:
-        khipu_string += "   └── Units Tier    (10^0): 1x Figure-Eight Knot (∞)\n" if units == 1 else f"   └── Units Tier    (10^0): 1x Long Knot [{units} wraps] (▰)\n"
+    khipu_string = f"───[Main Primary Cord Matrix | {origin_key.upper()} ➔ {dest_key.upper()}]───\n"
+    khipu_string += f"   ├── Active Hash Matrix Configuration: [{twist[0]}][{attachment[0]}][{color_profile[0]}][Subs:{subsidiaries}]\n"
     
+    # Render primary pendant cord
+    if hundreds > 0:
+        khipu_string += f"   ├── Pendant String Tier (10^2): {hundreds}x Cluster Knots (●)\n"
+    if tens > 0:
+        khipu_string += f"   ├── Pendant String Tier (10^1): {tens}x Cluster Knots (●)\n"
+    if units > 0:
+        khipu_string += "   ├── Pendant String Tier (10^0): 1x Figure-Eight Knot (∞)\n" if units == 1 else f"   ├── Pendant String Tier (10^0): 1x Long Knot [{units} wraps] (▰)\n"
+    
+    # Render dynamic subsidiary structures for parity
+    for i in range(1, subsidiaries + 1):
+        khipu_string += f"   │     └── [Subsidiary Cord {i}] ── Checksum Verification Segment (◈)\n"
+        
+    khipu_string += f"   └── [Terminal Node Loop Closure] Status Synchronized at Destination.\n"
     st.code(khipu_string, language="text")
