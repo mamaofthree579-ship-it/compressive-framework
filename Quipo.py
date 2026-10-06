@@ -50,6 +50,60 @@ color_profile = st.sidebar.selectbox(
 )
 subsidiaries = st.sidebar.slider("Subsidiary Parity Cords Attached", min_value=0, max_value=4, value=1)
 
+# --- SIMULATED HISTORICAL ARCHAEOLOGICAL DATA REGISTRY ---
+# Inspired by the structural distribution profiles found in real database registries.
+khipu_archaeological_registry = {
+    "URTON-M01": {
+        "provenance": "Puruchuco Valley Cache",
+        "primary_color": "Solid Natural (Single Carrier)",
+        "twist_type": "Z-Twist (Default/Linear)",
+        "hitch": "Recto (Parallel Pack)",
+        "subsidiary_count": 0,
+        "raw_payload_equivalent": 450,
+        "notes": "Classic administrative accounting record. High structural linearity, minimal data fragmentation."
+    },
+    "URTON-M24": {
+        "provenance": "Chachapoyas Laguna Region",
+        "primary_color": "Bi-Chrome Barber-Pole (2-Channel MUX)",
+        "twist_type": "S-Twist (Marked/Compressed)",
+        "hitch": "Verso (Orthogonal Resist)",
+        "subsidiary_count": 3,
+        "raw_payload_equivalent": 1850,
+        "notes": "Highly complex narrative-structural crossover cord. Heavy density variation indicating anomaly recording or tax exemptions."
+    },
+    "URTON-M82": {
+        "provenance": "Ica Valley Coastal Site",
+        "primary_color": "Tri-Color Mottled (3-Channel MUX)",
+        "twist_type": "Z-Twist (Default/Linear)",
+        "hitch": "Recto (Parallel Pack)",
+        "subsidiary_count": 1,
+        "raw_payload_equivalent": 920,
+        "notes": "Multi-tier quantitative census profile tracking high-volume resource migration along maritime exchange sectors."
+    }
+}
+
+# --- ADDING ARTIFACT INJECTOR TO STREAMLIT UI ---
+st.sidebar.markdown("---")
+st.sidebar.header("🏺 Archaeological Sandbox")
+use_preset = st.sidebar.checkbox("Inject Real Database Preset")
+
+if use_preset:
+    preset_key = st.sidebar.selectbox("Select Khipu Artifact Model", list(khipu_archaeological_registry.keys()))
+    artifact = khipu_archaeological_registry[preset_key]
+    
+    # Overriding the UI states automatically based on the selected catalog artifact
+    st.sidebar.info(f"**Loaded Provenance:** {artifact['provenance']}\n\n*Note: Manual configuration fields overridden.*")
+    
+    # Re-mapping engine hooks to the data payload
+    color_profile = artifact["primary_color"]
+    twist = artifact["twist_type"]
+    attachment = artifact["hitch"]
+    subsidiaries = artifact["subsidiary_count"]
+    
+    # Display artifact field profile in the main dashboard view
+    st.subheader(f"🔍 Active Sample Profile: {preset_key}")
+    st.markdown(f"**Field Context:** {artifact['notes']}")
+
 # --- ENGINE COMPUTATIONAL LAYER ---
 geo1, geo2 = nodes_geo[origin_key], nodes_geo[dest_key]
 true_distance = calculate_haversine_distance(geo1["lat"], geo1["lon"], geo2["lat"], geo2["lon"])
