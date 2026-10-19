@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 import physics_core as pc
 import anim_renderers as ar
 
-st.set_page_config(page_title="Manas-Yantra Unified Flight Deck", layout="wide")
-st.title("Project Manas-Yantra: Unified Grand Flight Deck")
+st.set_page_config(page_title="Manas-Yantra Grand Unified Deck", layout="wide")
+st.title("Project Manas-Yantra: Unified Flight Deck Simulation Matrix")
 st.markdown("---")
 
 # --- Interface Controls Setup ---
@@ -27,7 +27,6 @@ vocal_freq, core_attenuation = (136.1, 0.95) if "OM" in mantra_input else ((480.
 magnetic_field_strength = st.sidebar.slider("Magnetic Field Flux (Tesla)", 10, 250, 120)
 plasma_temperature = st.sidebar.slider("Mercury Plasma Temp (Kelvin)", 1000, 15000, 6500, 500)
 
-# --- Dynamic Sensor Modulators ---
 if system_choice == "Propulsion & Maneuvers":
     well_depth_mod = st.sidebar.slider("Well Depth (-M)", 10, 120, int((magnetic_field_strength*0.4) + (simulated_voltage*0.3)))
     asymmetry_scale = st.sidebar.slider("Gradient Vector Skew (α)", 0.1, 2.5, float((plasma_temperature/15000)*1.5 + (eeg_amplitude*0.02)), 0.1)
@@ -37,7 +36,6 @@ elif system_choice == "Invisibility System":
 else:
     beam_intensity = st.sidebar.slider("Focal Core Compression Intensity", 1.0, 6.0, float((magnetic_field_strength*0.015) + (simulated_voltage*0.02)), 0.1)
 
-# --- NEW EXTENDED EXPERIMENTAL LAB SIDEBAR SLIDERS ---
 st.sidebar.subheader("🔬 Advanced Material & Aero Profilers")
 alloy_selection = st.sidebar.selectbox("Select Target Alloy Specimen:", ["Kundodara Loha (Engine Core)", "Raajaloha (Airframe Hull)", "Vishvodara Metal"])
 target_velocity_mach = st.sidebar.slider("Target Flight Velocity (Mach)", 0.0, 8.0, 2.4, 0.2)
@@ -50,9 +48,13 @@ with display_col:
     row1_left, row1_right = st.columns(2)
     with row1_left:
         st.markdown("#### 🌌 Active Macro-Field Map")
-        if system_choice == "Propulsion & Maneuvers": st.image(ar.render_propulsion(well_depth_mod, asymmetry_scale), use_container_width=True)
-        elif system_choice == "Invisibility System": st.image(ar.render_invisibility(envelope_radius, diffraction_mod), use_container_width=True)
-        else: st.image(ar.render_weapon(beam_intensity), use_container_width=True)
+        if system_choice == "Propulsion & Maneuvers": 
+            st.image(ar.render_propulsion(well_depth_mod, asymmetry_scale), use_container_width=True)
+        elif system_choice == "Invisibility System": 
+            st.image(ar.render_invisibility(envelope_radius, diffraction_mod), use_container_width=True)
+        else: 
+            st.image(ar.render_weapon(beam_intensity), use_container_width=True)
+            
     with row1_right:
         st.markdown("#### 🧲 Core MHD Mercury Plasma Loop")
         st.image(ar.render_plasma_vortex(plasma_temperature, magnetic_field_strength), use_container_width=True)
@@ -60,23 +62,23 @@ with display_col:
     st.markdown("---")
     st.markdown("#### 🔷 Hyperspatial Core Topology Projection (4D Coordinate Fold)")
     row2_center = st.columns([0.15, 1.0, 0.15])
-    with row2_center[1]: st.image(ar.render_tesseract(simulated_voltage), use_container_width=True)
+    with row2_center: 
+        st.image(ar.render_tesseract(simulated_voltage), use_container_width=True)
 
 with telemetry_col:
     st.markdown("### 📊 Grand Unified System Metrics")
-    st.metric(label="MHD Vortex Angular Velocity", value=f"{(magnetic_field_strength * 72.5):,.0f} rad/s", delta=f"{magnetic_field_strength} T Flux")
-    st.metric(label="Substrate Electrical Resonance Gain", value=f"{simulated_voltage:.1f} mV", delta=brainwave_state.split()[0])
-    st.metric(label="Acoustic Carrier Lock Frequency", value=f"{vocal_freq:.1f} Hz", delta=f"Dampening: x{core_attenuation:.2f}")
+    st.metric(label="MHD Vortex Angular Velocity", value=f"{(magnetic_field_strength * 72.5):,.0f} rad/s")
+    st.metric(label="Substrate Electrical Resonance Gain", value=f"{simulated_voltage:.1f} mV")
+    st.metric(label="Acoustic Carrier Lock Frequency", value=f"{vocal_freq:.1f} Hz")
     
     st.markdown("---")
-    st.markdown("**🔬 Material Science & Aero Vector Readout:**")
     m_name, diff_coeff, sat_pct = pc.calculate_biometallurgy(alloy_selection, plasma_temperature)
     eff_Cd, drag_force = pc.calculate_aerodynamics(target_velocity_mach, atmospheric_density, well_depth_mod if system_choice == "Propulsion & Maneuvers" else 0.0)
     
-    st.write(f"🔬 **{m_name}** at {plasma_temperature}K achieves an atomic diffusion velocity constant of **{diff_coeff:.2e} m²/s**, showing a complete structural crystal lattice saturation efficiency score of **{sat_pct:.2f}%**.")
-    st.write(f"✈️ At **Mach {target_velocity_mach}**, spatial curvature compression reduces the drag coefficient down to **{eff_Cd:.3f}**, limiting total hull friction loads to **{drag_force:.2f} kN**.")
+    st.write(f"🔬 **{m_name}** at {plasma_temperature}K holds a diffusion rate of **{diff_coeff:.2e} m²/s**, providing structural saturation metrics of **{sat_pct:.2f}%**.")
+    st.write(f"✈️ At **Mach {target_velocity_mach}**, localized medium compression drops the airframe drag down to **{eff_Cd:.3f}**, anchoring current kinetic drag resistance to **{drag_force:.2f} kN**.")
 
-# --- DYNAMIC EXTREME DIAGNOSTICS DECK ---
+# --- DIAGNOSTICS GRAPH MATRICES ---
 st.markdown("---")
 st.header("🛡️ Sub-Hull Structural Analytics & Wave-Vector Telemetry")
 diag_col1, diag_col2 = st.columns(2)
@@ -91,8 +93,8 @@ with diag_col1:
     ax_hull.set_facecolor('black'); fig_hull.patch.set_facecolor('black')
     stress_x = np.linspace(0, 10, 100)
     strain_y = 100 * (1 - np.exp(-stress_x / 3.0))
-    ax_hull.plot(stress_x, strain_y, color='cyan', label='Raajaloha Elastic Boundary')
-    ax_hull.axvline(x=attenuated_load / 50.0, color='red', linestyle='--', label='Active Operational Load')
+    ax_hull.plot(stress_x, strain_y, color='cyan', label='Raajaloha Elastic Limit')
+    ax_hull.axvline(x=attenuated_load / 50.0, color='red', linestyle='--', label='Active Structural Vector')
     ax_hull.set_xlabel('Applied Hyperspatial Stress Metric', color='white')
     ax_hull.set_ylabel('Micro-Strain Deformation (%)', color='white')
     ax_hull.tick_params(colors='white'); ax_hull.legend(facecolor='black', edgecolor='white', labelcolor='white')
