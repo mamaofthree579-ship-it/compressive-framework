@@ -74,13 +74,14 @@ def render_tesseract(voltage):
         theta = (frame / FRAMES) * 2 * np.pi
         phi = (voltage / 150.0) * np.pi
         
-        # Repaired 4D Rotation Matrices around the XW and ZW hyper-planes
+        # Repaired valid 4D Rotation Matrices around the XW and ZW planes
         R_xw = np.array([
             [np.cos(theta), 0, 0, -np.sin(theta)],
 ,
  ,
             [np.sin(theta), 0, 0, np.cos(theta)]
         ])
+        
         R_zw = np.array([,
  ,
             [0, 0, np.cos(phi), -np.sin(phi)],
@@ -89,11 +90,17 @@ def render_tesseract(voltage):
         
         rotated = vertices_4d @ R_xw @ R_zw
         D = 2.5
-        projected = np.array([[v[0]*(D/(D-v[3])), v[1]*(D/(D-v[3])), v[2]*(D/(D-v[3]))] for v in rotated])
+        projected = []
+        for v in rotated:
+            w_factor = D / (D - v[3])
+            projected.append([v[0] * w_factor, v[1] * w_factor, v[2] * w_factor])
+        projected = np.array(projected)
         
         for edge in edges:
-            p1, p2 = projected[edge[0]], projected[edge[1]]
+            p1 = projected[edge[0]]
+            p2 = projected[edge[1]]
             ax.plot([p1[0], p2[0]], [p1[1], p2[1]], [p1[2], p2[2]], color='cyan', alpha=0.4, lw=1)
+            
         ax.scatter(projected[:,0], projected[:,1], projected[:,2], color='magenta', s=12)
         ax.set_xlim(-2.5, 2.5); ax.set_ylim(-2.5, 2.5); ax.set_zlim(-2.5, 2.5)
         ax.set_axis_off(); fig.patch.set_facecolor('black')
@@ -120,7 +127,7 @@ def render_propulsion(depth, skew):
         if frame == 0: craft_pos = np.array([0.0, 0.0])
         ax.clear()
         if 10 < frame <= 40: craft_pos += skew * 1.5
-        X_s, Y_s = X - craft_pos, Y - craft_pos
+        X_s, Y_s = X - craft_pos[0], Y - craft_pos[1]
         R = np.sqrt(X_s**2 + Y_s**2)
         Z = -depth * np.exp(-(R**2)/(2*25.0**2)) + (skew * X_s)
         ax.plot_surface(X, Y, Z, cmap=cm.magma, linewidth=0, rcount=30, ccount=30)
