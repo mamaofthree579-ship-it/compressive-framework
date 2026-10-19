@@ -65,13 +65,12 @@ def calculate_planetary_resonance_coupling(vocal_freq, altitude_km, geo_flux_tes
     # Induced magnetic drag stabilization torque (Lorentz coupling variant)
     induced_coupling_stabilization = geo_flux_tesla * coherence_factor * 12.5
     
-    return coherent_lock_status(coherence_factor, induced_coupling_stabilization, closest_harmonic)
-
-def coherent_lock_status(coherence_factor, induced_coupling_stabilization, closest_harmonic):
+    # Repaired status evaluation string generation block
     if coherence_factor > 0.6:
         status = "CRITICAL RESONANCE LOCK ACTIVE"
     elif coherence_factor > 0.2:
         status = "COMPATIBLE WAVEFRONT ALIGNMENT"
     else:
         status = "HIGH INDEPENDENT TURBULENCE DRIFT"
+        
     return coherence_factor, induced_coupling_stabilization, closest_harmonic, status
