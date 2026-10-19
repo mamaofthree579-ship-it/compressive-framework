@@ -61,8 +61,11 @@ with display_col:
     
     st.markdown("---")
     st.markdown("#### 🔷 Hyperspatial Core Topology Projection (4D Coordinate Fold)")
-    row2_center = st.columns([0.15, 1.0, 0.15])
-    with row2_center: 
+    
+    # Correctly unpack the column list layout elements natively into specific slots
+    left_pad, center_slot, right_pad = st.columns([0.15, 1.0, 0.15])
+    
+    with center_slot: 
         st.image(ar.render_tesseract(simulated_voltage), use_container_width=True)
 
 with telemetry_col:
