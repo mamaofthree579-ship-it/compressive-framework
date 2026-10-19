@@ -8,11 +8,24 @@ from matplotlib.patches import Polygon
 from PIL import Image
 
 def compile_in_memory_gif(frames, duration=50):
-    """Compiles list of PIL images into an animated GIF byte stream."""
+    """
+    Correctly compiles a list of PIL images into an animated GIF byte stream
+    by saving from the first frame item and appending the rest.
+    """
     if not frames:
         return None
     out_buf = io.BytesIO()
-    frames.save(out_buf, format='GIF', save_all=True, append_images=frames[1:], duration=duration, loop=0)
+    
+    # Repaired line: Call .save() on the first frame, not the list object itself
+    frames[0].save(
+        out_buf, 
+        format='GIF', 
+        save_all=True, 
+        append_images=frames[1:], 
+        duration=duration, 
+        loop=0
+    )
+    
     out_buf.seek(0)
     return out_buf
 
