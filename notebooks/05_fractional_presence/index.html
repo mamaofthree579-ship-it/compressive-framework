@@ -1020,7 +1020,7 @@ C_{ij} = \frac{\langle \psi_i^* \psi_j \rangle}{\sqrt{\langle |\psi_i|^2 \rangle
 <li>Simple Correlation Simulation</li>
 </ol>
 <p>from itertools import combinations</p>
-<p>nodes = [np.exp(-((x - c)<strong>2)/(2*sigma</strong>2)) for c in centers]</p>
+<p>nodes = [np.exp(-((x - c)**2)/(2*sigma**2)) for c in centers]</p>
 <p>def correlation(a, b):
     return np.sum(a * b) / np.sqrt(np.sum(a<strong>2) * np.sum(b</strong>2))</p>
 <p>pairs = list(combinations(range(len(nodes)), 2))
