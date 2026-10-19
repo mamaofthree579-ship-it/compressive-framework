@@ -17,15 +17,12 @@ def safe_animation_save(ani, final_filepath, fps, dpi):
     Saves an animation atomically to prevent Streamlit from reading 
     a partial/corrupted file during the write process.
     """
-    # 1. Create a temporary file in the same directory to ensure fast renaming
     dir_name = os.path.dirname(final_filepath)
     with tempfile.NamedTemporaryFile(suffix='.gif', dir=dir_name, delete=False) as tmpfile:
         tmp_path = tmpfile.name
     
     try:
-        # 2. Save the animation fully to the temporary location
         ani.save(tmp_path, writer='pillow', fps=fps, dpi=dpi)
-        # 3. Atomically swap it to the destination (thread-safe OS operation)
         os.replace(tmp_path, final_filepath)
     except Exception as e:
         if os.path.exists(tmp_path):
@@ -76,13 +73,27 @@ def render_tesseract(voltage):
         ax.clear()
         theta = (frame / FRAMES) * 2 * np.pi
         phi = (voltage / 150.0) * np.pi
-        R_xw = np.array([[np.cos(theta), 0, 0, -np.sin(theta)],,, [np.sin(theta), 0, 0, np.cos(theta)]])
-        R_zw = np.array([,, [0, 0, np.cos(phi), -np.sin(phi)], [0, 0, np.sin(phi), np.cos(phi)]])
+        
+        # Repaired 4D Rotation Matrices around the XW and ZW hyper-planes
+        R_xw = np.array([
+            [np.cos(theta), 0, 0, -np.sin(theta)],
+,
+ ,
+            [np.sin(theta), 0, 0, np.cos(theta)]
+        ])
+        R_zw = np.array([,
+ ,
+            [0, 0, np.cos(phi), -np.sin(phi)],
+            [0, 0, np.sin(phi), np.cos(phi)]
+        ])
+        
         rotated = vertices_4d @ R_xw @ R_zw
         D = 2.5
-        projected = np.array([[v*(D/(D-v)), v*(D/(D-v)), v*(D/(D-v))] for v in rotated])
+        projected = np.array([[v[0]*(D/(D-v[3])), v[1]*(D/(D-v[3])), v[2]*(D/(D-v[3]))] for v in rotated])
+        
         for edge in edges:
-            ax.plot([projected[edge,0], projected[edge,0]], [projected[edge,1], projected[edge,1]], [projected[edge,2], projected[edge,2]], color='cyan', alpha=0.4, lw=1)
+            p1, p2 = projected[edge[0]], projected[edge[1]]
+            ax.plot([p1[0], p2[0]], [p1[1], p2[1]], [p1[2], p2[2]], color='cyan', alpha=0.4, lw=1)
         ax.scatter(projected[:,0], projected[:,1], projected[:,2], color='magenta', s=12)
         ax.set_xlim(-2.5, 2.5); ax.set_ylim(-2.5, 2.5); ax.set_zlim(-2.5, 2.5)
         ax.set_axis_off(); fig.patch.set_facecolor('black')
@@ -113,7 +124,7 @@ def render_propulsion(depth, skew):
         R = np.sqrt(X_s**2 + Y_s**2)
         Z = -depth * np.exp(-(R**2)/(2*25.0**2)) + (skew * X_s)
         ax.plot_surface(X, Y, Z, cmap=cm.magma, linewidth=0, rcount=30, ccount=30)
-        ax.scatter(craft_pos, craft_pos, np.min(Z)-5, marker='o', s=80, c='cyan')
+        ax.scatter(craft_pos[0], craft_pos[1], np.min(Z)-5, marker='o', s=80, c='cyan')
         ax.set_zlim(-180, 80); ax.set_axis_off(); fig.patch.set_facecolor('black')
 
     ani = FuncAnimation(fig, update, frames=FRAMES)
