@@ -27,6 +27,11 @@ vocal_freq, core_attenuation = (136.1, 0.95) if "OM" in mantra_input else ((480.
 magnetic_field_strength = st.sidebar.slider("Magnetic Field Flux (Tesla)", 10, 250, 120)
 plasma_temperature = st.sidebar.slider("Mercury Plasma Temp (Kelvin)", 1000, 15000, 6500, 500)
 
+# --- NEW PLANETARY NAVIGATION MATRIX CONTROLS ---
+st.sidebar.subheader("🌍 Earth Resonance Environment")
+flight_altitude = st.sidebar.slider("Flight Operational Altitude (km)", 0.5, 120.0, 12.0, 0.5)
+local_geomagnetic_flux = st.sidebar.slider("Geomagnetic Flux (Micro-Tesla)", 20.0, 70.0, 48.0, 1.0)
+
 if system_choice == "Propulsion & Maneuvers":
     well_depth_mod = st.sidebar.slider("Well Depth (-M)", 10, 120, int((magnetic_field_strength*0.4) + (simulated_voltage*0.3)))
     asymmetry_scale = st.sidebar.slider("Gradient Vector Skew (α)", 0.1, 2.5, float((plasma_temperature/15000)*1.5 + (eeg_amplitude*0.02)), 0.1)
@@ -61,10 +66,7 @@ with display_col:
     
     st.markdown("---")
     st.markdown("#### 🔷 Hyperspatial Core Topology Projection (4D Coordinate Fold)")
-    
-    # Correctly unpack the column list layout elements natively into specific slots
     left_pad, center_slot, right_pad = st.columns([0.15, 1.0, 0.15])
-    
     with center_slot: 
         st.image(ar.render_tesseract(simulated_voltage), use_container_width=True)
 
@@ -78,12 +80,21 @@ with telemetry_col:
     m_name, diff_coeff, sat_pct = pc.calculate_biometallurgy(alloy_selection, plasma_temperature)
     eff_Cd, drag_force = pc.calculate_aerodynamics(target_velocity_mach, atmospheric_density, well_depth_mod if system_choice == "Propulsion & Maneuvers" else 0.0)
     
+    # Calculate live planetary Schumann coupling matrix metrics
+    c_factor, mag_stab, target_harm, lock_txt = pc.calculate_planetary_resonance_coupling(vocal_freq, flight_altitude, local_geomagnetic_flux * 1e-6)
+    
     st.write(f"🔬 **{m_name}** at {plasma_temperature}K holds a diffusion rate of **{diff_coeff:.2e} m²/s**, providing structural saturation metrics of **{sat_pct:.2f}%**.")
     st.write(f"✈️ At **Mach {target_velocity_mach}**, localized medium compression drops the airframe drag down to **{eff_Cd:.3f}**, anchoring current kinetic drag resistance to **{drag_force:.2f} kN**.")
+    
+    st.markdown("---")
+    st.markdown("**🌍 Earth Cavity Telemetry:**")
+    st.write(f"📡 Stabilizer mapping tracks harmonic resonance proximity to Earth's **{target_harm}th sub-harmonic band**.")
+    st.write(f"Coherence Index: **{c_factor:.3f}** | Stabilization Gain: **{mag_stab:.2e} N-m**")
+    st.info(f"Status Matrix: **{lock_txt}**")
 
 # --- DIAGNOSTICS GRAPH MATRICES ---
 st.markdown("---")
-st.header("🛡️ Sub-Hull Structural Analytics & Wave-Vector Telemetry")
+st.header("🛡️ Sub-Hull Structural Analytics & Planetary Coupling Vectors")
 diag_col1, diag_col2 = st.columns(2)
 
 with diag_col1:
@@ -105,22 +116,7 @@ with diag_col1:
     st.metric(label="Calculated Material Hull Fatigue Yield Capacity", value=f"{yield_strength_pct:.2f} %")
 
 with diag_col2:
-    st.subheader("📈 Gravitational Wave-Vector Tracking Analysis")
-    fig_vec, ax_vec = plt.subplots(figsize=(6, 3))
-    ax_vec.set_facecolor('black'); fig_vec.patch.set_facecolor('black')
-    vec_x, vec_y = np.meshgrid(np.linspace(-5, 5, 15), np.linspace(-5, 5, 10))
-    
-    if system_choice == "Propulsion & Maneuvers":
-        u, v = vec_x + asymmetry_scale, vec_y * 0.5
-        title_str = "Asymmetrical Propulsion Gradient Stream"
-    elif system_choice == "Invisibility System":
-        u, v = vec_x * (1 - np.exp(-(vec_x**2 + vec_y**2)/4.0)), vec_y * (1 - np.exp(-(vec_x**2 + vec_y**2)/4.0))
-        title_str = "Isotropic Photon Wrap Deflection Field"
-    else:
-        u, v = -vec_x * beam_intensity, -vec_y * beam_intensity
-        title_str = "Focused Convergence Singularity Vector"
-        
-    ax_vec.quiver(vec_x, vec_y, u, v, color='magenta', alpha=0.8)
-    ax_vec.tick_params(colors='white'); ax_vec.set_axis_off(); ax_vec.set_title(title_str, color='white', fontsize=10)
-    st.pyplot(fig_vec)
-    st.info("📊 Phase coherence analytics confirm that spatial fluid alignment matches your loaded Yantra algorithm accurately.")
+    st.subheader("🌐 Coupled Earth-Stabilizer Phase Wavefront")
+    # Call the new real-time atmospheric coupling wave visualizer module
+    stream_data = ar.render_planetary_interference_field(vocal_freq, c_factor)
+    st.image(stream_data, use_container_width=True)
