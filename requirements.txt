@@ -10,6 +10,8 @@ bilby[gw]
 lalsuite[siminspiralfd]
 gwpy
 networkx
+pillow
+pytesseract
 # --- Core MkDocs setup ---
 mkdocs>=1.6.0
 mkdocs-material>=9.5.0
