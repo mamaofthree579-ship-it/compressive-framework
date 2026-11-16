@@ -21,7 +21,7 @@
       
       
       <link rel="icon" href="../../images/cf-trifractal-dark.svg">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
     
     
       
@@ -1020,7 +1020,7 @@ C_{ij} = \frac{\langle \psi_i^* \psi_j \rangle}{\sqrt{\langle |\psi_i|^2 \rangle
 <li>Simple Correlation Simulation</li>
 </ol>
 <p>from itertools import combinations</p>
-<p>nodes = [np.exp(-((x - c)**2)/(2*sigma**2)) for c in centers]</p>
+<p>nodes = [np.exp(-((x - c)**2)/(2<em>sigma</em>*2)) for c in centers]</p>
 <p>def correlation(a, b):
     return np.sum(a * b) / np.sqrt(np.sum(a<strong>2) * np.sum(b</strong>2))</p>
 <p>pairs = list(combinations(range(len(nodes)), 2))
@@ -1107,7 +1107,7 @@ corrs = [correlation(nodes[i], nodes[j]) for i, j in pairs]</p>
       <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.instant", "content.code.copy", "header.autohide"], "search": "../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.c21346df.min.js"></script>
+      <script src="../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
       
         <script src="../../assets/js/particles.js"></script>
       
