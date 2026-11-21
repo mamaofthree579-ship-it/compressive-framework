@@ -439,7 +439,7 @@ with tab3:
         n_nodes=n_spec, phase_flux=flux_strength, jitter=adaptive_jitter
     )
 
-        g1, g2, g3 = st.columns(3)
+    g1, g2, g3 = st.columns(3)
     g1.metric("Real CF-D Wasserstein Dist to GUE", f"{w_real:.4f}")
     reduction = ((w_real - w_complex) / max(w_real, 1e-9)) * 100.0
     g2.metric("Complex CF-D Wasserstein Dist to GUE", f"{w_complex:.4f}", f"{-reduction:.1f}% error")
