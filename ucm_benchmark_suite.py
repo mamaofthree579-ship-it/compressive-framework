@@ -292,6 +292,7 @@ tab1, tab2, tab3, tab4 = st.tabs([
     "2. CF-A..CF-D Synchronization (Theorem 2)",
     "3. CF-D Complex Phase vs. Riemann Zeta GUE",
     "4. Multi-Field Spatiotemporal Lattice (CF-DPF)",
+    "5. Madelung Shock Regularization (Navier–Stokes)",
 ])
 
 # ------------------------------------------------------------------------------
@@ -532,3 +533,166 @@ with tab4:
     )
     st.plotly_chart(fig_dpf, use_container_width=True)
 
+# ==============================================================================
+# 6. MODULE D: MADELUNG-NAVIER-STOKES SHOCK REGULARIZATION (Book Two, Ch. 20-21)
+# ==============================================================================
+
+def run_madelung_shock_comparison(
+    n_grid: int = 256,
+    t_max: float = 1.25,
+    kappa: float = 0.08,
+    alpha: float = 2.0,
+    eta_coh: float = 0.015,
+    hbar_eff: float = 0.06,
+):
+    """
+    Compares unregularized inviscid Burgers/Euler shock blowup (du/dt + u du/dx = 0)
+    against the Madelung-transformed UCM fluid (psi = sqrt(rho) * exp(i*S/hbar_eff))
+    evolved under Q[psi] + H_coh (Book Two, Section 20.7 & Theorems 4, 8).
+    """
+    L = 2.0 * np.pi
+    x = np.linspace(0, L, n_grid, endpoint=False)
+    dx = x - x
+    k = 2.0 * np.pi * np.fft.fftfreq(n_grid, d=dx)
+
+    # Identical smooth initial velocity profile u(x, 0) = sin(x)
+    u_init = np.sin(x)
+    S_init = -np.cos(x)  # since v = dS/dx = sin(x)
+    rho_init = np.ones_like(x)
+    psi = np.sqrt(rho_init) * np.exp(1j * S_init / hbar_eff)
+
+    u_std = u_init.copy()
+    dt = 0.0005
+    steps = int(t_max / dt)
+    sample_every = max(1, steps // 35)
+
+    t_hist, grad_std_hist, grad_ucm_hist, rho_max_hist = [], [], [], []
+    kin_phase = np.exp(-0.5j * hbar_eff * (k ** 2) * dt)
+
+    for step in range(steps + 1):
+        if step % sample_every == 0:
+            # Standard fluid velocity gradient |du/dx|
+            du_std = np.abs(np.roll(u_std, -1) - np.roll(u_std, 1)) / (2.0 * dx)
+
+            # Madelung velocity extraction: v = (hbar_eff / rho) * Im(psi* grad(psi))
+            rho_now = np.abs(psi) ** 2
+            grad_psi = (np.roll(psi, -1) - np.roll(psi, 1)) / (2.0 * dx)
+            v_ucm = hbar_eff * np.imag(np.conj(psi) * grad_psi) / np.maximum(rho_now, 1e-6)
+            dv_ucm = np.abs(np.roll(v_ucm, -1) - np.roll(v_ucm, 1)) / (2.0 * dx)
+
+            t_hist.append(step * dt)
+            grad_std_hist.append(float(np.max(du_std)))
+            grad_ucm_hist.append(float(np.max(dv_ucm)))
+            rho_max_hist.append(float(np.max(rho_now)))
+
+        # 1. Advance Standard Inviscid Fluid (Upwind conservation form)
+        flux_std = 0.5 * (u_std ** 2)
+        u_std = u_std - (dt / dx) * (flux_std - np.roll(flux_std, 1))
+
+        # 2. Advance UCM Madelung Fluid via Strang Splitting (Q + H_coh + Bohm dispersion)
+        psi = np.fft.ifft(np.fft.fft(psi) * kin_phase)
+        rho = np.abs(psi) ** 2
+        # Polytropic compression potential V_Q = kappa * rho^alpha (Theorem 8)
+        V_Q = kappa * (rho ** alpha)
+        # Coherence graph Laplacian damping H_coh = -eta * L
+        lap_psi = (np.roll(psi, -1) - 2.0 * psi + np.roll(psi, 1)) / (dx ** 2)
+        psi = psi * np.exp(-1j * V_Q * dt / hbar_eff) + eta_coh * dt * lap_psi
+        psi = np.fft.ifft(np.fft.fft(psi) * kin_phase)
+
+    # Final spatial profiles for overlay comparison
+    rho_final = np.abs(psi) ** 2
+    grad_psi_final = (np.roll(psi, -1) - np.roll(psi, 1)) / (2.0 * dx)
+    v_ucm_final = hbar_eff * np.imag(np.conj(psi) * grad_psi_final) / np.maximum(rho_final, 1e-6)
+
+    return (
+        x,
+        u_std,
+        v_ucm_final,
+        rho_final,
+        np.array(t_hist),
+        np.array(grad_std_hist),
+        np.array(grad_ucm_hist),
+        np.array(rho_max_hist),
+    )
+
+
+# ------------------------------------------------------------------------------
+# TAB 5: Madelung-Navier-Stokes Shock Regularization
+# ------------------------------------------------------------------------------
+with tab5:
+    st.subheader("Madelung–Navier–Stokes Mapping & Singularity Blowup Suppression")
+    st.caption(
+        "Compares finite-time shock blowup in unregularized Euler/Burgers flow against your Madelung-decomposed "
+        "UCM fluid (Q[psi] polytropic pressure + H_coh coherence viscosity + Bohm dispersion; Book Two, Section 20.7)."
+    )
+
+    m_c1, m_c2, m_c3, m_c4 = st.columns(4)
+    shock_kappa = m_c1.slider("Polytropic compression κ", 0.00, 0.20, 0.08, 0.01)
+    shock_eta = m_c2.slider("Coherence viscosity η_coh", 0.000, 0.050, 0.015, 0.005)
+    shock_hbar = m_c3.slider("Bohm dispersion scale ħ_eff", 0.02, 0.15, 0.06, 0.01)
+    shock_tmax = m_c4.slider("Evolution horizon t_max", 0.80, 1.50, 1.25, 0.05)
+
+    (
+        x_sh,
+        u_std_end,
+        v_ucm_end,
+        rho_sh_end,
+        t_sh,
+        g_std,
+        g_ucm,
+        rho_max_sh,
+    ) = run_madelung_shock_comparison(
+        n_grid=256,
+        t_max=shock_tmax,
+        kappa=shock_kappa,
+        alpha=2.0,
+        eta_coh=shock_eta,
+        hbar_eff=shock_hbar,
+    )
+
+    peak_std = float(np.max(g_std))
+    peak_ucm = float(np.max(g_ucm))
+    suppression_pct = ((peak_std - peak_ucm) / max(peak_std, 1e-9)) * 100.0
+
+    k1, k2, k3, k4 = st.columns(4)
+    k1.metric("Standard Fluid Peak |∂u/∂x|", f"{peak_std:.2f}", "Shock Singularity (t ≈ 1.0)", delta_color="inverse")
+    k2.metric("UCM Fluid Peak |∂v/∂x|", f"{peak_ucm:.2f}", f"{-suppression_pct:.1f}% blowup suppression")
+    k3.metric("Terminal UCM Gradient", f"{g_ucm[-1]:.2f}", f"vs. Standard: {g_std[-1]:.2f}")
+    k4.metric("Peak Core Compression ρ_max", f"{np.max(rho_max_sh):.3f}", "Bounded Polytropic Core")
+
+    col_s1, col_s2 = st.columns(2)
+    with col_s1:
+        fig_grad = go.Figure()
+        fig_grad.add_trace(go.Scatter(
+            x=t_sh, y=g_std, name="Standard Inviscid Fluid |∂u/∂x|", line=dict(color="#d62728", width=2.5, dash="dash")
+        ))
+        fig_grad.add_trace(go.Scatter(
+            x=t_sh, y=g_ucm, name="UCM Regularized Fluid |∂v/∂x|", line=dict(color="#1f77b4", width=3)
+        ))
+        fig_grad.add_vline(x=1.0, line_dash="dot", line_color="gray", annotation_text="Classical Shock Time (t = 1.0)")
+        fig_grad.update_layout(
+            title="Maximum Velocity Gradient Evolution (Singularity Suppression)",
+            xaxis_title="Simulation Time t",
+            yaxis_title="Max Velocity Gradient |∂v/∂x|",
+            height=410,
+        )
+        st.plotly_chart(fig_grad, use_container_width=True)
+
+    with col_s2:
+        fig_vel = go.Figure()
+        fig_vel.add_trace(go.Scatter(
+            x=x_sh, y=u_std_end, name="Standard Fluid Velocity u(x, t_max)", line=dict(color="#d62728", dash="dash")
+        ))
+        fig_vel.add_trace(go.Scatter(
+            x=x_sh, y=v_ucm_end, name="UCM Madelung Velocity v(x, t_max)", line=dict(color="#1f77b4", width=2.5)
+        ))
+        fig_vel.add_trace(go.Scatter(
+            x=x_sh, y=rho_sh_end, name="UCM Fluid Density ρ(x, t_max)", line=dict(color="#2ca02c", width=2, opacity=0.75)
+        ))
+        fig_vel.update_layout(
+            title=f"Terminal Wavefront & Density Profile at t = {shock_tmax:.2f}",
+            xaxis_title="Spatial Coordinate x",
+            yaxis_title="Velocity v(x) / Density ρ(x)",
+            height=410,
+        )
+        st.plotly_chart(fig_vel, use_container_width=True)
