@@ -369,7 +369,7 @@ st.markdown(
     "**Book Two (Strang-Splitting Operator Algebra, 2026 *MNRAS* Filament Bounds, & Riemann Zeta GUE Spectral Tests)**."
 )
 
-tab1, tab2, tab3, tab4 = st.tabs([
+tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "1. Strang-Splitting & 2026 MNRAS Filament Test",
     "2. CF-A..CF-D Synchronization (Theorem 2)",
     "3. CF-D Complex Phase vs. Riemann Zeta GUE",
