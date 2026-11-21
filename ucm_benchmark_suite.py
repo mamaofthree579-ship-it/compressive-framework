@@ -687,7 +687,12 @@ with tab5:
             x=x_sh, y=v_ucm_end, name="UCM Madelung Velocity v(x, t_max)", line=dict(color="#1f77b4", width=2.5)
         ))
         fig_vel.add_trace(go.Scatter(
-            x=x_sh, y=rho_sh_end, name="UCM Fluid Density ρ(x, t_max)", line=dict(color="#2ca02c", width=2, opacity=0.75)
+            x=x_sh,
+            y=rho_sh_end,
+            name="UCM Fluid Density ρ(x, t_max)",
+            line=dict(color="#2ca02c", width=2),
+            opacity=0.75,
+        ))
         ))
         fig_vel.update_layout(
             title=f"Terminal Wavefront & Density Profile at t = {shock_tmax:.2f}",
