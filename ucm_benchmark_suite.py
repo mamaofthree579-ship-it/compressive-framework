@@ -693,7 +693,6 @@ with tab5:
             line=dict(color="#2ca02c", width=2),
             opacity=0.75,
         ))
-        ))
         fig_vel.update_layout(
             title=f"Terminal Wavefront & Density Profile at t = {shock_tmax:.2f}",
             xaxis_title="Spatial Coordinate x",
