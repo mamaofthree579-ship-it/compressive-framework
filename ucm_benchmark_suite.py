@@ -295,12 +295,12 @@ def run_madelung_shock_comparison(
     """
     L = 2.0 * np.pi
     x = np.linspace(0, L, n_grid, endpoint=False)
-    dx = x - x
+    dx = float(x[1] - x[0])
     k = 2.0 * np.pi * np.fft.fftfreq(n_grid, d=dx)
 
     # Identical smooth initial velocity profile u(x, 0) = sin(x)
     u_init = np.sin(x)
-    S_init = -np.cos(x)  # since v = dS/dx = sin(x)
+    S_init = -np.cos(x)
     rho_init = np.ones_like(x)
     psi = np.sqrt(rho_init) * np.exp(1j * S_init / hbar_eff)
 
@@ -314,10 +314,8 @@ def run_madelung_shock_comparison(
 
     for step in range(steps + 1):
         if step % sample_every == 0:
-            # Standard fluid velocity gradient |du/dx|
             du_std = np.abs(np.roll(u_std, -1) - np.roll(u_std, 1)) / (2.0 * dx)
 
-            # Madelung velocity extraction: v = (hbar_eff / rho) * Im(psi* grad(psi))
             rho_now = np.abs(psi) ** 2
             grad_psi = (np.roll(psi, -1) - np.roll(psi, 1)) / (2.0 * dx)
             v_ucm = hbar_eff * np.imag(np.conj(psi) * grad_psi) / np.maximum(rho_now, 1e-6)
@@ -335,29 +333,16 @@ def run_madelung_shock_comparison(
         # 2. Advance UCM Madelung Fluid via Strang Splitting (Q + H_coh + Bohm dispersion)
         psi = np.fft.ifft(np.fft.fft(psi) * kin_phase)
         rho = np.abs(psi) ** 2
-        # Polytropic compression potential V_Q = kappa * rho^alpha (Theorem 8)
         V_Q = kappa * (rho ** alpha)
-        # Coherence graph Laplacian damping H_coh = -eta * L
         lap_psi = (np.roll(psi, -1) - 2.0 * psi + np.roll(psi, 1)) / (dx ** 2)
         psi = psi * np.exp(-1j * V_Q * dt / hbar_eff) + eta_coh * dt * lap_psi
         psi = np.fft.ifft(np.fft.fft(psi) * kin_phase)
 
-    # Final spatial profiles for overlay comparison
     rho_final = np.abs(psi) ** 2
     grad_psi_final = (np.roll(psi, -1) - np.roll(psi, 1)) / (2.0 * dx)
     v_ucm_final = hbar_eff * np.imag(np.conj(psi) * grad_psi_final) / np.maximum(rho_final, 1e-6)
 
-    return (
-        x,
-        u_std,
-        v_ucm_final,
-        rho_final,
-        np.array(t_hist),
-        np.array(grad_std_hist),
-        np.array(grad_ucm_hist),
-        np.array(rho_max_hist),
-    )
-
+    return x, u_std, v_ucm_final, rho_final, np.array(t_hist), np.array(grad_std_hist), np.array(grad_ucm_hist), np.array(rho_max_hist)
 
 # ==============================================================================
 # 6. STREAMLIT USER INTERFACE
@@ -632,22 +617,8 @@ with tab5:
     shock_hbar = m_c3.slider("Bohm dispersion scale ħ_eff", 0.02, 0.15, 0.06, 0.01)
     shock_tmax = m_c4.slider("Evolution horizon t_max", 0.80, 1.50, 1.25, 0.05)
 
-    (
-        x_sh,
-        u_std_end,
-        v_ucm_end,
-        rho_sh_end,
-        t_sh,
-        g_std,
-        g_ucm,
-        rho_max_sh,
-    ) = run_madelung_shock_comparison(
-        n_grid=256,
-        t_max=shock_tmax,
-        kappa=shock_kappa,
-        alpha=2.0,
-        eta_coh=shock_eta,
-        hbar_eff=shock_hbar,
+    x_sh, u_std_end, v_ucm_end, rho_sh_end, t_sh, g_std, g_ucm, rho_max_sh = run_madelung_shock_comparison(
+        n_grid=256, t_max=shock_tmax, kappa=shock_kappa, alpha=2.0, eta_coh=shock_eta, hbar_eff=shock_hbar
     )
 
     peak_std = float(np.max(g_std))
@@ -663,40 +634,16 @@ with tab5:
     col_s1, col_s2 = st.columns(2)
     with col_s1:
         fig_grad = go.Figure()
-        fig_grad.add_trace(go.Scatter(
-            x=t_sh, y=g_std, name="Standard Inviscid Fluid |∂u/∂x|", line=dict(color="#d62728", width=2.5, dash="dash")
-        ))
-        fig_grad.add_trace(go.Scatter(
-            x=t_sh, y=g_ucm, name="UCM Regularized Fluid |∂v/∂x|", line=dict(color="#1f77b4", width=3)
-        ))
+        fig_grad.add_trace(go.Scatter(x=t_sh, y=g_std, name="Standard Inviscid Fluid |∂u/∂x|", line=dict(color="#d62728", width=2.5, dash="dash")))
+        fig_grad.add_trace(go.Scatter(x=t_sh, y=g_ucm, name="UCM Regularized Fluid |∂v/∂x|", line=dict(color="#1f77b4", width=3)))
         fig_grad.add_vline(x=1.0, line_dash="dot", line_color="gray", annotation_text="Classical Shock Time (t = 1.0)")
-        fig_grad.update_layout(
-            title="Maximum Velocity Gradient Evolution (Singularity Suppression)",
-            xaxis_title="Simulation Time t",
-            yaxis_title="Max Velocity Gradient |∂v/∂x|",
-            height=410,
-        )
+        fig_grad.update_layout(title="Maximum Velocity Gradient Evolution (Singularity Suppression)", xaxis_title="Simulation Time t", yaxis_title="Max Velocity Gradient |∂v/∂x|", height=410)
         st.plotly_chart(fig_grad, use_container_width=True)
 
     with col_s2:
         fig_vel = go.Figure()
-        fig_vel.add_trace(go.Scatter(
-            x=x_sh, y=u_std_end, name="Standard Fluid Velocity u(x, t_max)", line=dict(color="#d62728", dash="dash")
-        ))
-        fig_vel.add_trace(go.Scatter(
-            x=x_sh, y=v_ucm_end, name="UCM Madelung Velocity v(x, t_max)", line=dict(color="#1f77b4", width=2.5)
-        ))
-        fig_vel.add_trace(go.Scatter(
-            x=x_sh,
-            y=rho_sh_end,
-            name="UCM Fluid Density ρ(x, t_max)",
-            line=dict(color="#2ca02c", width=2),
-            opacity=0.75,
-        ))
-        fig_vel.update_layout(
-            title=f"Terminal Wavefront & Density Profile at t = {shock_tmax:.2f}",
-            xaxis_title="Spatial Coordinate x",
-            yaxis_title="Velocity v(x) / Density ρ(x)",
-            height=410,
-        )
+        fig_vel.add_trace(go.Scatter(x=x_sh, y=u_std_end, name="Standard Fluid Velocity u(x, t_max)", line=dict(color="#d62728", dash="dash")))
+        fig_vel.add_trace(go.Scatter(x=x_sh, y=v_ucm_end, name="UCM Madelung Velocity v(x, t_max)", line=dict(color="#1f77b4", width=2.5)))
+        fig_vel.add_trace(go.Scatter(x=x_sh, y=rho_sh_end, name="UCM Fluid Density ρ(x, t_max)", line=dict(color="#2ca02c", width=2), opacity=0.75))
+        fig_vel.update_layout(title=f"Terminal Wavefront & Density Profile at t = {shock_tmax:.2f}", xaxis_title="Spatial Coordinate x", yaxis_title="Velocity v(x) / Density ρ(x)", height=410)
         st.plotly_chart(fig_vel, use_container_width=True)
