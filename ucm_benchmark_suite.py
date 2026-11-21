@@ -276,9 +276,91 @@ def compute_cfd_magnetic_laplacian_spacings(n_nodes: int = 243, phase_flux: floa
 
     return spacings, s_grid, gue_pdf, poisson_pdf, w_dist
 
+# ==============================================================================
+# 5. MODULE D: MADELUNG-NAVIER-STOKES SHOCK REGULARIZATION (Book Two, Ch. 20-21)
+# ==============================================================================
+
+def run_madelung_shock_comparison(
+    n_grid: int = 256,
+    t_max: float = 1.25,
+    kappa: float = 0.08,
+    alpha: float = 2.0,
+    eta_coh: float = 0.015,
+    hbar_eff: float = 0.06,
+):
+    """
+    Compares unregularized inviscid Burgers/Euler shock blowup (du/dt + u du/dx = 0)
+    against the Madelung-transformed UCM fluid (psi = sqrt(rho) * exp(i*S/hbar_eff))
+    evolved under Q[psi] + H_coh (Book Two, Section 20.7 & Theorems 4, 8).
+    """
+    L = 2.0 * np.pi
+    x = np.linspace(0, L, n_grid, endpoint=False)
+    dx = x - x
+    k = 2.0 * np.pi * np.fft.fftfreq(n_grid, d=dx)
+
+    # Identical smooth initial velocity profile u(x, 0) = sin(x)
+    u_init = np.sin(x)
+    S_init = -np.cos(x)  # since v = dS/dx = sin(x)
+    rho_init = np.ones_like(x)
+    psi = np.sqrt(rho_init) * np.exp(1j * S_init / hbar_eff)
+
+    u_std = u_init.copy()
+    dt = 0.0005
+    steps = int(t_max / dt)
+    sample_every = max(1, steps // 35)
+
+    t_hist, grad_std_hist, grad_ucm_hist, rho_max_hist = [], [], [], []
+    kin_phase = np.exp(-0.5j * hbar_eff * (k ** 2) * dt)
+
+    for step in range(steps + 1):
+        if step % sample_every == 0:
+            # Standard fluid velocity gradient |du/dx|
+            du_std = np.abs(np.roll(u_std, -1) - np.roll(u_std, 1)) / (2.0 * dx)
+
+            # Madelung velocity extraction: v = (hbar_eff / rho) * Im(psi* grad(psi))
+            rho_now = np.abs(psi) ** 2
+            grad_psi = (np.roll(psi, -1) - np.roll(psi, 1)) / (2.0 * dx)
+            v_ucm = hbar_eff * np.imag(np.conj(psi) * grad_psi) / np.maximum(rho_now, 1e-6)
+            dv_ucm = np.abs(np.roll(v_ucm, -1) - np.roll(v_ucm, 1)) / (2.0 * dx)
+
+            t_hist.append(step * dt)
+            grad_std_hist.append(float(np.max(du_std)))
+            grad_ucm_hist.append(float(np.max(dv_ucm)))
+            rho_max_hist.append(float(np.max(rho_now)))
+
+        # 1. Advance Standard Inviscid Fluid (Upwind conservation form)
+        flux_std = 0.5 * (u_std ** 2)
+        u_std = u_std - (dt / dx) * (flux_std - np.roll(flux_std, 1))
+
+        # 2. Advance UCM Madelung Fluid via Strang Splitting (Q + H_coh + Bohm dispersion)
+        psi = np.fft.ifft(np.fft.fft(psi) * kin_phase)
+        rho = np.abs(psi) ** 2
+        # Polytropic compression potential V_Q = kappa * rho^alpha (Theorem 8)
+        V_Q = kappa * (rho ** alpha)
+        # Coherence graph Laplacian damping H_coh = -eta * L
+        lap_psi = (np.roll(psi, -1) - 2.0 * psi + np.roll(psi, 1)) / (dx ** 2)
+        psi = psi * np.exp(-1j * V_Q * dt / hbar_eff) + eta_coh * dt * lap_psi
+        psi = np.fft.ifft(np.fft.fft(psi) * kin_phase)
+
+    # Final spatial profiles for overlay comparison
+    rho_final = np.abs(psi) ** 2
+    grad_psi_final = (np.roll(psi, -1) - np.roll(psi, 1)) / (2.0 * dx)
+    v_ucm_final = hbar_eff * np.imag(np.conj(psi) * grad_psi_final) / np.maximum(rho_final, 1e-6)
+
+    return (
+        x,
+        u_std,
+        v_ucm_final,
+        rho_final,
+        np.array(t_hist),
+        np.array(grad_std_hist),
+        np.array(grad_ucm_hist),
+        np.array(rho_max_hist),
+    )
+
 
 # ==============================================================================
-# 5. STREAMLIT USER INTERFACE
+# 6. STREAMLIT USER INTERFACE
 # ==============================================================================
 
 st.title("Unified Compressive Model (UCM) — Open-Source Benchmark & Falsification Suite")
@@ -532,88 +614,6 @@ with tab4:
         height=520,
     )
     st.plotly_chart(fig_dpf, use_container_width=True)
-
-# ==============================================================================
-# 6. MODULE D: MADELUNG-NAVIER-STOKES SHOCK REGULARIZATION (Book Two, Ch. 20-21)
-# ==============================================================================
-
-def run_madelung_shock_comparison(
-    n_grid: int = 256,
-    t_max: float = 1.25,
-    kappa: float = 0.08,
-    alpha: float = 2.0,
-    eta_coh: float = 0.015,
-    hbar_eff: float = 0.06,
-):
-    """
-    Compares unregularized inviscid Burgers/Euler shock blowup (du/dt + u du/dx = 0)
-    against the Madelung-transformed UCM fluid (psi = sqrt(rho) * exp(i*S/hbar_eff))
-    evolved under Q[psi] + H_coh (Book Two, Section 20.7 & Theorems 4, 8).
-    """
-    L = 2.0 * np.pi
-    x = np.linspace(0, L, n_grid, endpoint=False)
-    dx = x - x
-    k = 2.0 * np.pi * np.fft.fftfreq(n_grid, d=dx)
-
-    # Identical smooth initial velocity profile u(x, 0) = sin(x)
-    u_init = np.sin(x)
-    S_init = -np.cos(x)  # since v = dS/dx = sin(x)
-    rho_init = np.ones_like(x)
-    psi = np.sqrt(rho_init) * np.exp(1j * S_init / hbar_eff)
-
-    u_std = u_init.copy()
-    dt = 0.0005
-    steps = int(t_max / dt)
-    sample_every = max(1, steps // 35)
-
-    t_hist, grad_std_hist, grad_ucm_hist, rho_max_hist = [], [], [], []
-    kin_phase = np.exp(-0.5j * hbar_eff * (k ** 2) * dt)
-
-    for step in range(steps + 1):
-        if step % sample_every == 0:
-            # Standard fluid velocity gradient |du/dx|
-            du_std = np.abs(np.roll(u_std, -1) - np.roll(u_std, 1)) / (2.0 * dx)
-
-            # Madelung velocity extraction: v = (hbar_eff / rho) * Im(psi* grad(psi))
-            rho_now = np.abs(psi) ** 2
-            grad_psi = (np.roll(psi, -1) - np.roll(psi, 1)) / (2.0 * dx)
-            v_ucm = hbar_eff * np.imag(np.conj(psi) * grad_psi) / np.maximum(rho_now, 1e-6)
-            dv_ucm = np.abs(np.roll(v_ucm, -1) - np.roll(v_ucm, 1)) / (2.0 * dx)
-
-            t_hist.append(step * dt)
-            grad_std_hist.append(float(np.max(du_std)))
-            grad_ucm_hist.append(float(np.max(dv_ucm)))
-            rho_max_hist.append(float(np.max(rho_now)))
-
-        # 1. Advance Standard Inviscid Fluid (Upwind conservation form)
-        flux_std = 0.5 * (u_std ** 2)
-        u_std = u_std - (dt / dx) * (flux_std - np.roll(flux_std, 1))
-
-        # 2. Advance UCM Madelung Fluid via Strang Splitting (Q + H_coh + Bohm dispersion)
-        psi = np.fft.ifft(np.fft.fft(psi) * kin_phase)
-        rho = np.abs(psi) ** 2
-        # Polytropic compression potential V_Q = kappa * rho^alpha (Theorem 8)
-        V_Q = kappa * (rho ** alpha)
-        # Coherence graph Laplacian damping H_coh = -eta * L
-        lap_psi = (np.roll(psi, -1) - 2.0 * psi + np.roll(psi, 1)) / (dx ** 2)
-        psi = psi * np.exp(-1j * V_Q * dt / hbar_eff) + eta_coh * dt * lap_psi
-        psi = np.fft.ifft(np.fft.fft(psi) * kin_phase)
-
-    # Final spatial profiles for overlay comparison
-    rho_final = np.abs(psi) ** 2
-    grad_psi_final = (np.roll(psi, -1) - np.roll(psi, 1)) / (2.0 * dx)
-    v_ucm_final = hbar_eff * np.imag(np.conj(psi) * grad_psi_final) / np.maximum(rho_final, 1e-6)
-
-    return (
-        x,
-        u_std,
-        v_ucm_final,
-        rho_final,
-        np.array(t_hist),
-        np.array(grad_std_hist),
-        np.array(grad_ucm_hist),
-        np.array(rho_max_hist),
-    )
 
 
 # ------------------------------------------------------------------------------
